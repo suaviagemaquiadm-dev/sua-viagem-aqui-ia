@@ -1,3 +1,4 @@
+
 const logger = require("firebase-functions/logger");
 const { onRequest } = require("firebase-functions/v2/https");
 const crypto = require("crypto");
@@ -11,7 +12,7 @@ const {
   PARTNER_STATUS,
   PAYMENT_STATUS,
   TRANSACTION_TYPES,
-} = require("./config");
+} = require("../config");
 
 /**
  * Valida a assinatura do webhook do Mercado Pago para previnir ataques.
@@ -136,3 +137,4 @@ exports.mercadoPagoWebhook = onRequest(
     }
   },
 );
+

@@ -1,7 +1,8 @@
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { beforeUserDeleted } = require("firebase-functions/v2/auth");
 const logger = require("firebase-functions/logger");
-const { db, FieldValue } = require("./config");
+const { db, FieldValue } = require("../config");
 const { deleteCollectionRecursive } = require("./utils");
 
 /**
@@ -76,3 +77,4 @@ exports.cleanupUserData = beforeUserDeleted(async (event) => {
     logger.error(`Erro ao limpar dados do usuário ${userId} no Firestore (a exclusão do Auth continuará):`, error);
   }
 });
+
