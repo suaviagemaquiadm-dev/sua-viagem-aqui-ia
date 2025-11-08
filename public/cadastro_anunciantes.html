@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anuncie na Plataforma - Sua Viagem Aqui</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://unpkg.com/imask"></script>
+  </head>
+  <body class="bg-slate-900">
+    <div
+      class="min-h-screen flex items-center justify-center bg-cover bg-center p-4"
+      style="
+        background-image: url(&quot;https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?q=80&w=1966&auto=format&fit=crop&quot;);
+      "
+    >
+      <div class="absolute inset-0 bg-black/60"></div>
+      <div class="relative w-full max-w-2xl">
+        <!-- Formulário de Cadastro de Anunciante -->
+        <div
+          id="form-container"
+          class="space-y-6 glass-effect rounded-2xl shadow-2xl p-8"
+        >
+          <h2 class="text-center text-3xl font-extrabold text-white">
+            Anuncie seu Negócio
+          </h2>
+          <p class="mt-2 text-center text-md text-slate-300">
+            Alcance milhares de viajantes em nossa plataforma.
+          </p>
+
+          <form id="partner-form" class="mt-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label
+                  for="businessName"
+                  class="block text-sm font-medium text-slate-200"
+                  >Nome do Negócio</label
+                >
+                <input
+                  id="businessName"
+                  name="businessName"
+                  type="text"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  for="ownerName"
+                  class="block text-sm font-medium text-slate-200"
+                  >Nome do Responsável</label
+                >
+                <input
+                  id="ownerName"
+                  name="ownerName"
+                  type="text"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  for="cnpj"
+                  class="block text-sm font-medium text-slate-200"
+                  >CNPJ</label
+                >
+                <input
+                  id="cnpj"
+                  name="cnpj"
+                  type="text"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                  placeholder="00.000.000/0001-00"
+                />
+              </div>
+              <div>
+                <label
+                  for="whatsapp"
+                  class="block text-sm font-medium text-slate-200"
+                  >WhatsApp</label
+                >
+                <input
+                  id="whatsapp"
+                  name="whatsapp"
+                  type="text"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                  placeholder="(00) 90000-0000"
+                />
+              </div>
+              <div>
+                <label
+                  for="city"
+                  class="block text-sm font-medium text-slate-200"
+                  >Cidade</label
+                >
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  for="state"
+                  class="block text-sm font-medium text-slate-200"
+                  >Estado (UF)</label
+                >
+                <input
+                  id="state"
+                  name="state"
+                  type="text"
+                  required
+                  maxlength="2"
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                  placeholder="Ex: SP"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="category"
+                  class="block text-sm font-medium text-slate-200"
+                  >Categoria</label
+                >
+                <select
+                  id="category"
+                  name="category"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                >
+                  <option value="" disabled selected>
+                    Carregando categorias...
+                  </option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="image"
+                  class="block text-sm font-medium text-slate-200"
+                  >URL da Imagem Principal (opcional)</label
+                >
+                <input
+                  id="image"
+                  name="image"
+                  type="url"
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="plan"
+                  class="block text-sm font-medium text-slate-200"
+                  >Plano de Anúncio</label
+                >
+                <select
+                  id="plan"
+                  name="plan"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                >
+                  <option value="free">
+                    Plano Gratuito (Aguardar Aprovação)
+                  </option>
+                  <option value="basic">Plano Basic (R$ 99,00)</option>
+                  <option value="plus">Plano Plus (R$ 199,00)</option>
+                  <option value="advance">Plano Advance (R$ 399,00)</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="email"
+                  class="block text-sm font-medium text-slate-200"
+                  >Email de Acesso</label
+                >
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  for="password"
+                  class="block text-sm font-medium text-slate-200"
+                  >Senha</label
+                >
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm"
+                />
+              </div>
+              <div>
+                <label
+                  for="confirm-password"
+                  class="block text-sm font-medium text-slate-200"
+                  >Confirmar Senha</label
+                >
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type="password"
+                  required
+                  class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm"
+                />
+              </div>
+            </div>
+            <div
+              id="form-message"
+              class="hidden text-center p-3 rounded-md mt-6 text-sm"
+            ></div>
+            <div class="mt-6">
+              <button
+                type="submit"
+                id="submit-btn"
+                class="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-slate-900 bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-70"
+              >
+                <span id="submit-text">Finalizar Cadastro</span>
+                <span id="submit-loading" class="hidden"
+                  ><div class="modern-spinner-btn mr-2"></div>
+                  Aguarde...</span
+                >
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tela de Sucesso -->
+        <div
+          id="success-container"
+          class="hidden text-center glass-effect rounded-2xl shadow-2xl p-8"
+        >
+          <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+          <h2 class="text-3xl font-extrabold text-white">Cadastro Recebido!</h2>
+          <p class="mt-4 text-slate-300">Seu código de controle é:</p>
+          <div
+            id="control-code-display"
+            class="my-4 p-4 bg-slate-900 border-2 border-dashed border-amber-400 rounded-lg text-amber-300 text-3xl font-bold tracking-widest"
+          >
+            Aguardando...
+          </div>
+          <div id="payment-container" class="hidden mt-8">
+            <p class="text-slate-300 mb-4">
+              Para ativar seu plano, finalize o pagamento:
+            </p>
+            <div id="wallet_container"></div>
+          </div>
+          <p class="relative text-center text-sm text-slate-300 mt-6">
+            Você já pode
+            <a
+              href="pagina_login.html"
+              class="font-bold text-amber-400 hover:underline"
+              >fazer o login</a
+            >
+            para acompanhar o status.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/cadastro_anunciantes.js"></script>
+  </body>
+</html>

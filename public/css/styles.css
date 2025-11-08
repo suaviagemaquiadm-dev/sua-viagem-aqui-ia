@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    scroll-behavior: smooth;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-slate-900 text-slate-200;
+}
+.glass-effect {
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(12px);
+}
+.modern-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #fcd34d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+.modern-spinner-btn {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,0.2);
+    border-top: 3px solid #111827;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+.text-gradient-gold {
+    background: linear-gradient(135deg, #fcd34d, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3 {
+    color: #fcd34d;
+}
+.prose-invert a {
+    color: #f59e0b;
+}
+.prose-invert ul > li::before {
+    background-color: #fcd34d;
+}
+.form-input {
+    @apply w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:bg-slate-700 focus:border-amber-400 transition-all;
+}
+.btn-primary {
+    @apply bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-4 rounded-lg transition-colors;
+}
+.btn-primary-sm {
+     @apply bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-1 px-3 rounded-md transition-colors text-sm;
+}
+.btn-secondary {
+    @apply bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-lg transition-colors;
+}
+
+/* FAQ / Accordion Styles */
+.faq-question { cursor: pointer; }
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.faq-item.open .faq-answer {
+    max-height: 500px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+.faq-item.open .faq-icon {
+    transform: rotate(180deg);
+}
+.faq-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Skeleton Loaders */
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #1f2937, #374151, #1f2937);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.75rem;
+}
+
+/* Notificações */
+#notification-badge.active {
+    display: flex;
+}
+#notification-panel {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Roteiro Markdown Styles */
+#itinerary-modal-body h1, #itinerary-modal-body h2, #itinerary-modal-body h3,
+.itinerary-content h1, .itinerary-content h2, .itinerary-content h3 {
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #fcd34d;
+}
+#itinerary-modal-body h1, .itinerary-content h1 { font-size: 1.875rem; }
+#itinerary-modal-body h2, .itinerary-content h2 { font-size: 1.5rem; }
+#itinerary-modal-body h3, .itinerary-content h3 { font-size: 1.25rem; }
+#itinerary-modal-body p, .itinerary-content p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    color: #d1d5db;
+}
+#itinerary-modal-body ul, #itinerary-modal-body ol,
+.itinerary-content ul, .itinerary-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+    list-style-position: outside;
+}
+#itinerary-modal-body li, .itinerary-content li { margin-bottom: 0.5rem; }
+#itinerary-modal-body strong, .itinerary-content strong { color: #f9fafb; }
+
+/* Admin Panel */
+.table-row {
+    @apply border-b border-slate-700 hover:bg-slate-800/50 transition-colors;
+}
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+.modal-content {
+    background-color: #1e293b;
+}
+
+/* Foco Visível para Acessibilidade */
+:focus-visible {
+    outline: 3px solid #f59e0b;
+    outline-offset: 2px;
+}

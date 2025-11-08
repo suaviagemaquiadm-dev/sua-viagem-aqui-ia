@@ -1,0 +1,145 @@
+<!-- Forçar atualização de cache: 2025-10-13 15:00 -->
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar Parceiros - Sua Viagem Aqui</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body class="bg-slate-900 flex flex-col min-h-screen">
+    <!-- Header -->
+    <header
+      id="main-header"
+      class="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-slate-700"
+    >
+        <!-- O cabeçalho será carregado aqui -->
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow container mx-auto px-4 py-16">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+          Encontre o Parceiro Ideal
+        </h1>
+        <p class="text-lg text-slate-400">
+          Explore nossa rede de parceiros verificados para sua próxima viagem.
+        </p>
+      </div>
+
+      <!-- Filtros de Busca -->
+      <div
+        class="mb-10 p-6 bg-slate-800/50 rounded-2xl border border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
+      >
+        <div>
+          <label
+            for="search-text"
+            class="block text-sm font-semibold text-slate-300 mb-2"
+            >Buscar por nome</label
+          >
+          <input
+            type="text"
+            id="search-text"
+            placeholder="Nome do hotel, restaurante..."
+            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
+          />
+        </div>
+        <div>
+          <label
+            for="filter-category"
+            class="block text-sm font-semibold text-slate-300 mb-2"
+            >Filtrar por categoria</label
+          >
+          <select
+            id="filter-category"
+            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white appearance-none"
+          >
+            <option value="">Todas as Categorias</option>
+            <option value="agencias">Agências de Viagens</option>
+            <option value="aluguel">
+              Aluguel de Carros, Motos e Bicicletas
+            </option>
+            <option value="bares">Bares e Vida Noturna</option>
+            <option value="camping">Camping</option>
+            <option value="ecoturismo">Ecoturismo e Aventura</option>
+            <option value="experiencias">Experiências Culturais</option>
+            <option value="familia">Viagens em Família</option>
+            <option value="fotografos">Fotógrafos de Viagem</option>
+            <option value="guias">Guias de Turismo</option>
+            <option value="hospedagem">Hotéis e Pousadas</option>
+            <option value="mergulho">Mergulho</option>
+            <option value="passeios_barco">Passeios de Barco / Lancha</option>
+            <option value="pet_friendly">Pet Friendly</option>
+            <option value="restaurantes">Restaurantes</option>
+            <option value="transfer">Transfer e Receptivo</option>
+            <option value="turismo_rural">Turismo Rural</option>
+          </select>
+        </div>
+        <div>
+          <button
+            id="clear-filters-btn"
+            class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition"
+          >
+            Limpar Filtros
+          </button>
+        </div>
+      </div>
+
+      <!-- Skeleton Loaders -->
+      <div
+        id="loading-container"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+      >
+        <!-- Repetir este bloco para criar o efeito de skeleton -->
+        <div class="skeleton h-72"></div>
+        <div class="skeleton h-72 hidden sm:block"></div>
+        <div class="skeleton h-72 hidden lg:block"></div>
+        <div class="skeleton h-72 hidden lg:block"></div>
+      </div>
+
+      <!-- Grid de Resultados -->
+      <div
+        id="partners-grid"
+        class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+      >
+        <!-- Cards de parceiros serão inseridos aqui -->
+      </div>
+
+      <!-- Mensagem de Nenhum Resultado Aprimorada -->
+      <div
+        id="no-results-message"
+        class="hidden text-center py-16 bg-slate-800/50 rounded-3xl"
+      >
+        <i class="fas fa-map-signs text-5xl text-amber-400 mb-6"></i>
+        <h3 class="text-3xl font-bold text-white">
+          Nenhum parceiro encontrado
+        </h3>
+        <p class="text-slate-400 mt-4 max-w-md mx-auto">
+          Não encontramos resultados para sua busca. Tente ajustar os filtros ou
+          explorar outras categorias.
+        </p>
+        <button
+          id="clear-filters-btn-empty"
+          class="mt-8 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-lg transition"
+        >
+          Limpar Filtros e Ver Todos
+        </button>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
+        <!-- O rodapé será carregado aqui -->
+    </footer>
+
+    <script type="module" src="/src/layout.js"></script>
+    <script type="module" src="/src/buscar_parceiros.js"></script>
+  </body>
+</html>

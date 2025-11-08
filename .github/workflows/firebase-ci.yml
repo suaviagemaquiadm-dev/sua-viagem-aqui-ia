@@ -1,0 +1,52 @@
+# Este workflow aciona a implantação no Firebase Hosting e a execução de testes das Functions
+
+name: Build, Test and Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main # Aciona o workflow em pushes para a branch principal
+
+jobs:
+  build_test_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Instala dependências do projeto raiz (Vite, etc.)
+      - name: Install Root Dependencies
+        run: npm ci
+
+      # Instala dependências das Cloud Functions
+      - name: Install Functions Dependencies
+        run: npm ci --prefix functions
+
+      # Roda o linter para garantir a qualidade do código
+      - name: Lint Code
+        run: npm run lint
+
+      # Roda os testes unitários do backend (Cloud Functions)
+      - name: Run Backend Tests
+        run: npm test --prefix functions
+
+      # Constrói o projeto frontend para produção
+      - name: Build Frontend
+        run: npm run build
+
+      # Deploy no Firebase
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}"
+          channelId: live # Deploys para o canal de produção
+          projectId: gemini-cli-98f4a
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels

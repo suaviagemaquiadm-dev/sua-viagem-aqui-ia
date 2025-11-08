@@ -1,0 +1,37 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "test": "mocha test/**/*.test.js",
+    "test:rules": "mocha --timeout 10000 test/firestore.rules.test.js",
+    "audit": "npm audit --audit-level=high",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:logs"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "@sentry/node": "^10.22.0",
+    "@sentry/profiling-node": "^10.22.0",
+    "axios": "^1.7.2",
+    "dompurify": "^3.1.5",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.6.0",
+    "jsdom": "^24.1.0",
+    "mercadopago": "^2.0.11",
+    "nodemailer": "^7.0.10",
+    "openai": "^4.52.7"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "firebase-functions-test": "^3.1.0",
+    "mocha": "^10.2.0",
+    "sinon": "^15.0.1"
+  },
+  "private": true
+}
