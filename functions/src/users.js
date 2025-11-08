@@ -1,7 +1,7 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { beforeUserDeleted } = require("firebase-functions/v2/auth");
 const logger = require("firebase-functions/logger");
-const { db, FieldValue } = require("./config");
+const { db, FieldValue } = require("../config");
 const { deleteCollectionRecursive } = require("./utils");
 
 /**

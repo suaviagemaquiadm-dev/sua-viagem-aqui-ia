@@ -11,7 +11,7 @@ const {
   PARTNER_STATUS,
   PAYMENT_STATUS,
   TRANSACTION_TYPES,
-} = require("./config");
+} = require("../config");
 
 /**
  * Valida a assinatura do webhook do Mercado Pago para previnir ataques.
