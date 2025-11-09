@@ -1,26 +1,25 @@
 
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const functions = require("firebase-functions");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
 const { deleteCollectionRecursive } = require("./utils");
 
 /**
- * Função para permitir que um usuário autenticado atualize seu próprio perfil.
+ * Função para permitir que um usuário autenticado atualize seu próprio perfil (v1).
  */
-exports.updateUserProfile = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
+exports.updateUserProfile = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
       "unauthenticated",
       "A função só pode ser chamada por um usuário autenticado.",
     );
   }
 
-  const userId = request.auth.uid;
-  const { name, photoURL } = request.data;
+  const userId = context.auth.uid;
+  const { name, photoURL } = data;
 
   if (!name && !photoURL) {
-    throw new HttpsError(
+    throw new functions.https.HttpsError(
       "invalid-argument",
       "Pelo menos um campo (name ou photoURL) deve ser fornecido.",
     );
@@ -40,14 +39,13 @@ exports.updateUserProfile = onCall(async (request) => {
     return { success: true, message: "Perfil atualizado com sucesso!" };
   } catch (error) {
     logger.error(`Erro ao atualizar o perfil do usuário ${userId}:`, error);
-    throw new HttpsError("internal", "Não foi possível atualizar o perfil.");
+    throw new functions.https.HttpsError("internal", "Não foi possível atualizar o perfil.");
   }
 });
 
 /**
  * Trigger que limpa os dados de um usuário no Firestore e subcoleções
- * DEPOIS que a conta correspondente é deletada do Firebase Authentication.
- * Usando o gatilho v1 para contornar problemas de importação no ambiente de teste.
+ * DEPOIS que a conta correspondente é deletada do Firebase Authentication (v1).
  */
 exports.cleanupUserData = functions.auth.user().onDelete(async (user) => {
   const userId = user.uid;

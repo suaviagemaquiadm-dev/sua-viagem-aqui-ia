@@ -1,0 +1,96 @@
+<!-- Forçar atualização de cache: 2025-10-09 12:45 -->
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Construtor de Roteiros com IA - Sua Viagem Aqui</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://viacep.com.br wss://*.firebaseio.com https://*.googleapis.com; frame-src 'self' https://*.mercadolibre.com;">
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+  </head>
+  <body class="bg-slate-900 flex flex-col min-h-screen">
+    <header
+      id="main-header"
+      class="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-slate-700"
+    >
+      <!-- O cabeçalho será carregado aqui -->
+    </header>
+    <main class="flex-grow container mx-auto px-4 py-16">
+      <div id="loading-container" class="text-center p-10">
+        <div class="modern-spinner mx-auto"></div>
+        <p class="mt-4 text-slate-400">Verificando sua assinatura...</p>
+      </div>
+      <div id="upgrade-message" class="hidden text-center py-16">
+        <i class="fas fa-rocket text-5xl text-amber-400 mb-4"></i>
+        <h2 class="text-3xl font-bold text-white">
+          Recurso Exclusivo para Viajantes Plus
+        </h2>
+        <p class="text-slate-400 mt-2 mb-6">
+          Faça o upgrade para criar roteiros ilimitados com nossa IA!
+        </p>
+        <a
+          href="cadastro_viajante_plus.html"
+          class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-lg transition"
+          >Seja um Viajante Plus</a
+        >
+      </div>
+      <div id="plus-content" class="hidden max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            Construtor de Roteiros com IA
+          </h1>
+          <p class="text-lg text-slate-400">
+            Descreva a viagem dos seus sonhos e deixe nossa IA fazer o resto.
+          </p>
+        </div>
+        <form id="ai-form" class="glass-effect rounded-3xl p-8 md:p-10 shadow-2xl space-y-6">
+          <div>
+            <label for="ai-destination" class="block text-white text-sm font-semibold mb-3">Destino Principal</label>
+            <input type="text" id="ai-destination" required placeholder="Ex: Salvador, Bahia" class="form-input"/>
+          </div>
+          <div>
+            <label for="ai-prompt" class="block text-white text-sm font-semibold mb-3">Descreva sua Viagem</label>
+            <textarea id="ai-prompt" rows="5" required class="form-input" placeholder="Ex: 'Quero um roteiro de 5 dias em Salvador, focado em cultura, história e gastronomia, com um orçamento moderado.'"></textarea>
+          </div>
+          <div class="pt-2">
+            <button type="submit" id="generate-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl text-lg shadow-xl">
+              <span class="submit-text flex items-center justify-center"><i class="fas fa-magic mr-3"></i>Gerar Roteiro</span>
+              <span class="submit-loading hidden items-center justify-center">
+                <div class="modern-spinner mr-3" style="border-top-color: #111827"></div>
+                Gerando...
+              </span>
+            </button>
+          </div>
+        </form>
+        <div id="itinerary-container" class="hidden mt-12 glass-effect rounded-3xl p-8 md:p-10 shadow-2xl">
+          <div id="itinerary-result" class="itinerary-content"></div>
+          <div class="text-center mt-8">
+            <button id="save-itinerary-btn" class="hidden bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition">
+              <i class="fas fa-save mr-2"></i>Salvar Roteiro
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
+        <!-- O rodapé será carregado aqui -->
+    </footer>
+    <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
+        <p id="alert-message" class="text-white text-lg mb-6"></p>
+        <button id="alert-close-btn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-lg transition">OK</button>
+      </div>
+    </div>
+    <script type="module" src="/src/layout.js"></script>
+    <script type="module" src="/src/roteiro_ia.js"></script>
+  </body>
+</html>

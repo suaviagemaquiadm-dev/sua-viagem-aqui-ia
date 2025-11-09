@@ -1,20 +1,26 @@
-import { db, collection, getDocs, query, where } from "./firebase.js";
+import { db, collection, getDocs, query, where, orderBy, limit, startAfter } from "./firebase.js";
 import { getResizedImageUrl } from "./utils.js";
 import { initApp } from './app.js';
 
-let allPartners = [];
+let lastVisible = null; // Para paginação
+let allPartners = []; // Cache para buscas subsequentes sem filtro de categoria
+let currentQueryConstraints = [];
+
+const loadingContainer = document.getElementById("loading-container");
+const grid = document.getElementById("partners-grid");
+const noResultsMessage = document.getElementById("no-results-message");
 
 /**
  * Renderiza a lista de parceiros no grid.
  * @param {Array} partners - A lista de parceiros a ser renderizada.
+ * @param {boolean} append - Se deve adicionar aos resultados existentes (paginação).
  */
-function renderPartners(partners) {
-  const grid = document.getElementById("partners-grid");
-  const noResultsMessage = document.getElementById("no-results-message");
+function renderPartners(partners, append = false) {
+  if (!append) {
+    grid.innerHTML = "";
+  }
 
-  grid.innerHTML = "";
-
-  if (partners.length === 0) {
+  if (partners.length === 0 && !append) {
     noResultsMessage.classList.remove("hidden");
     grid.classList.add("hidden");
   } else {
@@ -45,63 +51,70 @@ function renderPartners(partners) {
 }
 
 /**
- * Filtra os parceiros com base nos inputs do usuário.
+ * Executa a busca no Firestore com base nos filtros atuais.
  */
-function filterPartners() {
-  const searchText = document.getElementById("search-text").value.toLowerCase();
+async function performSearch() {
+  loadingContainer.classList.remove("hidden");
+  grid.classList.add("hidden");
+  noResultsMessage.classList.add("hidden");
+  
+  const searchText = document.getElementById("search-text").value.toLowerCase().trim();
   const category = document.getElementById("filter-category").value;
+  
+  // Reseta a paginação para uma nova busca
+  lastVisible = null; 
 
-  const filtered = allPartners.filter((partner) => {
-    const nameMatch = partner.businessName.toLowerCase().includes(searchText);
-    const categoryMatch = category ? partner.category === category : true;
-    return nameMatch && categoryMatch;
-  });
-
-  renderPartners(filtered);
-}
-
-/**
- * Busca todos os parceiros aprovados no Firestore.
- */
-async function fetchPartners() {
-  const loadingContainer = document.getElementById("loading-container");
-  const grid = document.getElementById("partners-grid");
+  currentQueryConstraints = [where("status", "==", "aprovado")];
+  if (category) {
+      currentQueryConstraints.push(where("category", "==", category));
+  }
+  // A busca por texto é feita no lado do cliente após a consulta inicial
+  // O ideal seria usar um serviço como Algolia para busca de texto completa no backend.
 
   try {
-    const q = query(collection(db, "partners"), where("status", "==", "aprovado"));
+    const q = query(collection(db, "partners"), ...currentQueryConstraints, orderBy("businessName"), limit(12));
     const querySnapshot = await getDocs(q);
-    allPartners = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
     
-    renderPartners(allPartners);
+    lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    allPartners = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Filtro de texto no lado do cliente
+    const filteredPartners = searchText
+      ? allPartners.filter(p => p.businessName.toLowerCase().includes(searchText))
+      : allPartners;
+
+    renderPartners(filteredPartners);
 
   } catch (error) {
     console.error("Erro ao buscar parceiros:", error);
     loadingContainer.innerHTML = '<p class="text-red-400 text-center">Não foi possível carregar os parceiros. Tente novamente mais tarde.</p>';
   } finally {
     loadingContainer.classList.add("hidden");
-    // O grid é gerenciado por renderPartners, não precisa ser mostrado aqui
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     initApp();
-    fetchPartners();
+    performSearch(); // Carga inicial
 
     const searchInput = document.getElementById("search-text");
     const categorySelect = document.getElementById("filter-category");
     const clearFiltersBtn = document.getElementById("clear-filters-btn");
     const clearFiltersEmptyBtn = document.getElementById("clear-filters-btn-empty");
 
-    searchInput.addEventListener("input", filterPartners);
-    categorySelect.addEventListener("change", filterPartners);
+    let searchTimeout;
+    searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 500); // Debounce
+    });
+
+    categorySelect.addEventListener("change", performSearch);
 
     const clear = () => {
         searchInput.value = "";
         categorySelect.value = "";
-        renderPartners(allPartners);
+        performSearch();
     };
 
     clearFiltersBtn.addEventListener("click", clear);

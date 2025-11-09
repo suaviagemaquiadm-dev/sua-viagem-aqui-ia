@@ -34,8 +34,8 @@ jobs:
           cache-dependency-path: 'functions/package.json'
 
       - name: Install Functions Dependencies
-        # Usa 'npm ci' para instalações mais rápidas e consistentes em CI.
-        run: npm ci --prefix functions
+        # Usa 'npm install' como fallback para ambientes sem package-lock.json
+        run: npm install --prefix functions
 
       - name: Audit for Security Vulnerabilities
         run: npm audit --prefix functions --audit-level=high
