@@ -46,27 +46,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (favorites.length === 0) {
                 loadingContainer.classList.add("hidden");
+                favoritesGrid.classList.add("hidden");
                 noFavoritesMessage.classList.remove("hidden");
                 return;
             }
 
-            const partnersRef = collection(db, "partners");
-            // Firestore 'in' queries are limited to 30 items. For more, chunking would be needed.
-            const q = query(partnersRef, where("__name__", "in", favorites.slice(0, 30)));
-            const querySnapshot = await getDocs(q);
+            // Chunk the favorites array into arrays of 30 due to 'in' query limit
+            const chunks = [];
+            for (let i = 0; i < favorites.length; i += 30) {
+                chunks.push(favorites.slice(i, i + 30));
+            }
 
-            favoritesGrid.innerHTML = "";
-            querySnapshot.forEach((docSnap) => {
-                const partner = { id: docSnap.id, ...docSnap.data() };
-                const card = createPartnerCard(partner);
-                favoritesGrid.appendChild(card);
+            const partnersRef = collection(db, "partners");
+            const queryPromises = chunks.map(chunk => {
+                const q = query(partnersRef, where("__name__", "in", chunk));
+                return getDocs(q);
             });
 
-            loadingContainer.classList.add("hidden");
-            favoritesGrid.classList.remove("hidden");
+            const querySnapshots = await Promise.all(queryPromises);
+
+            favoritesGrid.innerHTML = "";
+            querySnapshots.forEach(snapshot => {
+                snapshot.forEach((docSnap) => {
+                    if(docSnap.exists()) {
+                        const partner = { id: docSnap.id, ...docSnap.data() };
+                        const card = createPartnerCard(partner);
+                        favoritesGrid.appendChild(card);
+                    }
+                });
+            });
+
+            if (favoritesGrid.children.length === 0) {
+                noFavoritesMessage.classList.remove("hidden");
+                favoritesGrid.classList.add("hidden");
+            } else {
+                noFavoritesMessage.classList.add("hidden");
+                favoritesGrid.classList.remove("hidden");
+            }
+            
         } catch (error) {
             console.error("Erro ao carregar favoritos:", error);
             loadingContainer.innerHTML = '<p class="text-red-400">Não foi possível carregar seus favoritos.</p>';
+        } finally {
+            loadingContainer.classList.add("hidden");
         }
     }
 

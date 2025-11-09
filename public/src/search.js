@@ -4,13 +4,14 @@ import { db, collection, getDocs, query, where } from "./firebase.js";
 import { getResizedImageUrl } from "./utils.js";
 
 let allPartners = [];
-let hasFetched = false;
+let hasFetchedAll = false;
 
 /**
- * Fetches all approved partners from Firestore and caches them.
+ * Fetches all approved partners from Firestore and caches them in memory.
+ * This is used as a fallback when no server-side filters are applied.
  */
-async function fetchAndCachePartners() {
-  if (hasFetched) return allPartners;
+async function fetchAndCacheAllPartners() {
+  if (hasFetchedAll) return allPartners;
 
   try {
     const q = query(collection(db, "partners"), where("status", "==", "aprovado"));
@@ -19,7 +20,7 @@ async function fetchAndCachePartners() {
       id: doc.id,
       ...doc.data(),
     }));
-    hasFetched = true;
+    hasFetchedAll = true;
     return allPartners;
   } catch (error) {
     console.error("Erro ao buscar parceiros para a busca:", error);
@@ -73,18 +74,27 @@ export function initSearch() {
     }
     
     try {
-      // Busca os parceiros (usando cache se já buscado)
-      const partners = await fetchAndCachePartners();
+      let partnersToFilter;
+
+      // Otimização: Se uma categoria for selecionada, filtra no backend.
+      if (category !== "todos") {
+        const q = query(
+          collection(db, "partners"),
+          where("status", "==", "aprovado"),
+          where("category", "==", category)
+        );
+        const querySnapshot = await getDocs(q);
+        partnersToFilter = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      } else {
+        // Fallback: Se nenhuma categoria for selecionada, usa a lista cacheada de todos os parceiros.
+        partnersToFilter = await fetchAndCacheAllPartners();
+      }
       
       const searchKeywords = where.split(' ').filter(k => k.length > 1);
 
-      // Filtra os parceiros no lado do cliente
-      const filteredPartners = partners.filter(partner => {
-        const categoryMatch = category === "todos" || partner.category === category;
-
-        if (!categoryMatch) return false;
-
-        // Se não houver texto de busca e a categoria corresponder, é um resultado válido
+      // Filtra os parceiros (já pré-filtrados ou todos) no lado do cliente pelo texto de busca
+      const filteredPartners = partnersToFilter.filter(partner => {
+        // Se não houver texto de busca, todos os parceiros pré-filtrados são válidos
         if (searchKeywords.length === 0) return true;
 
         // Cria um texto unificado para busca
@@ -108,6 +118,7 @@ export function initSearch() {
         where_text: where,
         results_count: filteredPartners.length,
       });
+
       // Exibe a seção de resultados e esconde o conteúdo principal
       mainContent.classList.add("hidden");
       heroSection.classList.add("hidden");
