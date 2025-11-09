@@ -38,4 +38,3 @@ async function deleteQueryBatch(query, resolve) {
 }
 
 module.exports = { deleteCollectionRecursive };
-

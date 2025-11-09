@@ -1,14 +1,13 @@
 
 const functions = require("firebase-functions");
 const logger = require("firebase-functions/logger");
-const { onRequest } = require("firebase-functions/v2/https");
 const crypto = require("crypto");
 const mercadopago = require("mercadopago");
 const {
   db,
   adminAuth,
-  mpAccessToken,
-  mpWebhookSecret,
+  mpAccessToken, // Apenas para obter o .name()
+  mpWebhookSecret, // Apenas para obter o .name()
   ROLES,
   PARTNER_STATUS,
   PAYMENT_STATUS,
@@ -17,13 +16,13 @@ const {
 
 /**
  * Valida a assinatura do webhook do Mercado Pago para previnir ataques.
- * @param {import("firebase-functions/v2/https").Request} req - O objeto da requisição.
+ * @param {functions.https.Request} req - O objeto da requisição.
  * @returns {{valid: boolean, reason?: string}} - Retorna um objeto indicando se a assinatura é válida e o motivo da falha.
  */
 function validateWebhookSignature(req) {
   const signatureHeader = req.headers["x-signature"];
   const requestId = req.headers["x-request-id"];
-  const webhookSecret = mpWebhookSecret.value();
+  const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 
   if (!signatureHeader || !requestId || !webhookSecret) {
     logger.warn("Webhook validation failed: Missing headers or secret.");
@@ -56,7 +55,7 @@ function validateWebhookSignature(req) {
   const computedSignature = hmac.digest("hex");
 
   if (
-    !signature || // Garante que a assinatura exista
+    !signature ||
     !crypto.timingSafeEqual(
       Buffer.from(computedSignature),
       Buffer.from(signature),
@@ -70,15 +69,15 @@ function validateWebhookSignature(req) {
 }
 
 /**
- * Webhook para receber notificações de pagamento do Mercado Pago.
+ * Webhook para receber notificações de pagamento do Mercado Pago (v1).
  */
-exports.mercadoPagoWebhook = onRequest(
-  {
-    region: "southamerica-east1",
-    secrets: [mpAccessToken, mpWebhookSecret],
+exports.mercadoPagoWebhook = functions
+  .runWith({
+    secrets: [mpAccessToken.name, mpWebhookSecret.name],
     memory: "256MiB",
-  },
-  async (req, res) => {
+  })
+  .region("southamerica-east1")
+  .https.onRequest(async (req, res) => {
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
     }
@@ -102,7 +101,7 @@ exports.mercadoPagoWebhook = onRequest(
     logger.info(`Processing payment notification for ID: ${paymentId}`);
 
     try {
-      mercadopago.configure({ access_token: mpAccessToken.value() });
+      mercadopago.configure({ access_token: process.env.MERCADOPAGO_ACCESS_TOKEN });
       const paymentInfo = await mercadopago.payment.findById(paymentId);
 
       if (!paymentInfo || !paymentInfo.body) {
@@ -130,7 +129,6 @@ exports.mercadoPagoWebhook = onRequest(
             role: ROLES.TRAVELER_PLUS,
             payment_status: PAYMENT_STATUS.PAID,
           });
-          // Atualiza as permissões do usuário no Auth para acesso imediato
           await adminAuth.setCustomUserClaims(userId, {
             role: ROLES.TRAVELER_PLUS,
           });
@@ -141,7 +139,6 @@ exports.mercadoPagoWebhook = onRequest(
             status: PARTNER_STATUS.APPROVED,
             payment_status: PAYMENT_STATUS.PAID,
           });
-          // Atualiza as permissões do usuário no Auth para acesso imediato
           await adminAuth.setCustomUserClaims(userId, {
             role: ROLES.ADVERTISER,
           });
@@ -161,11 +158,11 @@ exports.mercadoPagoWebhook = onRequest(
       logger.error(`Error processing payment ${paymentId}:`, error);
       return res.status(500).send({ status: "ERROR", message: error.message });
     }
-  },
-);
+  });
+
 
 /**
- * Cria uma preferência de pagamento no Mercado Pago (versão 1 para compatibilidade de teste).
+ * Cria uma preferência de pagamento no Mercado Pago (versão 1).
  */
 exports.createMercadoPagoPreference = functions
   .runWith({ secrets: [mpAccessToken.name] })
@@ -199,7 +196,7 @@ exports.createMercadoPagoPreference = functions
         email: email,
       },
       back_urls: {
-        success: "https://gemini-cli-98f4a.web.app/perfil.html", // TODO: Criar páginas de sucesso/falha
+        success: "https://gemini-cli-98f4a.web.app/perfil.html",
         failure: "https://gemini-cli-98f4a.web.app/perfil.html",
         pending: "https://gemini-cli-98f4a.web.app/perfil.html",
       },
@@ -222,4 +219,3 @@ exports.createMercadoPagoPreference = functions
       );
     }
   });
-

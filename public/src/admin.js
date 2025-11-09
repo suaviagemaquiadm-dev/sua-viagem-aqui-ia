@@ -5,7 +5,6 @@ import {
   onSnapshot,
   doc,
   updateDoc,
-  deleteDoc,
   signOut,
   httpsCallable,
   auth,
@@ -29,6 +28,9 @@ function setupAdminPanel() {
     updateDashboard(allPartnersData);
     renderPartnersTable(allPartnersData);
   });
+
+  // Carrega e renderiza a lista de administradores
+  loadAndRenderAdmins();
 }
 
 // --- DASHBOARD ---
@@ -37,14 +39,7 @@ function updateDashboard(partners) {
   const activePartners = partners.filter((p) => p.status === 'aprovado');
   document.getElementById('active-partners').textContent = activePartners.length;
 
-  const now = new Date();
-  const freePlans = activePartners.filter(
-    (p) =>
-      p.plan === 'free' &&
-      p.trialEndDate &&
-      p.trialEndDate.toDate &&
-      p.trialEndDate.toDate() > now, // Verifica se toDate existe antes de chamar
-  );
+  const freePlans = activePartners.filter(p => p.plan === 'free');
   document.getElementById('free-plans').textContent = freePlans.length;
 
   const paidSubscribers = activePartners.filter(
@@ -110,6 +105,10 @@ function updatePlansChart(partners) {
 function renderPartnersTable(partners) {
   const tableBody = document.getElementById('partners-table-body');
   tableBody.innerHTML = '';
+  if (!partners || partners.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum parceiro encontrado.</td></tr>';
+    return;
+  }
   partners.forEach((partner) => {
     const tr = document.createElement('tr');
     tr.className = 'table-row';
@@ -127,7 +126,7 @@ function renderPartnersTable(partners) {
 <td class="p-4 font-medium text-white">${partner.businessName}</td>
 <td class="p-4 text-slate-400">${partner.email}</td>
 <td class="p-4">
-  <span class="font-semibold">${partner.plan || 'Nenhum'}</span>
+  <span class="font-semibold capitalize">${partner.plan || 'Nenhum'}</span>
 </td>
 <td class="p-4">
   <span class="font-bold ${statusColors[partner.status] || 'text-slate-500'}"
@@ -135,24 +134,20 @@ function renderPartnersTable(partners) {
   >
 </td>
 <td class="p-4 text-center space-x-2">
-  <button
-    class="edit-btn text-blue-400 hover:text-blue-300"
-    data-id="${partner.id}"
-  >
-    <i class="fas fa-edit"></i>
-  </button>
   <select
-    class="change-status-select form-input rounded text-xs py-1"
+    class="change-status-select bg-slate-700 border border-slate-600 rounded text-xs py-1"
     data-id="${partner.id}"
   >
     <option value="" disabled selected>Mudar Status</option>
     <option value="aprovado">Aprovar</option>
     <option value="suspenso">Suspender</option>
     <option value="rejeitado">Rejeitar</option>
+    <option value="aguardando_pagamento">Aguardando Pagamento</option>
   </select>
   <button
     class="delete-btn text-red-500 hover:text-red-400"
     data-id="${partner.id}"
+    title="Excluir Parceiro"
   >
     <i class="fas fa-trash"></i>
   </button>
@@ -166,18 +161,19 @@ document.getElementById('search-partners').addEventListener('input', (e) => {
   const searchTerm = e.target.value.toLowerCase();
   const filteredPartners = allPartnersData.filter(
     (p) =>
-      p.businessName.toLowerCase().includes(searchTerm) ||
-      p.email.toLowerCase().includes(searchTerm),
+      p.businessName?.toLowerCase().includes(searchTerm) ||
+      p.email?.toLowerCase().includes(searchTerm),
   );
   renderPartnersTable(filteredPartners);
 });
 
 // Event delegation for table actions
 document.getElementById('partners-table-body').addEventListener('click', (e) => {
-  if (e.target.closest('.delete-btn')) {
-    const partnerId = e.target.closest('.delete-btn').dataset.id;
+  const deleteBtn = e.target.closest('.delete-btn');
+  if (deleteBtn) {
+    const partnerId = deleteBtn.dataset.id;
     showConfirmation(
-      'Tem a certeza de que quer eliminar este parceiro? Esta ação é irreversível.',
+      'Tem certeza que deseja apagar este parceiro? Esta ação é irreversível e removerá a conta de autenticação e todos os dados associados.',
       () => deletePartner(partnerId),
     );
   }
@@ -185,38 +181,87 @@ document.getElementById('partners-table-body').addEventListener('click', (e) => 
 
 document
   .getElementById('partners-table-body')
-  .addEventListener('change', (e) => {
-    const partnerId = e.target.dataset.id;
-    if (e.target.classList.contains('change-status-select')) {
-      const newStatus = e.target.value;
+  .addEventListener('change', async (e) => {
+    const selectEl = e.target;
+    if (selectEl.classList.contains('change-status-select')) {
+      const partnerId = selectEl.dataset.id;
+      const newStatus = selectEl.value;
       if (newStatus) {
-        updatePartner(partnerId, { status: newStatus });
+        const setPartnerStatus = httpsCallable(functions, 'setPartnerStatus');
+        try {
+            await setPartnerStatus({ partnerId, newStatus });
+            showInfo(`Status do parceiro alterado para ${newStatus}.`);
+        } catch(error) {
+            console.error('Erro ao alterar status:', error);
+            showInfo(`Erro: ${error.message}`);
+        }
+        selectEl.value = ""; // Reseta o select
       }
     }
   });
 
-async function updatePartner(id, data) {
+async function deletePartner(id) {
+  const deletePartnerAccount = httpsCallable(functions, 'deletePartnerAccount');
   try {
-    const partnerRef = doc(db, 'partners', id);
-    await updateDoc(partnerRef, data);
-    showInfo('Parceiro atualizado com sucesso.');
+    await deletePartnerAccount({ partnerId: id });
+    showInfo('Parceiro e conta associada foram excluídos com sucesso.');
   } catch (error) {
-    console.error('Erro ao atualizar parceiro: ', error);
-    showInfo('Erro ao atualizar parceiro.');
+    console.error('Erro ao excluir parceiro:', error);
+    showInfo(`Erro ao excluir parceiro: ${error.message}`);
   }
 }
 
-async function deletePartner(id) {
-  // Idealmente, isso deveria chamar uma Cloud Function que também apaga o usuário do Auth.
-  // Por simplicidade, estamos apenas apagando do Firestore.
-  try {
-    await deleteDoc(doc(db, 'partners', id));
-    showInfo('Parceiro eliminado com sucesso.');
-  } catch (error) {
-    console.error('Erro ao eliminar parceiro:', error);
-    showInfo('Erro ao eliminar parceiro.');
-  }
+// --- ADMIN MANAGEMENT ---
+
+async function loadAndRenderAdmins() {
+    const adminList = document.getElementById("admin-list");
+    const listAdmins = httpsCallable(functions, 'listAdmins');
+    try {
+        const result = await listAdmins();
+        const admins = result.data;
+        adminList.innerHTML = ''; // Limpa o estado de "carregando"
+        if (admins.length === 0) {
+            adminList.innerHTML = '<li><p class="text-slate-400">Nenhum administrador encontrado.</p></li>';
+        }
+        admins.forEach(admin => {
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between bg-slate-700/50 p-2 rounded';
+            li.innerHTML = `
+                <span>${admin.displayName || admin.email} <span class="text-xs text-slate-400">(${admin.email})</span></span>
+                <button class="revoke-admin-btn text-red-500 hover:text-red-400 text-sm" data-uid="${admin.uid}" title="Revogar acesso de admin">
+                    <i class="fas fa-user-slash mr-1"></i> Revogar
+                </button>
+            `;
+            adminList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Erro ao listar administradores:", error);
+        adminList.innerHTML = '<li><p class="text-red-400">Falha ao carregar a lista de administradores.</p></li>';
+    }
 }
+
+document.getElementById('admin-list').addEventListener('click', e => {
+    const revokeBtn = e.target.closest('.revoke-admin-btn');
+    if (revokeBtn) {
+        const targetUid = revokeBtn.dataset.uid;
+        showConfirmation('Tem certeza que deseja revogar os privilégios de administrador deste usuário?', () => {
+            revokeAdminRole(targetUid);
+        });
+    }
+});
+
+async function revokeAdminRole(targetUid) {
+    const revokeAdminRoleFn = httpsCallable(functions, 'revokeAdminRole');
+    try {
+        await revokeAdminRoleFn({ targetUid });
+        showInfo('Privilégios de administrador revogados com sucesso.');
+        loadAndRenderAdmins(); // Atualiza a lista
+    } catch (error) {
+        console.error("Erro ao revogar privilégios:", error);
+        showInfo(`Erro: ${error.message}`);
+    }
+}
+
 
 // --- MODALS (Alert, Confirmation) ---
 const alertModal = document.getElementById('alert-modal');
@@ -270,6 +315,23 @@ createPartnerForm.addEventListener('submit', async (e) => {
     showInfo(`Erro: ${error.message}`);
   }
 });
+
+const grantAdminForm = document.getElementById('grant-admin-form');
+grantAdminForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('admin-email-input').value;
+    const grantAdminRole = httpsCallable(functions, 'grantAdminRole');
+    try {
+        await grantAdminRole({ email });
+        showInfo(`Usuário ${email} promovido a administrador.`);
+        grantAdminForm.reset();
+        loadAndRenderAdmins(); // Atualiza a lista
+    } catch(error) {
+        console.error("Erro ao promover admin:", error);
+        showInfo(`Erro: ${error.message}`);
+    }
+});
+
 
 // --- LOGOUT ---
 document.getElementById('logout-btn').addEventListener('click', () => {

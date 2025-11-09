@@ -49,14 +49,14 @@ export function initAIRouteBuilder() {
         }
 
         try {
-            const generateRoteiro = httpsCallable(functions, 'generateRoteiro');
-            const result = await generateRoteiro({ prompt: prompt });
+            const generateItinerary = httpsCallable(functions, 'generateItinerary');
+            const result = await generateItinerary({ prompt: prompt });
 
             if (result.data.roteiroId) {
-                 window.open(`/roteiro_publico.html?uid=${user.uid}&id=${result.data.roteiroId}`, '_blank');
+                 window.open(`/roteiro_publico.html?user=${user.uid}&id=${result.data.roteiroId}`, '_blank');
                  if(resultText) resultText.innerHTML = '<p class="text-green-400 text-center">Seu roteiro foi gerado em uma nova aba!</p>';
             } else {
-                throw new Error("ID do roteiro não foi retornado pela função.");
+                throw new Error(result.data.error || "ID do roteiro não foi retornado pela função.");
             }
 
         } catch (error) {

@@ -73,8 +73,7 @@ exports.cleanupUserData = functions.auth.user().onDelete(async (user) => {
     logger.info(`Documento do usuário ${userId} deletado do Firestore.`);
     
   } catch (error) {
-    // Não re-lança o erro para não impedir a exclusão do usuário no Auth
+    // Não re-lança o erro, pois a exclusão do usuário no Auth já ocorreu.
     logger.error(`Erro ao limpar dados do usuário ${userId} no Firestore:`, error);
   }
 });
-

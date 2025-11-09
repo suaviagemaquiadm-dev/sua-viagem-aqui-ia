@@ -1,17 +1,30 @@
-# Este workflow aciona a implantação no Firebase Hosting e a execução de testes das Functions
+# Este workflow constrói, testa e implanta seu projeto Firebase.
+#
+# Para usar este workflow, você precisa:
+# 1. Criar uma conta de serviço no Firebase com o papel "Administrador do Firebase".
+# 2. No console do seu projeto Firebase > Configurações do projeto > Contas de serviço.
+# 3. Clique em "Gerar nova chave privada" e salve o arquivo JSON.
+# 4. No seu repositório GitHub, vá para Settings > Secrets and variables > Actions.
+# 5. Crie um novo "repository secret" com o nome `FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A`.
+# 6. Cole todo o conteúdo do arquivo JSON como o valor do segredo.
 
 name: Build, Test and Deploy to Firebase
 
 on:
   push:
     branches:
-      - main # Aciona o workflow em pushes para a branch principal
+      - main # Aciona em pushes para a branch principal
+  pull_request:
+    branches:
+      - main # Aciona em pull requests para a branch principal
 
 jobs:
-  build_test_and_deploy:
+  build_and_test:
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,22 +34,31 @@ jobs:
           cache-dependency-path: 'functions/package.json'
 
       - name: Install Functions Dependencies
-        run: npm install --prefix functions
+        # Usa 'npm ci' para instalações mais rápidas e consistentes em CI.
+        run: npm ci --prefix functions
 
-      # PASSO DE SEGURANÇA ADICIONADO
       - name: Audit for Security Vulnerabilities
         run: npm audit --prefix functions --audit-level=high
 
       - name: Run Backend Tests
         run: npm test --prefix functions
 
-      # Deploy unificado no Firebase Hosting e Functions
+  deploy:
+    name: Deploy to Firebase
+    needs: build_and_test # Depende do sucesso do job 'build_and_test'
+    runs-on: ubuntu-latest
+    # Apenas executa este job em pushes para a branch 'main', não em pull requests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # A ação `action-hosting-deploy` lida com o deploy de Functions e Hosting.
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@v1
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}"
           channelId: live
           projectId: gemini-cli-98f4a
-          # A ação `action-hosting-deploy` faz deploy de tudo que está no firebase.json (Hosting e Functions).
-

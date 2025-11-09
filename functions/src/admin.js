@@ -7,12 +7,12 @@ const { deleteCollectionRecursive } = require("./utils");
 /**
  * Helper para verificar se o autor da chamada é um administrador.
  * Lança um erro HttpsError 'permission-denied' se não for.
- * @param {object} context - O contexto da função callable, que é o próprio objeto 'request' na v2.
+ * @param {object} request - O objeto da requisição da função callable v2.
  */
-const ensureIsAdmin = (context) => {
-  if (context.auth?.token?.admin !== true) {
+const ensureIsAdmin = (request) => {
+  if (request.auth?.token?.admin !== true) {
     logger.warn(
-      `Usuário não-admin '${context.auth?.uid || "não autenticado"}' tentou acessar uma função restrita.`,
+      `Usuário não-admin '${request.auth?.uid || "não autenticado"}' tentou acessar uma função restrita.`,
     );
     throw new HttpsError(
       "permission-denied",
@@ -245,4 +245,3 @@ exports.listAdmins = onCall(async (request) => {
     throw new HttpsError("internal", "Erro ao listar administradores.", error.message);
   }
 });
-

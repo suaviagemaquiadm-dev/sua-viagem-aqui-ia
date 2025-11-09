@@ -20,10 +20,8 @@ const mercadopago = {
   },
 };
 
-// --- Mock de Configuração via Proxyquire ---
 const WEBHOOK_SECRET = "test-secret-12345";
 const ACCESS_TOKEN = "test-access-token";
-const originalConfig = require("../config");
 
 // Mocks para os serviços do firebase-admin
 const adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
@@ -34,36 +32,34 @@ const dbStub = { collection: collectionStub };
 
 const proxyquire = require("proxyquire").noCallThru();
 
-// Importa as funções a serem testadas usando proxyquire para injetar os mocks
-const {
-  createMercadoPagoPreference,
-  mercadoPagoWebhook,
-} = proxyquire("../src/payments.js", {
-  mercadopago: mercadopago,
-  // Injeta uma versão mockada do config para controlar os valores dos segredos e stubs do DB/Auth
-  "../config": {
-    ...originalConfig,
+// Importa as funções a serem testadas usando proxyquire para injetar os mocks do DB/Auth
+const myFunctions = proxyquire("../index.js", {
+  "./src/config": {
     db: dbStub,
     adminAuth: adminAuthStub,
-    mpWebhookSecret: { value: () => WEBHOOK_SECRET },
-    mpAccessToken: { value: () => ACCESS_TOKEN },
   },
+  mercadopago: mercadopago,
 });
 
+const { createMercadoPagoPreference, mercadoPagoWebhook } = myFunctions;
+
 describe("Payments Cloud Functions", () => {
+  let envStub;
+
   beforeEach(() => {
+    // Stub process.env para fornecer os segredos para as funções v1
+    envStub = sinon.stub(process, "env").value({
+      ...process.env,
+      MERCADOPAGO_ACCESS_TOKEN: ACCESS_TOKEN,
+      MERCADOPAGO_WEBHOOK_SECRET: WEBHOOK_SECRET,
+    });
     // Reseta o histórico de todos os stubs antes de cada teste
-    sinon.resetHistory();
-    mercadopago.payment.findById.resetHistory();
-    mercadopago.preferences.create.resetHistory();
-    adminAuthStub.setCustomUserClaims.resetHistory();
-    updateStub.resetHistory();
-    docStub.resetHistory();
-    collectionStub.resetHistory();
+    sinon.reset();
   });
 
-  after(() => {
-    sinon.restore();
+  afterEach(() => {
+    // Restaura o process.env original
+    envStub.restore();
     test.cleanup();
   });
 
@@ -99,7 +95,8 @@ describe("Payments Cloud Functions", () => {
         },
       });
 
-      await mercadoPagoWebhook(req, res);
+      const wrapped = test.wrap(mercadoPagoWebhook);
+      await wrapped(req, res);
 
       assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200");
       assert.isTrue(res.send.calledWith({ status: "OK" }));
@@ -111,11 +108,12 @@ describe("Payments Cloud Functions", () => {
 
     it("deve rejeitar um webhook com assinatura inválida (status 400)", async () => {
       const req = generateValidRequest();
-      const validTimestamp = req.headers["x-signature"].split(',')[0];
+      const validTimestamp = req.headers["x-signature"].split(",")[0];
       req.headers["x-signature"] = `${validTimestamp},v1=${"0".repeat(64)}`; // Assinatura inválida com tamanho correto
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
-
-      await mercadoPagoWebhook(req, res);
+      
+      const wrapped = test.wrap(mercadoPagoWebhook);
+      await wrapped(req, res);
 
       assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
       assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Assinatura do Webhook inválida." }));
@@ -132,8 +130,9 @@ describe("Payments Cloud Functions", () => {
       const signature = hmac.digest("hex");
       req.headers["x-signature"] = `ts=${oldTimestamp},v1=${signature}`;
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
-
-      await mercadoPagoWebhook(req, res);
+      
+      const wrapped = test.wrap(mercadoPagoWebhook);
+      await wrapped(req, res);
 
       assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
       assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Timestamp da assinatura expirado." }));
@@ -146,7 +145,8 @@ describe("Payments Cloud Functions", () => {
           body: { data: { id: "123" } },
         };
         const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
-        await mercadoPagoWebhook(req, res);
+        const wrapped = test.wrap(mercadoPagoWebhook);
+        await wrapped(req, res);
         assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200 para tópicos ignorados");
         assert.isTrue(res.send.calledWith({ status: "Ignored" }));
     });
@@ -198,4 +198,3 @@ describe("Payments Cloud Functions", () => {
     });
   });
 });
-

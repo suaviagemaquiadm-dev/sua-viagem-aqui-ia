@@ -5,23 +5,43 @@ import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAzrZ-gVFJXCevpEkKHht3dn9RLCRdo2h0",
-    authDomain: "gemini-cli-98f4a.firebaseapp.com",
-    projectId: "gemini-cli-98f4a",
-    storageBucket: "gemini-cli-98f4a.appspot.com",
-    messagingSenderId: "1065949512661",
-    appId: "1:1065949512661:web:57d184d86a82438511f35c",
-    measurementId: "G-CHE4S36RY3",
-};
+let app, auth, db, functions, storage;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const functions = getFunctions(app, 'southamerica-east1');
-const storage = getStorage(app);
+/**
+ * Initializes Firebase by fetching the configuration from the reserved URL.
+ * This is the recommended secure way for web apps.
+ */
+async function initializeFirebase() {
+    try {
+        const response = await fetch('/__/firebase/init.json');
+        if (!response.ok) {
+            throw new Error('Failed to fetch Firebase config. Ensure Firebase Hosting is set up correctly.');
+        }
+        const firebaseConfig = await response.json();
+        
+        // Initialize Firebase with the fetched config
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        functions = getFunctions(app, 'southamerica-east1');
+        storage = getStorage(app);
+
+    } catch (error) {
+        console.error("Critical Firebase Initialization Error:", error);
+        document.body.innerHTML = `
+            <div style="text-align: center; padding: 50px; color: white; background-color: #111827; height: 100vh; display: flex; align-items: center; justify-content: center;">
+                <div>
+                    <h1>Erro de Configuração</h1>
+                    <p>Não foi possível conectar aos nossos serviços. Por favor, tente novamente mais tarde.</p>
+                </div>
+            </div>`;
+        // Stop further script execution
+        throw new Error("Firebase init failed");
+    }
+}
+
+await initializeFirebase();
+
 
 // Export Firebase services and functions for use in other modules
 export { 

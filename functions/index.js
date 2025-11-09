@@ -48,4 +48,3 @@ Object.defineProperty(exports, "cleanupUserData", { get: () => loadFunctions("us
 
 // Funções relacionadas à IA
 Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
-

@@ -1,7 +1,6 @@
-
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
-const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("../config");
+const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("./config");
 const { deleteCollectionRecursive } = require("./utils");
 
 /**
@@ -245,4 +244,3 @@ exports.listAdmins = onCall(async (request) => {
     throw new HttpsError("internal", "Erro ao listar administradores.", error.message);
   }
 });
-

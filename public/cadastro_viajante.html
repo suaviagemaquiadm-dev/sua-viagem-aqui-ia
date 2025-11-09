@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Viajante - Sua Viagem Aqui</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body class="bg-slate-900 flex flex-col min-h-screen">
+    <header id="main-header" class="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-slate-700">
+      <!-- O cabeçalho será carregado aqui -->
+    </header>
+    <main class="flex-grow container mx-auto px-4 py-16 flex items-center justify-center">
+      <div class="max-w-md w-full">
+        <div class="text-center mb-10">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            Crie sua Conta
+          </h1>
+          <p class="text-lg text-slate-400">
+            Junte-se à nossa comunidade de viajantes.
+          </p>
+        </div>
+        <form id="register-form" class="glass-effect rounded-3xl p-8 md:p-10 shadow-2xl space-y-6">
+          <div>
+            <label for="name" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-user mr-2"></i>Nome Completo</label>
+            <input type="text" id="name" name="name" required placeholder="Seu nome" class="form-input"/>
+          </div>
+          <div>
+            <label for="email" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-envelope mr-2"></i>E-mail</label>
+            <input type="email" id="email" name="email" required placeholder="seu@email.com" autocomplete="email" class="form-input"/>
+          </div>
+          <div>
+            <label for="password" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-lock mr-2"></i>Senha</label>
+            <input type="password" id="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres" class="form-input"/>
+          </div>
+          <div>
+            <label for="confirm-password" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-lock mr-2"></i>Confirme a Senha</label>
+            <input type="password" id="confirm-password" name="confirm-password" required minlength="6" class="form-input"/>
+          </div>
+          <div class="pt-2">
+            <button type="submit" id="submit-btn" class="btn-modern w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl text-lg shadow-xl">
+              <span class="submit-text flex items-center justify-center"><i class="fas fa-user-plus mr-3"></i>Criar Conta</span>
+              <span class="submit-loading hidden items-center justify-center">
+                  <div class="modern-spinner mr-3" style="border-top-color: #111827"></div>Criando...
+              </span>
+            </button>
+          </div>
+          <div class="text-center text-slate-400 pt-2">
+            <p>
+              Já tem uma conta?
+              <a href="pagina_login.html" class="font-semibold text-amber-400 hover:underline">Faça Login</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </main>
+    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
+        <!-- O rodapé será carregado aqui -->
+    </footer>
+    <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
+        <p id="alert-message" class="text-white text-lg mb-6"></p>
+        <button id="alert-close-btn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-lg transition">OK</button>
+      </div>
+    </div>
+    <script type="module" src="/src/layout.js"></script>
+    <script type="module" src="/src/cadastro_viajante.js"></script>
+  </body>
+</html>
