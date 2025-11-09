@@ -1,10 +1,33 @@
 import { showAlert } from "./ui/alert.js";
-import { trackEvent } from "./analytics.js"; // CORREÇÃO: Importa do novo módulo de analytics
-import { ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY } from "./firebase-config.js";
+import { trackEvent } from "./analytics.js";
+import { db, collection, getDocs, query, where } from "./firebase.js";
+import { getResizedImageUrl } from "./utils.js";
 
-// Configuração do Algolia para o Frontend
-const searchClient = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY);
-const index = searchClient.initIndex("partners");
+let allPartners = [];
+let hasFetched = false;
+
+/**
+ * Fetches all approved partners from Firestore and caches them.
+ */
+async function fetchAndCachePartners() {
+  if (hasFetched) return allPartners;
+
+  try {
+    const q = query(collection(db, "partners"), where("status", "==", "aprovado"));
+    const querySnapshot = await getDocs(q);
+    allPartners = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    hasFetched = true;
+    return allPartners;
+  } catch (error) {
+    console.error("Erro ao buscar parceiros para a busca:", error);
+    showAlert("Não foi possível carregar os parceiros para a busca. Tente novamente mais tarde.");
+    return [];
+  }
+}
+
 
 /**
  * Inicializa a funcionalidade de busca da página inicial.
@@ -31,19 +54,16 @@ export function initSearch() {
     searchLoadingEl.classList.remove("hidden");
     searchBtn.disabled = true;
 
-    // Coleta os valores dos novos campos de filtro
-    const destination = document
-      .getElementById("search-destination-input")
-      .value.trim();
+    // Coleta os valores dos campos de filtro
+    const where = document
+      .getElementById("search-where-input")
+      .value.trim().toLowerCase();
     const category = document.getElementById("search-category-select").value;
-    const interestLocation = document
-      .getElementById("search-location-input")
-      .value.trim();
-
+    
     // Validação de input no cliente (OWASP A03)
-    if (!destination && !interestLocation && category === "todos") {
+    if (!where && category === "todos") {
       showAlert(
-        "Por favor, preencha pelo menos um campo de busca ou selecione uma categoria.",
+        "Por favor, preencha o destino ou selecione uma categoria.",
       );
       // Restaura o estado normal do botão
       searchTextEl.classList.remove("hidden");
@@ -51,38 +71,42 @@ export function initSearch() {
       searchBtn.disabled = false;
       return;
     }
-
-    if (
-      (destination && destination.length < 2) ||
-      (interestLocation && interestLocation.length < 2)
-    ) {
-      showAlert("Os termos de busca devem ter pelo menos 2 caracteres.");
-      searchTextEl.classList.remove("hidden");
-      searchLoadingEl.classList.add("hidden");
-      searchBtn.disabled = false;
-      return;
-    }
-
+    
     try {
-      // Combina os textos de busca para uma pesquisa mais rica
-      const combinedSearchText = `${destination} ${interestLocation}`.trim();
+      // Busca os parceiros (usando cache se já buscado)
+      const partners = await fetchAndCachePartners();
+      
+      const searchKeywords = where.split(' ').filter(k => k.length > 1);
 
-      // Busca diretamente no Algolia
-      const { hits } = await index.search(combinedSearchText, {
-        filters: category !== "todos" ? `category:${category}` : "",
+      // Filtra os parceiros no lado do cliente
+      const filteredPartners = partners.filter(partner => {
+        const categoryMatch = category === "todos" || partner.category === category;
+
+        if (!categoryMatch) return false;
+
+        // Se não houver texto de busca e a categoria corresponder, é um resultado válido
+        if (searchKeywords.length === 0) return true;
+
+        // Cria um texto unificado para busca
+        const partnerText = `
+          ${partner.businessName?.toLowerCase()} 
+          ${partner.city?.toLowerCase()} 
+          ${partner.state?.toLowerCase()} 
+          ${(partner.tags || []).join(' ').toLowerCase()}
+          ${partner.description?.toLowerCase()}
+        `;
+
+        // Verifica se alguma palavra-chave da busca está presente nos dados do parceiro
+        return searchKeywords.some(keyword => partnerText.includes(keyword));
       });
 
-      // O Algolia retorna os objetos com um `objectID`. Mapeamos para `id`.
-      const partners = hits.map((hit) => ({ id: hit.objectID, ...hit }));
-
-      renderSearchResults(partners);
+      renderSearchResults(filteredPartners);
 
       // Rastrear evento de busca
       trackEvent("search_performed", {
         category: category,
-        destination_text: destination,
-        interest_text: interestLocation,
-        results_count: partners.length,
+        where_text: where,
+        results_count: filteredPartners.length,
       });
       // Exibe a seção de resultados e esconde o conteúdo principal
       mainContent.classList.add("hidden");
@@ -110,9 +134,9 @@ export function initSearch() {
     mainContent.classList.remove("hidden");
     heroSection.classList.remove("hidden");
     // Limpa todos os campos de busca
-    document.getElementById("search-destination-input").value = "";
+    document.getElementById("search-where-input").value = "";
+    document.getElementById("search-day-input").value = "";
     document.getElementById("search-category-select").value = "todos";
-    document.getElementById("search-location-input").value = "";
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
@@ -123,12 +147,12 @@ export function initSearch() {
       noResultsMessage.classList.add("hidden");
       partners.forEach((partner) => {
         const cardWrapper = document.createElement("a");
-        cardWrapper.href = `public_partner_details.html?id=${partner.id}`;
+        cardWrapper.href = `ad_details.html?id=${partner.id}`;
         cardWrapper.className =
           "bg-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover";
         cardWrapper.innerHTML = `
                     <div class="relative overflow-hidden h-48">
-                        <img src="${partner.image || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="${partner.businessName}" class="w-full h-full object-cover">
+                        <img src="${getResizedImageUrl(partner.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="${partner.businessName}" class="w-full h-full object-cover">
                     </div>
                     <div class="p-4 flex flex-col flex-grow">
                         <h3 class="text-lg font-bold text-white">${partner.businessName}</h3>

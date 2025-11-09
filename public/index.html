@@ -17,7 +17,6 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.20.0/dist/algoliasearch-lite.umd.js"></script>
   </head>
   <body class="bg-slate-900 text-slate-200">
     <header
@@ -42,182 +41,221 @@
         <div class="absolute inset-0 bg-black/60"></div>
         <div class="relative z-10 px-4">
           <h1
-            class="text-4xl md:text-6xl font-black text-white leading-tight mb-4"
+            class="text-4xl md:text-5xl font-bold text-white leading-tight mb-4"
           >
-            Sua Próxima Aventura Começa
-            <span class="text-gradient-gold">Aqui</span>.
+            A plataforma definitiva para <span class="text-amber-400">agências de viagens</span>
           </h1>
           <p class="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto">
-            Descubra parceiros locais, crie roteiros com Inteligência Artificial
-            e transforme sua viagem em uma experiência inesquecível.
+            Eleve a experiência dos seus clientes com ferramentas exclusivas e
+            acesso a pacotes premium.
           </p>
         </div>
       </section>
 
       <!-- Seção de Busca -->
-      <section
-        id="search-section"
-        class="container mx-auto px-4 -mt-20 relative z-20"
-      >
-        <div
-          class="glass-effect p-6 md:p-8 rounded-2xl border border-slate-700 shadow-2xl"
-        >
-          <div
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end"
-          >
+      <section id="search-section" class="container mx-auto px-4 -mt-20 relative z-20">
+        <div class="glass-effect p-6 md:p-8 rounded-2xl border border-slate-700 shadow-2xl">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Para onde quero ir -->
             <div>
-              <label
-                for="search-destination-input"
-                class="block text-sm font-semibold text-slate-300 mb-2"
-                >Destino</label
-              >
-              <input
-                type="text"
-                id="search-destination-input"
-                placeholder="Ex: Rio de Janeiro"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
-              />
+              <label for="search-where-input" class="flex items-center text-sm font-semibold text-slate-300 mb-2">
+                <i class="fas fa-map-marker-alt mr-2 text-amber-400"></i>Para onde quero ir
+              </label>
+              <input type="text" id="search-where-input" placeholder="Ex: Maldivas, Tóquio" class="form-input"/>
             </div>
+            <!-- Dia que Gostaria -->
             <div>
-              <label
-                for="search-category-select"
-                class="block text-sm font-semibold text-slate-300 mb-2"
-                >Categoria</label
-              >
-              <select
-                id="search-category-select"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
-              >
-                <option value="todos">Todas</option>
+              <label for="search-day-input" class="flex items-center text-sm font-semibold text-slate-300 mb-2">
+                <i class="fas fa-calendar-alt mr-2 text-amber-400"></i>Dia que Gostaria
+              </label>
+              <input type="text" id="search-day-input" placeholder="dd/mm/aaaa" class="form-input"/>
+            </div>
+            <!-- Categoria -->
+            <div>
+              <label for="search-category-select" class="flex items-center text-sm font-semibold text-slate-300 mb-2">
+                <i class="fas fa-tag mr-2 text-amber-400"></i>Categoria
+              </label>
+              <select id="search-category-select" class="form-input">
+                <option value="todos">Todas as Categorias</option>
                 <option value="hospedagem">Hospedagem</option>
                 <option value="restaurantes">Restaurantes</option>
                 <option value="passeios">Passeios</option>
                 <option value="agencias">Agências</option>
               </select>
             </div>
-            <div>
-              <label
-                for="search-location-input"
-                class="block text-sm font-semibold text-slate-300 mb-2"
-                >Interesses</label
-              >
-              <input
-                type="text"
-                id="search-location-input"
-                placeholder="Ex: Praia, museu, trilha"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
-              />
-            </div>
-            <button
-              id="search-btn"
-              class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-4 rounded-lg transition"
-            >
-              <span id="search-text" class="flex items-center justify-center"
-                ><i class="fas fa-search mr-2"></i>Buscar</span
-              >
-              <span
-                id="search-loading"
-                class="hidden items-center justify-center"
-                ><div class="modern-spinner mr-2"></div>
-                Buscando...</span
-              >
-            </button>
+          </div>
+          <!-- Botão de Busca -->
+          <div class="flex justify-center">
+              <button id="search-btn" class="btn-primary w-full md:w-auto md:px-20 py-3">
+                  <span id="search-text" class="flex items-center justify-center">
+                      <i class="fas fa-search mr-2"></i>Buscar
+                  </span>
+                  <span id="search-loading" class="hidden items-center justify-center">
+                      <div class="modern-spinner-btn mr-2"></div>Buscando...
+                  </span>
+              </button>
           </div>
         </div>
       </section>
 
       <!-- Seção de Resultados da Busca (escondida por padrão) -->
-      <section id="search-results-section" class="hidden container mx-auto px-4 py-16">
-          <div class="flex justify-between items-center mb-8">
-              <h2 class="text-3xl font-bold text-white">Resultados da Busca</h2>
-              <button id="clear-search-btn" class="btn-secondary">Limpar Busca</button>
-          </div>
-          <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              <!-- Resultados da busca serão inseridos aqui -->
-          </div>
-          <div id="no-results-message" class="hidden text-center py-16">
-              <p class="text-slate-400">Nenhum parceiro encontrado com os critérios informados.</p>
-          </div>
+      <section
+        id="search-results-section"
+        class="hidden container mx-auto px-4 py-16"
+      >
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold text-white">Resultados da Busca</h2>
+          <button id="clear-search-btn" class="btn-secondary">
+            Limpar Busca
+          </button>
+        </div>
+        <div
+          id="search-results-grid"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+        >
+          <!-- Resultados da busca serão inseridos aqui -->
+        </div>
+        <div id="no-results-message" class="hidden text-center py-16">
+          <p class="text-slate-400">
+            Nenhum parceiro encontrado com os critérios informados.
+          </p>
+        </div>
       </section>
-      
+
       <!-- Seção Agências Premium -->
       <section id="agencies-section" class="py-16">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-white text-center mb-8">Agências em Destaque</h2>
-            <div class="relative">
-                <div id="carousel-container" class="overflow-hidden">
-                    <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
-                        <!-- Cards de agências serão inseridos aqui -->
-                    </div>
-                </div>
-                <button id="prev-btn" class="absolute top-1/2 left-0 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
-                <button id="next-btn" class="absolute top-1/2 right-0 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-right"></i></button>
+          <h2 class="text-3xl font-bold text-white text-center mb-8">
+            Agências em Destaque
+          </h2>
+          <div class="relative">
+            <div id="carousel-container" class="overflow-hidden">
+              <div
+                id="carousel-track"
+                class="flex transition-transform duration-500 ease-in-out"
+              >
+                <!-- Cards de agências serão inseridos aqui -->
+              </div>
             </div>
+            <button
+              id="prev-btn"
+              class="absolute top-1/2 left-0 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button
+              id="next-btn"
+              class="absolute top-1/2 right-0 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </section>
 
       <!-- Seção Parceiros (rolagem infinita) -->
-       <section class="py-16 bg-slate-800/20">
-            <div class="container mx-auto px-4">
-                <h2 class="text-3xl font-bold text-white text-center mb-8">Explore Nossos Parceiros</h2>
-                 <div class="relative overflow-hidden group">
-                    <div id="partners-carousel-track" class="flex animate-scroll">
-                        <!-- Partner logos will be inserted here -->
-                    </div>
-                </div>
+      <section class="py-16 bg-slate-800/20">
+        <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-white text-center mb-8">
+            Explore Nossos Parceiros
+          </h2>
+          <div class="relative overflow-hidden group">
+            <div id="partners-carousel-track" class="flex animate-scroll">
+              <!-- Partner logos will be inserted here -->
             </div>
-        </section>
+          </div>
+        </div>
+      </section>
 
       <!-- Seção Ferramentas (IA) -->
       <section id="ferramentas" class="py-16">
         <div class="container mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-white">Construtor de Roteiros com IA</h2>
-                <p class="text-lg text-slate-400 mt-2">Exclusivo para membros Viajante Plus.</p>
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-white">
+              Construtor de Roteiros com IA
+            </h2>
+            <p class="text-lg text-slate-400 mt-2">
+              Exclusivo para membros Viajante Plus.
+            </p>
+          </div>
+          <div
+            class="max-w-3xl mx-auto glass-effect rounded-2xl p-8 border border-slate-700"
+          >
+            <textarea
+              id="ai-prompt"
+              class="form-input mb-4 h-24"
+              placeholder="Descreva sua viagem dos sonhos... Ex: 'Quero um roteiro de 5 dias em Salvador, focado em cultura, história e gastronomia, com um orçamento moderado.'"
+            ></textarea>
+            <button id="generate-ai-btn" class="btn-primary w-full text-lg">
+              <span id="ai-btn-text" class="flex items-center justify-center"
+                ><i class="fas fa-magic mr-2"></i>Gerar Roteiro</span
+              >
+              <span
+                id="ai-btn-loading"
+                class="hidden items-center justify-center"
+                ><div class="modern-spinner-btn mr-3"></div>
+                Gerando...</span
+              >
+            </button>
+            <div id="ai-result-container" class="mt-6 hidden">
+              <div
+                id="ai-result-text"
+                class="bg-slate-900 p-4 rounded-lg border border-slate-600"
+              ></div>
             </div>
-            <div class="max-w-3xl mx-auto glass-effect rounded-2xl p-8 border border-slate-700">
-                <textarea id="ai-prompt" class="form-input mb-4 h-24" placeholder="Descreva sua viagem dos sonhos... Ex: 'Quero um roteiro de 5 dias em Salvador, focado em cultura, história e gastronomia, com um orçamento moderado.'"></textarea>
-                <button id="generate-ai-btn" class="btn-primary w-full text-lg">
-                    <span id="ai-btn-text" class="flex items-center justify-center"><i class="fas fa-magic mr-2"></i>Gerar Roteiro</span>
-                    <span id="ai-btn-loading" class="hidden items-center justify-center"><div class="modern-spinner mr-3"></div>Gerando...</span>
-                </button>
-                <div id="ai-result-container" class="mt-6 hidden">
-                    <div id="ai-result-text" class="bg-slate-900 p-4 rounded-lg border border-slate-600"></div>
-                </div>
-            </div>
+          </div>
         </div>
       </section>
 
       <!-- Seção Anunciantes Basic -->
       <section class="py-16">
-          <div class="container mx-auto px-4">
-              <h2 class="text-3xl font-bold text-white text-center mb-8">Mais Opções Para Sua Viagem</h2>
-              <div id="advertiser-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  <!-- Skeleton loaders -->
-                  <div class="skeleton h-80"></div>
-                  <div class="skeleton h-80"></div>
-                  <div class="skeleton h-80 hidden sm:block"></div>
-                  <div class="skeleton h-80 hidden lg:block"></div>
-              </div>
+        <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-white text-center mb-8">
+            Mais Opções Para Sua Viagem
+          </h2>
+          <div
+            id="advertiser-grid"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            <!-- Skeleton loaders -->
+            <div class="skeleton h-80"></div>
+            <div class="skeleton h-80"></div>
+            <div class="skeleton h-80 hidden sm:block"></div>
+            <div class="skeleton h-80 hidden lg:block"></div>
           </div>
+        </div>
       </section>
 
       <!-- Seção de Depoimentos -->
       <section id="testimonials-section" class="py-16 bg-slate-800/20">
-          <div class="container mx-auto px-4">
-              <h2 class="text-3xl font-bold text-white text-center mb-8">O Que Nossos Viajantes Dizem</h2>
-              <div class="relative max-w-2xl mx-auto">
-                  <div class="overflow-hidden">
-                      <div id="testimonials-track" class="flex transition-transform duration-500 ease-in-out">
-                          <!-- Depoimentos serão inseridos aqui -->
-                      </div>
-                  </div>
-                  <button id="testimonials-prev-btn" class="absolute top-1/2 -left-4 md:-left-12 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50"><i class="fas fa-chevron-left"></i></button>
-                  <button id="testimonials-next-btn" class="absolute top-1/2 -right-4 md:-right-12 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50"><i class="fas fa-chevron-right"></i></button>
+        <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-white text-center mb-8">
+            O Que Nossos Viajantes Dizem
+          </h2>
+          <div class="relative max-w-2xl mx-auto">
+            <div class="overflow-hidden">
+              <div
+                id="testimonials-track"
+                class="flex transition-transform duration-500 ease-in-out"
+              >
+                <!-- Depoimentos serão inseridos aqui -->
               </div>
+            </div>
+            <button
+              id="testimonials-prev-btn"
+              class="absolute top-1/2 -left-4 md:-left-12 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button
+              id="testimonials-next-btn"
+              class="absolute top-1/2 -right-4 md:-right-12 -translate-y-1/2 bg-slate-700/50 p-3 rounded-full text-white hover:bg-slate-600 disabled:opacity-50"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
+        </div>
       </section>
-
     </main>
 
     <footer
