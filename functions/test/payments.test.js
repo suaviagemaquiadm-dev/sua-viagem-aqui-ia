@@ -4,148 +4,193 @@ const test = require("firebase-functions-test")(
   },
   "test/service-account.json",
 );
-const assert = require("assert");
+const { assert } = require("chai");
 const sinon = require("sinon");
 const crypto = require("crypto");
-const mercadopago = require("mercadopago");
+const admin = require("firebase-admin");
 
-// Importa a função que queremos testar
-const { mercadoPagoWebhook } = require("../src/payments");
+// Mock 'mercadopago' antes de ser importado pelo arquivo de funções.
+const mercadopago = {
+  configure: sinon.stub(),
+  payment: {
+    findById: sinon.stub(),
+  },
+  preferences: {
+    create: sinon.stub(),
+  },
+};
+
+// --- Mock de Configuração via Proxyquire ---
+const WEBHOOK_SECRET = "test-secret-12345";
+const ACCESS_TOKEN = "test-access-token";
+const originalConfig = require("../config");
+
+const proxyquire = require("proxyquire").noCallThru();
+
+// Importa as funções a serem testadas usando proxyquire para injetar os mocks
+const {
+  createMercadoPagoPreference,
+  mercadoPagoWebhook,
+} = proxyquire("../src/payments.js", {
+  mercadopago: mercadopago,
+  // Injeta uma versão mockada do config para controlar os valores dos segredos
+  "../config": {
+    ...originalConfig,
+    mpWebhookSecret: { value: () => WEBHOOK_SECRET },
+    mpAccessToken: { value: () => ACCESS_TOKEN },
+  },
+});
 
 describe("Payments Cloud Functions", () => {
-  let mpStub, cryptoStub;
+  let adminAuthStub, updateStub, docStub, collectionStub;
 
-  // Mock do segredo do webhook
-  const WEBHOOK_SECRET = "test-secret";
+  before(() => {
+    // Stub do Firebase Admin SDK
+    adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
+    updateStub = sinon.stub().resolves();
+    docStub = sinon.stub().returns({ update: updateStub });
+    collectionStub = sinon.stub().returns({ doc: docStub });
 
-  beforeEach(() => {
-    // Stub para a API do Mercado Pago
-    mpStub = sinon.stub(mercadopago.Payment.prototype, "get");
-
-    // Stub para o defineSecret
-    process.env.MERCADOPAGO_WEBHOOK_SECRET = WEBHOOK_SECRET;
+    sinon.stub(admin, "auth").returns(adminAuthStub);
+    const firestore = sinon.stub().returns({ collection: collectionStub });
+    Object.defineProperty(admin, 'firestore', { get: () => firestore, configurable: true });
   });
 
-  afterEach(() => {
+  beforeEach(() => {
+    sinon.resetHistory();
+  });
+
+  after(() => {
     sinon.restore();
-    delete process.env.MERCADOPAGO_WEBHOOK_SECRET;
     test.cleanup();
   });
 
   describe("mercadoPagoWebhook", () => {
-    it("deve processar um webhook válido com sucesso (status 200)", async () => {
-      const paymentId = "12345";
-      const requestId = "test-request-id";
+    function generateValidRequest(paymentId = "12345") {
+      const requestId = `req-${Date.now()}`;
       const timestamp = Math.floor(Date.now() / 1000);
-
-      // 1. Gera uma assinatura válida para o teste
       const manifest = `id:${paymentId};request-id:${requestId};ts:${timestamp};`;
       const hmac = crypto.createHmac("sha256", WEBHOOK_SECRET);
       hmac.update(manifest);
       const signature = hmac.digest("hex");
 
-      // 2. Simula a requisição recebida pelo webhook
-      const req = {
+      return {
         headers: {
           "x-request-id": requestId,
           "x-signature": `ts=${timestamp},v1=${signature}`,
         },
+        method: "POST",
         query: { topic: "payment" },
-        body: {
-          data: { id: paymentId },
-        },
+        body: { data: { id: paymentId } },
       };
+    }
 
-      // 3. Mock da resposta da API do Mercado Pago
-      mpStub.resolves({
-        id: paymentId,
-        status: "approved",
-        external_reference: "user123",
-        metadata: { transaction_type: "user_subscription" },
+    it("deve processar um webhook válido com sucesso (status 200)", async () => {
+      const req = generateValidRequest();
+      const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
+
+      mercadopago.payment.findById.resolves({
+        body: {
+          status: "approved",
+          external_reference: "partner123",
+          metadata: { transaction_type: "partner_subscription" },
+        },
       });
 
-      // 4. Simula o objeto de resposta do Express
-      const res = {
-        status: sinon.stub().returnsThis(),
-        send: sinon.stub(),
-      };
-
-      // 5. Executa a função
       await mercadoPagoWebhook(req, res);
 
-      // 6. Asserts - Verifica se a resposta foi de sucesso
-      assert.ok(res.status.calledWith(200), "Deveria retornar status 200");
-      assert.ok(
-        res.send.calledWith({ status: "OK" }),
-        "Deveria enviar uma resposta de OK",
-      );
+      assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200");
+      assert.isTrue(res.send.calledWith({ status: "OK" }));
+      assert.isTrue(collectionStub.calledWith("partners"));
+      assert.isTrue(docStub.calledWith("partner123"));
+      assert.isTrue(updateStub.calledWith({ status: "aprovado", payment_status: "pago" }));
+      assert.isTrue(adminAuthStub.setCustomUserClaims.calledWith("partner123", { role: "advertiser" }));
     });
 
     it("deve rejeitar um webhook com assinatura inválida (status 400)", async () => {
-      const req = {
-        headers: {
-          "x-request-id": "some-id",
-          "x-signature": `ts=${Math.floor(Date.now() / 1000)},v1=invalid_signature`,
-        },
-        query: { topic: "payment" },
-        body: { data: { id: "12345" } },
-      };
-
-      const res = {
-        status: sinon.stub().returnsThis(),
-        send: sinon.stub(),
-      };
-
-      await mercadoPagoWebhook(req, res);
-
-      assert.ok(res.status.calledWith(400), "Deveria retornar status 400");
-      assert.ok(
-        res.send.calledWith({
-          status: "ERROR",
-          message: "Assinatura do Webhook inválida.",
-        }),
-        "Deveria enviar uma mensagem de erro de assinatura inválida",
-      );
-    });
-
-    it("deve rejeitar um webhook com timestamp expirado (ataque de replay)", async () => {
-      const expiredTimestamp = Math.floor(Date.now() / 1000) - 600; // 10 minutos atrás
-      const req = {
-        headers: {
-          "x-request-id": "some-id",
-          "x-signature": `ts=${expiredTimestamp},v1=some_signature`,
-        },
-        query: { topic: "payment" },
-        body: { data: { id: "12345" } },
-      };
-
-      const res = {
-        status: sinon.stub().returnsThis(),
-        send: sinon.stub(),
-      };
-
-      await mercadoPagoWebhook(req, res);
-
-      assert.ok(res.status.calledWith(400), "Deveria retornar status 400");
-      assert.ok(
-        res.send.calledWith({
-          status: "ERROR",
-          message: "Timestamp da assinatura expirado.",
-        }),
-        "Deveria enviar uma mensagem de erro de timestamp expirado",
-      );
-    });
-
-    it("deve ignorar webhooks que não são do tópico 'payment'", async () => {
-      const req = { query: { topic: "other_topic" }, body: {} };
+      const req = generateValidRequest();
+      req.headers["x-signature"] = `ts=${Math.floor(Date.now() / 1000)},v1=invalidhash`;
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
 
       await mercadoPagoWebhook(req, res);
 
-      assert.ok(
-        res.status.calledWith(200),
-        "Deveria retornar status 200 para tópicos ignorados",
-      );
+      assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
+      assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Assinatura do Webhook inválida." }));
+    });
+
+    it("deve rejeitar um webhook com timestamp expirado (ataque de replay)", async () => {
+      const req = generateValidRequest();
+      const requestId = req.headers["x-request-id"];
+      const paymentId = req.body.data.id;
+      const oldTimestamp = Math.floor(Date.now() / 1000) - 400; // > 300 segundos atrás
+      const manifest = `id:${paymentId};request-id:${requestId};ts:${oldTimestamp};`;
+      const hmac = crypto.createHmac("sha256", WEBHOOK_SECRET);
+      hmac.update(manifest);
+      const signature = hmac.digest("hex");
+      req.headers["x-signature"] = `ts=${oldTimestamp},v1=${signature}`;
+      const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
+
+      await mercadoPagoWebhook(req, res);
+
+      assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
+      assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Timestamp da assinatura expirado." }));
+    });
+
+     it("deve ignorar webhooks que não são do tópico 'payment'", async () => {
+        const req = {
+          method: "POST",
+          query: { topic: "other" },
+          body: { data: { id: "123" } },
+        };
+        const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
+        await mercadoPagoWebhook(req, res);
+        assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200 para tópicos ignorados");
+        assert.isTrue(res.send.calledWith({ status: "Ignored" }));
+    });
+  });
+
+  describe("createMercadoPagoPreference", () => {
+    const wrapped = test.wrap(createMercadoPagoPreference);
+
+    it("should create a preference for an authenticated user", async () => {
+      const context = { auth: { uid: "user123", token: {} } };
+      const data = {
+        title: "Test Plan",
+        price: 9.99,
+        userId: "user123",
+        email: "test@user.com",
+        transactionType: "user_subscription",
+      };
+
+      mercadopago.preferences.create.resolves({ body: { id: "pref_123" } });
+
+      const result = await wrapped({ data: data, auth: context.auth });
+
+      assert.deepStrictEqual(result, { preferenceId: "pref_123" });
+      assert.isTrue(mercadopago.preferences.create.calledOnce);
+      const preferenceArg = mercadopago.preferences.create.firstCall.args[0];
+      assert.equal(preferenceArg.external_reference, "user123");
+      assert.equal(preferenceArg.metadata.transaction_type, "user_subscription");
+      assert.equal(preferenceArg.items[0].unit_price, 9.99);
+    });
+
+    it("should throw 'unauthenticated' if user is not logged in", async () => {
+      try {
+        await wrapped({ data: {} }); // Sem auth context
+        assert.fail("Function should have thrown");
+      } catch (err) {
+        assert.equal(err.code, "unauthenticated");
+      }
+    });
+
+    it("should throw 'invalid-argument' if data is missing", async () => {
+      const context = { auth: { uid: "user123" } };
+      try {
+        await wrapped({ data: { title: "Incomplete" }, auth: context.auth });
+        assert.fail("Function should have thrown");
+      } catch (err) {
+        assert.equal(err.code, "invalid-argument");
+      }
     });
   });
 });

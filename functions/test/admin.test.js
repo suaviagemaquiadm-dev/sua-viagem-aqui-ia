@@ -29,8 +29,12 @@ describe("Admin Cloud Functions", () => {
     setStub = sinon.stub();
     docStub = sinon.stub().returns({ set: setStub });
     collectionStub = sinon.stub().returns({ doc: docStub });
-    firestoreStub = sinon.stub().returns({ collection: collectionStub });
-    sinon.stub(admin, "firestore").get(() => firestoreStub);
+    // Stub para admin.firestore que é um getter
+    const firestore = sinon.stub().returns({ collection: collectionStub });
+    Object.defineProperty(admin, 'firestore', {
+        get: () => firestore,
+        configurable: true // Permite re-stub
+    });
   });
 
   afterEach(() => {
@@ -56,7 +60,7 @@ describe("Admin Cloud Functions", () => {
       const wrapped = test.wrap(createPartnerAccount);
 
       // Act
-      const result = await wrapped(validData, context);
+      const result = await wrapped({ data: validData, auth: context.auth });
 
       // Assert
       assert.deepStrictEqual(result, { success: true, message: "Parceiro criado com sucesso!" });
@@ -74,7 +78,7 @@ describe("Admin Cloud Functions", () => {
 
       // Act & Assert
       try {
-        await wrapped(validData, context);
+        await wrapped({ data: validData, auth: context.auth });
         assert.fail("A função deveria ter lançado um erro de permissão negada");
       } catch (err) {
         assert.equal(err.code, "permission-denied");
@@ -92,7 +96,7 @@ describe("Admin Cloud Functions", () => {
 
       // Act & Assert
        try {
-        await wrapped(validData, context);
+        await wrapped({ data: validData, auth: context.auth });
         assert.fail("A função deveria ter lançado um erro interno");
        } catch(err) {
         assert.equal(err.code, "internal");
@@ -111,7 +115,7 @@ describe("Admin Cloud Functions", () => {
 
         // Act & Assert
         try {
-            await wrapped({ targetUid: 'admin1' }, context);
+            await wrapped({ data: { targetUid: 'admin1' }, auth: context.auth });
             assert.fail("A função deveria ter lançado um erro de pré-condição falhou");
         } catch(err) {
             assert.equal(err.code, "failed-precondition");
