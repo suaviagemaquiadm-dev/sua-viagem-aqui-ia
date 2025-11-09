@@ -18,29 +18,25 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          # Aponta o cache para o package.json das functions
           cache-dependency-path: 'functions/package.json'
 
-      # Instala dependências das Cloud Functions
       - name: Install Functions Dependencies
-        # Alterado de `npm ci` para `npm install` para evitar erro de package-lock.json ausente
         run: npm install --prefix functions
 
-      # Roda os testes unitários do backend (Cloud Functions)
+      # PASSO DE SEGURANÇA ADICIONADO
+      - name: Audit for Security Vulnerabilities
+        run: npm audit --prefix functions --audit-level=high
+
       - name: Run Backend Tests
         run: npm test --prefix functions
 
-      # Deploy no Firebase Hosting e Functions
+      # Deploy unificado no Firebase Hosting e Functions
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}"
-          channelId: live # Deploys para o canal de produção
+          channelId: live
           projectId: gemini-cli-98f4a
-          # A ação `action-hosting-deploy` também faz o deploy das functions se `firebase.json` estiver configurado
-          # Portanto, o passo de deploy separado não é mais estritamente necessário, mas mantê-lo não causa problemas.
-      
-      - name: Deploy to Cloud Functions
-        run: firebase deploy --only functions --project gemini-cli-98f4a
+          # A ação `action-hosting-deploy` faz deploy de tudo que está no firebase.json (Hosting e Functions).
 
