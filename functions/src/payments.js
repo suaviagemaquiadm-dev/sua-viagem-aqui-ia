@@ -1,3 +1,5 @@
+
+const functions = require("firebase-functions");
 const logger = require("firebase-functions/logger");
 const { onRequest } = require("firebase-functions/v2/https");
 const crypto = require("crypto");
@@ -16,7 +18,7 @@ const {
 /**
  * Valida a assinatura do webhook do Mercado Pago para previnir ataques.
  * @param {import("firebase-functions/v2/https").Request} req - O objeto da requisição.
- * @returns {boolean} - Retorna true se a assinatura for válida.
+ * @returns {{valid: boolean, reason?: string}} - Retorna um objeto indicando se a assinatura é válida e o motivo da falha.
  */
 function validateWebhookSignature(req) {
   const signatureHeader = req.headers["x-signature"];
@@ -25,7 +27,10 @@ function validateWebhookSignature(req) {
 
   if (!signatureHeader || !requestId || !webhookSecret) {
     logger.warn("Webhook validation failed: Missing headers or secret.");
-    return false;
+    return {
+      valid: false,
+      reason: "Cabeçalhos de assinatura ausentes ou segredo não configurado.",
+    };
   }
 
   const parts = signatureHeader.split(",").reduce((acc, part) => {
@@ -42,7 +47,7 @@ function validateWebhookSignature(req) {
   if (now - timestamp > 300) {
     // 5 minutos de tolerância
     logger.warn("Webhook validation failed: Timestamp expired.");
-    return false;
+    return { valid: false, reason: "Timestamp da assinatura expirado." };
   }
 
   const manifest = `id:${req.body.data.id};request-id:${requestId};ts:${timestamp};`;
@@ -50,10 +55,18 @@ function validateWebhookSignature(req) {
   hmac.update(manifest);
   const computedSignature = hmac.digest("hex");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(computedSignature),
-    Buffer.from(signature),
-  );
+  if (
+    !signature || // Garante que a assinatura exista
+    !crypto.timingSafeEqual(
+      Buffer.from(computedSignature),
+      Buffer.from(signature),
+    )
+  ) {
+    logger.error("Webhook validation failed: Invalid signature.");
+    return { valid: false, reason: "Assinatura do Webhook inválida." };
+  }
+
+  return { valid: true };
 }
 
 /**
@@ -71,15 +84,18 @@ exports.mercadoPagoWebhook = onRequest(
     }
 
     if (req.query.topic !== "payment" || !req.body?.data?.id) {
-      logger.info("Webhook received for a non-payment topic or without ID, ignoring.");
+      logger.info(
+        "Webhook received for a non-payment topic or without ID, ignoring.",
+      );
       return res.status(200).send({ status: "Ignored" });
     }
 
-    if (!validateWebhookSignature(req)) {
-      logger.error("Invalid webhook signature received.");
+    const validation = validateWebhookSignature(req);
+    if (!validation.valid) {
+      logger.error(`Invalid webhook signature received. Reason: ${validation.reason}`);
       return res
         .status(400)
-        .send({ status: "ERROR", message: "Assinatura do Webhook inválida." });
+        .send({ status: "ERROR", message: validation.reason });
     }
 
     const paymentId = req.body.data.id;
@@ -96,39 +112,50 @@ exports.mercadoPagoWebhook = onRequest(
       const payment = paymentInfo.body;
       const userId = payment.external_reference;
       const transactionType = payment.metadata.transaction_type;
-      
+
       if (!userId) {
-        throw new Error(`Payment ${paymentId} does not have an external_reference (userId).`);
+        throw new Error(
+          `Payment ${paymentId} does not have an external_reference (userId).`,
+        );
       }
 
-      if (payment.status === 'approved') {
-        logger.info(`Payment ${paymentId} was approved. Updating user/partner status.`);
-        
-        if (transactionType === TRANSACTION_TYPES.USER_SUBSCRIPTION) {
-          const userRef = db.collection('users').doc(userId);
-          await userRef.update({ 
-              role: ROLES.TRAVELER_PLUS, 
-              payment_status: PAYMENT_STATUS.PAID 
-          });
-          // Atualiza as permissões do usuário no Auth para acesso imediato
-          await adminAuth.setCustomUserClaims(userId, { role: ROLES.TRAVELER_PLUS });
-          logger.info(`User ${userId} updated to TRAVELER_PLUS.`);
+      if (payment.status === "approved") {
+        logger.info(
+          `Payment ${paymentId} was approved. Updating user/partner status.`,
+        );
 
-        } else if (transactionType === TRANSACTION_TYPES.PARTNER_SUBSCRIPTION) {
-          const partnerRef = db.collection('partners').doc(userId);
-          await partnerRef.update({
-            status: PARTNER_STATUS.APPROVED, 
-            payment_status: PAYMENT_STATUS.PAID
+        if (transactionType === TRANSACTION_TYPES.USER_SUBSCRIPTION) {
+          const userRef = db.collection("users").doc(userId);
+          await userRef.update({
+            role: ROLES.TRAVELER_PLUS,
+            payment_status: PAYMENT_STATUS.PAID,
           });
           // Atualiza as permissões do usuário no Auth para acesso imediato
-          await adminAuth.setCustomUserClaims(userId, { role: ROLES.ADVERTISER });
-           logger.info(`Partner ${userId} updated to APPROVED.`);
+          await adminAuth.setCustomUserClaims(userId, {
+            role: ROLES.TRAVELER_PLUS,
+          });
+          logger.info(`User ${userId} updated to TRAVELER_PLUS.`);
+        } else if (transactionType === TRANSACTION_TYPES.PARTNER_SUBSCRIPTION) {
+          const partnerRef = db.collection("partners").doc(userId);
+          await partnerRef.update({
+            status: PARTNER_STATUS.APPROVED,
+            payment_status: PAYMENT_STATUS.PAID,
+          });
+          // Atualiza as permissões do usuário no Auth para acesso imediato
+          await adminAuth.setCustomUserClaims(userId, {
+            role: ROLES.ADVERTISER,
+          });
+          logger.info(`Partner ${userId} updated to APPROVED.`);
         }
       } else {
-         logger.info(`Payment ${paymentId} status is '${payment.status}'. No action taken.`);
+        logger.info(
+          `Payment ${paymentId} status is '${payment.status}'. No action taken.`,
+        );
       }
 
-      logger.info(`Payment ${paymentId} for user ${userId} processed successfully.`);
+      logger.info(
+        `Payment ${paymentId} for user ${userId} processed successfully.`,
+      );
       return res.status(200).send({ status: "OK" });
     } catch (error) {
       logger.error(`Error processing payment ${paymentId}:`, error);
@@ -136,3 +163,63 @@ exports.mercadoPagoWebhook = onRequest(
     }
   },
 );
+
+/**
+ * Cria uma preferência de pagamento no Mercado Pago (versão 1 para compatibilidade de teste).
+ */
+exports.createMercadoPagoPreference = functions
+  .runWith({ secrets: [mpAccessToken.name] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "A função só pode ser chamada por um usuário autenticado.",
+      );
+    }
+
+    const { title, price, userId, email, transactionType } = data;
+    if (!title || !price || !userId || !email || !transactionType) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Dados insuficientes para criar a preferência de pagamento.",
+      );
+    }
+
+    mercadopago.configure({ access_token: process.env.MERCADOPAGO_ACCESS_TOKEN });
+
+    const preference = {
+      items: [
+        {
+          title: title,
+          unit_price: Number(price),
+          quantity: 1,
+        },
+      ],
+      payer: {
+        email: email,
+      },
+      back_urls: {
+        success: "https://gemini-cli-98f4a.web.app/perfil.html", // TODO: Criar páginas de sucesso/falha
+        failure: "https://gemini-cli-98f4a.web.app/perfil.html",
+        pending: "https://gemini-cli-98f4a.web.app/perfil.html",
+      },
+      auto_return: "approved",
+      external_reference: userId,
+      metadata: {
+        transaction_type: transactionType,
+        user_id: userId,
+      },
+    };
+
+    try {
+      const response = await mercadopago.preferences.create(preference);
+      return { preferenceId: response.body.id };
+    } catch (error) {
+      logger.error("Erro ao criar preferência no Mercado Pago:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Não foi possível criar a preferência de pagamento.",
+      );
+    }
+  });
+

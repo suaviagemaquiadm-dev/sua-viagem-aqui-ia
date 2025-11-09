@@ -1,3 +1,4 @@
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("../config");
@@ -6,7 +7,7 @@ const { deleteCollectionRecursive } = require("./utils");
 /**
  * Helper para verificar se o autor da chamada é um administrador.
  * Lança um erro HttpsError 'permission-denied' se não for.
- * @param {object} context - O contexto da função callable.
+ * @param {object} context - O contexto da função callable, que é o próprio objeto 'request' na v2.
  */
 const ensureIsAdmin = (context) => {
   if (context.auth?.token?.admin !== true) {
@@ -25,7 +26,7 @@ const ensureIsAdmin = (context) => {
  * Protegida para ser chamada apenas por administradores.
  */
 exports.createPartnerAccount = onCall(async (request) => {
-  ensureIsAdmin(request.context);
+  ensureIsAdmin(request);
 
   const { businessName, ownerName, email, password, plan } = request.data;
 
@@ -87,7 +88,7 @@ exports.createPartnerAccount = onCall(async (request) => {
  * Deleta uma conta de parceiro e todos os seus dados.
  */
 exports.deletePartnerAccount = onCall(async (request) => {
-    ensureIsAdmin(request.context);
+    ensureIsAdmin(request);
     const { partnerId } = request.data;
     if (!partnerId) {
         throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
@@ -124,7 +125,7 @@ exports.deletePartnerAccount = onCall(async (request) => {
  * Altera o status de um parceiro.
  */
 exports.setPartnerStatus = onCall(async (request) => {
-    ensureIsAdmin(request.context);
+    ensureIsAdmin(request);
     const { partnerId, newStatus, reason } = request.data;
 
     if (!partnerId || !newStatus || !Object.values(PARTNER_STATUS).includes(newStatus)) {
@@ -153,7 +154,7 @@ exports.setPartnerStatus = onCall(async (request) => {
  * Concede o papel de administrador a um usuário.
  */
 exports.grantAdminRole = onCall(async (request) => {
-  ensureIsAdmin(request.context);
+  ensureIsAdmin(request);
 
   const email = request.data.email;
   if (!email) {
@@ -183,14 +184,14 @@ exports.grantAdminRole = onCall(async (request) => {
  * Revoga o papel de administrador de um usuário.
  */
 exports.revokeAdminRole = onCall(async (request) => {
-  ensureIsAdmin(request.context);
+  ensureIsAdmin(request);
 
   const { targetUid } = request.data;
   if (!targetUid) {
     throw new HttpsError("invalid-argument", "O UID do usuário é obrigatório.");
   }
   
-  if (targetUid === request.context.auth.uid) {
+  if (targetUid === request.auth.uid) {
     throw new HttpsError("failed-precondition", "Um administrador não pode revogar os próprios privilégios.");
   }
 
@@ -224,7 +225,7 @@ exports.revokeAdminRole = onCall(async (request) => {
  * Lista os administradores atuais.
  */
 exports.listAdmins = onCall(async (request) => {
-  ensureIsAdmin(request.context);
+  ensureIsAdmin(request);
 
   try {
     const listUsersResult = await adminAuth.listUsers();
@@ -244,3 +245,4 @@ exports.listAdmins = onCall(async (request) => {
     throw new HttpsError("internal", "Erro ao listar administradores.", error.message);
   }
 });
+

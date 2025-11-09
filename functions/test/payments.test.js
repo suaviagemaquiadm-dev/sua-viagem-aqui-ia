@@ -1,3 +1,4 @@
+
 const test = require("firebase-functions-test")(
   {
     projectId: "gemini-cli-98f4a",
@@ -7,7 +8,6 @@ const test = require("firebase-functions-test")(
 const { assert } = require("chai");
 const sinon = require("sinon");
 const crypto = require("crypto");
-const admin = require("firebase-admin");
 
 // Mock 'mercadopago' antes de ser importado pelo arquivo de funções.
 const mercadopago = {
@@ -25,6 +25,13 @@ const WEBHOOK_SECRET = "test-secret-12345";
 const ACCESS_TOKEN = "test-access-token";
 const originalConfig = require("../config");
 
+// Mocks para os serviços do firebase-admin
+const adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
+const updateStub = sinon.stub().resolves();
+const docStub = sinon.stub().returns({ update: updateStub });
+const collectionStub = sinon.stub().returns({ doc: docStub });
+const dbStub = { collection: collectionStub };
+
 const proxyquire = require("proxyquire").noCallThru();
 
 // Importa as funções a serem testadas usando proxyquire para injetar os mocks
@@ -33,31 +40,26 @@ const {
   mercadoPagoWebhook,
 } = proxyquire("../src/payments.js", {
   mercadopago: mercadopago,
-  // Injeta uma versão mockada do config para controlar os valores dos segredos
+  // Injeta uma versão mockada do config para controlar os valores dos segredos e stubs do DB/Auth
   "../config": {
     ...originalConfig,
+    db: dbStub,
+    adminAuth: adminAuthStub,
     mpWebhookSecret: { value: () => WEBHOOK_SECRET },
     mpAccessToken: { value: () => ACCESS_TOKEN },
   },
 });
 
 describe("Payments Cloud Functions", () => {
-  let adminAuthStub, updateStub, docStub, collectionStub;
-
-  before(() => {
-    // Stub do Firebase Admin SDK
-    adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
-    updateStub = sinon.stub().resolves();
-    docStub = sinon.stub().returns({ update: updateStub });
-    collectionStub = sinon.stub().returns({ doc: docStub });
-
-    sinon.stub(admin, "auth").returns(adminAuthStub);
-    const firestore = sinon.stub().returns({ collection: collectionStub });
-    Object.defineProperty(admin, 'firestore', { get: () => firestore, configurable: true });
-  });
-
   beforeEach(() => {
+    // Reseta o histórico de todos os stubs antes de cada teste
     sinon.resetHistory();
+    mercadopago.payment.findById.resetHistory();
+    mercadopago.preferences.create.resetHistory();
+    adminAuthStub.setCustomUserClaims.resetHistory();
+    updateStub.resetHistory();
+    docStub.resetHistory();
+    collectionStub.resetHistory();
   });
 
   after(() => {
@@ -109,7 +111,8 @@ describe("Payments Cloud Functions", () => {
 
     it("deve rejeitar um webhook com assinatura inválida (status 400)", async () => {
       const req = generateValidRequest();
-      req.headers["x-signature"] = `ts=${Math.floor(Date.now() / 1000)},v1=invalidhash`;
+      const validTimestamp = req.headers["x-signature"].split(',')[0];
+      req.headers["x-signature"] = `${validTimestamp},v1=${"0".repeat(64)}`; // Assinatura inválida com tamanho correto
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
 
       await mercadoPagoWebhook(req, res);
@@ -150,49 +153,49 @@ describe("Payments Cloud Functions", () => {
   });
 
   describe("createMercadoPagoPreference", () => {
-
     it("deve criar uma preferência para um usuário autenticado", async () => {
-        const wrapped = test.wrap(createMercadoPagoPreference);
-        const context = { auth: { uid: "user123", token: {} } };
-        const data = {
-          title: "Test Plan",
-          price: 9.99,
-          userId: "user123",
-          email: "test@user.com",
-          transactionType: "user_subscription",
-        };
-  
-        mercadopago.preferences.create.resolves({ body: { id: "pref_123" } });
-  
-        const result = await wrapped({ data, auth: context.auth });
-  
-        assert.deepStrictEqual(result, { preferenceId: "pref_123" });
-        assert.isTrue(mercadopago.preferences.create.calledOnce);
-        const preferenceArg = mercadopago.preferences.create.firstCall.args[0];
-        assert.equal(preferenceArg.external_reference, "user123");
-        assert.equal(preferenceArg.metadata.transaction_type, "user_subscription");
-        assert.equal(preferenceArg.items[0].unit_price, 9.99);
-      });
-  
-      it("deve lançar 'unauthenticated' se o usuário não estiver logado", async () => {
-        const wrapped = test.wrap(createMercadoPagoPreference);
-        try {
-          await wrapped({ data: {} }); // Sem auth context
-          assert.fail("A função deveria ter lançado um erro");
-        } catch (err) {
-          assert.equal(err.code, "unauthenticated");
-        }
-      });
-  
-      it("deve lançar 'invalid-argument' se os dados estiverem faltando", async () => {
-        const wrapped = test.wrap(createMercadoPagoPreference);
-        const context = { auth: { uid: "user123" } };
-        try {
-          await wrapped({ data: { title: "Incomplete" }, auth: context.auth });
-          assert.fail("A função deveria ter lançado um erro");
-        } catch (err) {
-          assert.equal(err.code, "invalid-argument");
-        }
-      });
+      const wrapped = test.wrap(createMercadoPagoPreference);
+      const context = { auth: { uid: "user123", token: {} } };
+      const data = {
+        title: "Test Plan",
+        price: 9.99,
+        userId: "user123",
+        email: "test@user.com",
+        transactionType: "user_subscription",
+      };
+
+      mercadopago.preferences.create.resolves({ body: { id: "pref_123" } });
+
+      const result = await wrapped(data, context); // Chamada de função v1
+
+      assert.deepStrictEqual(result, { preferenceId: "pref_123" });
+      assert.isTrue(mercadopago.preferences.create.calledOnce);
+      const preferenceArg = mercadopago.preferences.create.firstCall.args[0];
+      assert.equal(preferenceArg.external_reference, "user123");
+      assert.equal(preferenceArg.metadata.transaction_type, "user_subscription");
+      assert.equal(preferenceArg.items[0].unit_price, 9.99);
+    });
+
+    it("deve lançar 'unauthenticated' se o usuário não estiver logado", async () => {
+      const wrapped = test.wrap(createMercadoPagoPreference);
+      try {
+        await wrapped({}, {}); // Chamada de função v1 sem auth
+        assert.fail("A função deveria ter lançado um erro");
+      } catch (err) {
+        assert.equal(err.code, "unauthenticated");
+      }
+    });
+
+    it("deve lançar 'invalid-argument' se os dados estiverem faltando", async () => {
+      const wrapped = test.wrap(createMercadoPagoPreference);
+      const context = { auth: { uid: "user123", token: {} } };
+      try {
+        await wrapped({ title: "Incomplete" }, context); // Chamada de função v1 com dados incompletos
+        assert.fail("A função deveria ter lançado um erro");
+      } catch (err) {
+        assert.equal(err.code, "invalid-argument");
+      }
+    });
   });
 });
+
