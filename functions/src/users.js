@@ -1,6 +1,6 @@
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { auth } = require("firebase-functions/v2");
+const { beforeUserDeleted } = require("firebase-functions/v2/auth");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
 const { deleteCollectionRecursive } = require("./utils");
@@ -48,7 +48,7 @@ exports.updateUserProfile = onCall(async (request) => {
  * Trigger que limpa os dados de um usuário no Firestore e subcoleções
  * ANTES que a conta correspondente seja deletada do Firebase Authentication.
  */
-exports.cleanupUserData = auth.beforeUserDeleted(async (event) => {
+exports.cleanupUserData = beforeUserDeleted(async (event) => {
   const user = event.data;
   const userId = user.uid;
   logger.info(`Iniciando limpeza de dados para o usuário prestes a ser deletado: ${userId}`);
@@ -77,4 +77,3 @@ exports.cleanupUserData = auth.beforeUserDeleted(async (event) => {
     logger.error(`Erro ao limpar dados do usuário ${userId} no Firestore (a exclusão do Auth continuará):`, error);
   }
 });
-
