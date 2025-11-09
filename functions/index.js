@@ -1,33 +1,51 @@
 /**
  * Ponto de entrada principal para todas as Cloud Functions.
- * Este arquivo importa e re-exporta todas as funções de seus respectivos módulos,
- * permitindo uma organização de código mais limpa e escalável.
+ * Este arquivo utiliza "lazy loading" para carregar os módulos de função sob demanda,
+ * melhorando a performance de inicialização e prevenindo erros em ambientes de teste.
  */
 
+// Objeto para carregar e armazenar módulos de forma preguiçosa
+const functionsMap = {
+  admin: null,
+  account: null,
+  payments: null,
+  users: null,
+  ai: null,
+};
+
+/**
+ * Carrega um módulo de função sob demanda para evitar a inicialização de todas as funções de uma vez.
+ * @param {keyof functionsMap} moduleName O nome do módulo a ser carregado.
+ * @returns {object} O módulo de funções exportado.
+ */
+function loadFunctions(moduleName) {
+  if (functionsMap[moduleName] === null) {
+    functionsMap[moduleName] = require(`./src/${moduleName}`);
+  }
+  return functionsMap[moduleName];
+}
+
+// Exporta as funções usando getters para acionar o lazy loading
+
 // Funções de Administração
-const adminFunctions = require("./src/admin");
-exports.createPartnerAccount = adminFunctions.createPartnerAccount;
-exports.deletePartnerAccount = adminFunctions.deletePartnerAccount;
-exports.setPartnerStatus = adminFunctions.setPartnerStatus;
-exports.grantAdminRole = adminFunctions.grantAdminRole;
-exports.revokeAdminRole = adminFunctions.revokeAdminRole;
-exports.listAdmins = adminFunctions.listAdmins;
+Object.defineProperty(exports, "createPartnerAccount", { get: () => loadFunctions("admin").createPartnerAccount });
+Object.defineProperty(exports, "deletePartnerAccount", { get: () => loadFunctions("admin").deletePartnerAccount });
+Object.defineProperty(exports, "setPartnerStatus", { get: () => loadFunctions("admin").setPartnerStatus });
+Object.defineProperty(exports, "grantAdminRole", { get: () => loadFunctions("admin").grantAdminRole });
+Object.defineProperty(exports, "revokeAdminRole", { get: () => loadFunctions("admin").revokeAdminRole });
+Object.defineProperty(exports, "listAdmins", { get: () => loadFunctions("admin").listAdmins });
 
 // Funções de Contas
-const accountFunctions = require("./src/account");
-exports.generateAndAssignControlCode = accountFunctions.generateAndAssignControlCode;
+Object.defineProperty(exports, "generateAndAssignControlCode", { get: () => loadFunctions("account").generateAndAssignControlCode });
 
 // Funções relacionadas a Pagamentos
-const paymentFunctions = require("./src/payments");
-exports.mercadoPagoWebhook = paymentFunctions.mercadoPagoWebhook;
-exports.createMercadoPagoPreference = paymentFunctions.createMercadoPagoPreference;
+Object.defineProperty(exports, "mercadoPagoWebhook", { get: () => loadFunctions("payments").mercadoPagoWebhook });
+Object.defineProperty(exports, "createMercadoPagoPreference", { get: () => loadFunctions("payments").createMercadoPagoPreference });
 
 // Funções relacionadas a Usuários
-const userFunctions = require("./src/users");
-exports.updateUserProfile = userFunctions.updateUserProfile;
-exports.cleanupUserData = userFunctions.cleanupUserData;
+Object.defineProperty(exports, "updateUserProfile", { get: () => loadFunctions("users").updateUserProfile });
+Object.defineProperty(exports, "cleanupUserData", { get: () => loadFunctions("users").cleanupUserData });
 
 // Funções relacionadas à IA
-const aiFunctions = require("./src/ai");
-exports.generateItinerary = aiFunctions.generateItinerary;
+Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
 
