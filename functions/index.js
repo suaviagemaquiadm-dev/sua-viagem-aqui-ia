@@ -13,11 +13,21 @@ exports.grantAdminRole = adminFunctions.grantAdminRole;
 exports.revokeAdminRole = adminFunctions.revokeAdminRole;
 exports.listAdmins = adminFunctions.listAdmins;
 
+// Funções de Contas
+const accountFunctions = require("./src/account");
+exports.generateAndAssignControlCode = accountFunctions.generateAndAssignControlCode;
+
 // Funções relacionadas a Pagamentos
 const paymentFunctions = require("./src/payments");
 exports.mercadoPagoWebhook = paymentFunctions.mercadoPagoWebhook;
+exports.createMercadoPagoPreference = paymentFunctions.createMercadoPagoPreference;
 
 // Funções relacionadas a Usuários
 const userFunctions = require("./src/users");
 exports.updateUserProfile = userFunctions.updateUserProfile;
 exports.cleanupUserData = userFunctions.cleanupUserData;
+
+// Funções relacionadas à IA
+const aiFunctions = require("./src/ai");
+exports.generateItinerary = aiFunctions.generateItinerary;
+
