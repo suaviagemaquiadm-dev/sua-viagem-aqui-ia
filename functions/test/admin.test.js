@@ -1,3 +1,4 @@
+
 const test = require("firebase-functions-test")(
   {
     projectId: "gemini-cli-98f4a", // Use o ID do seu projeto de teste
@@ -9,7 +10,8 @@ const admin = require("firebase-admin");
 const sinon = require("sinon");
 
 // Importa as funções que queremos testar do ponto de entrada principal do projeto
-const { createPartnerAccount, revokeAdminRole } = require("../index.js");
+const myFunctions = require("../index.js");
+const { createPartnerAccount, revokeAdminRole } = myFunctions;
 
 describe("Admin Cloud Functions", () => {
   let adminAuthStub, firestoreStub, collectionStub, docStub, setStub;
@@ -60,7 +62,7 @@ describe("Admin Cloud Functions", () => {
       const wrapped = test.wrap(createPartnerAccount);
 
       // Act
-      const result = await wrapped({ data: validData, auth: context.auth });
+      const result = await wrapped(validData, context);
 
       // Assert
       assert.deepStrictEqual(result, { success: true, message: "Parceiro criado com sucesso!" });
@@ -78,7 +80,7 @@ describe("Admin Cloud Functions", () => {
 
       // Act & Assert
       try {
-        await wrapped({ data: validData, auth: context.auth });
+        await wrapped(validData, context);
         assert.fail("A função deveria ter lançado um erro de permissão negada");
       } catch (err) {
         assert.equal(err.code, "permission-denied");
@@ -96,7 +98,7 @@ describe("Admin Cloud Functions", () => {
 
       // Act & Assert
        try {
-        await wrapped({ data: validData, auth: context.auth });
+        await wrapped(validData, context);
         assert.fail("A função deveria ter lançado um erro interno");
        } catch(err) {
         assert.equal(err.code, "internal");
@@ -112,10 +114,11 @@ describe("Admin Cloud Functions", () => {
         adminAuthStub.listUsers.resolves({ users: [adminUser] }); // Apenas um admin na lista
         const context = { auth: { uid: "admin_caller", token: { admin: true } } };
         const wrapped = test.wrap(revokeAdminRole);
+        const data = { targetUid: 'admin1' };
 
         // Act & Assert
         try {
-            await wrapped({ data: { targetUid: 'admin1' }, auth: context.auth });
+            await wrapped(data, context);
             assert.fail("A função deveria ter lançado um erro de pré-condição falhou");
         } catch(err) {
             assert.equal(err.code, "failed-precondition");
