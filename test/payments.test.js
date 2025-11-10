@@ -1,14 +1,13 @@
 
-const test = require("firebase-functions-test")(
-  {
-    projectId: "gemini-cli-98f4a",
-  },
-  "test/service-account.json",
-);
+const test = require("firebase-functions-test")();
 const { assert } = require("chai");
 const sinon = require("sinon");
 const crypto = require("crypto");
 const proxyquire = require("proxyquire").noCallThru();
+
+// Stubs for V2 functions to allow direct handler testing.
+const onCallStub = (handler) => handler;
+const onRequestStub = (options, handler) => handler || options;
 
 // Mock 'mercadopago' before it's imported by the functions file.
 const mercadopagoMock = {
@@ -25,19 +24,22 @@ const WEBHOOK_SECRET = "test-secret-12345";
 const ACCESS_TOKEN = "test-access-token";
 
 // Mocks for firebase-admin services
-const adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
-const updateStub = sinon.stub().resolves();
-const docStub = sinon.stub().returns({ update: updateStub });
-const collectionStub = sinon.stub().returns({ doc: docStub });
+const adminAuthStub = { setCustomUserClaims: sinon.stub() };
+const updateStub = sinon.stub();
+const docStub = sinon.stub();
+const collectionStub = sinon.stub();
 const dbStub = { collection: collectionStub };
+const { HttpsError } = require("firebase-functions/v2/https");
 const originalConfig = require("../functions/config");
 
-// Import the functions to be tested using proxyquire to inject mocks for dependencies
-const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
-  "../functions/src/payments.js",
+
+// Import the functions to be tested using proxyquire to inject mocks
+const paymentsFunctions = proxyquire(
+  "../src/payments.js",
   {
+    "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError },
     mercadopago: mercadopagoMock,
-    "../config": { // Mock the config file
+    "../config": { // Path is relative to src/payments.js
       ...originalConfig,
       db: dbStub,
       adminAuth: adminAuthStub,
@@ -49,8 +51,13 @@ const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
 
 describe("Payments Cloud Functions (V2)", () => {
   beforeEach(() => {
-    // Reset history of all stubs before each test
+    // Reset history and behavior of all stubs before each test
     sinon.reset();
+    // Re-establish default stub behaviors that were cleared by sinon.reset()
+    docStub.returns({ update: updateStub });
+    collectionStub.returns({ doc: docStub });
+    adminAuthStub.setCustomUserClaims.resolves();
+    updateStub.resolves();
   });
 
   after(() => {
@@ -90,7 +97,7 @@ describe("Payments Cloud Functions (V2)", () => {
         },
       });
 
-      await mercadoPagoWebhook(req, res);
+      await paymentsFunctions.mercadoPagoWebhook(req, res);
 
       assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200");
       assert.isTrue(res.send.calledWith({ status: "OK" }));
@@ -106,7 +113,7 @@ describe("Payments Cloud Functions (V2)", () => {
       req.headers["x-signature"] = `${validTimestamp},v1=${"0".repeat(64)}`; // Invalid signature
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
 
-      await mercadoPagoWebhook(req, res);
+      await paymentsFunctions.mercadoPagoWebhook(req, res);
 
       assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
       assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Assinatura do Webhook inválida." }));
@@ -122,7 +129,7 @@ describe("Payments Cloud Functions (V2)", () => {
       req.headers["x-signature"] = `ts=${oldTimestamp},v1=${signature}`;
       const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
 
-      await mercadoPagoWebhook(req, res);
+      await paymentsFunctions.mercadoPagoWebhook(req, res);
 
       assert.isTrue(res.status.calledWith(400), "Deveria retornar status 400");
       assert.isTrue(res.send.calledWith({ status: "ERROR", message: "Assinatura do Webhook inválida." }));
@@ -135,7 +142,7 @@ describe("Payments Cloud Functions (V2)", () => {
           body: { data: { id: "123" } },
         };
         const res = { status: sinon.stub().returnsThis(), send: sinon.stub() };
-        await mercadoPagoWebhook(req, res);
+        await paymentsFunctions.mercadoPagoWebhook(req, res);
         assert.isTrue(res.status.calledWith(200), "Deveria retornar status 200 para tópicos ignorados");
         assert.isTrue(res.send.calledWith({ status: "Ignored" }));
     });
@@ -150,7 +157,6 @@ describe("Payments Cloud Functions (V2)", () => {
         email: "test@user.com",
         transactionType: "user_subscription",
       };
-      // V2 request object for onCall functions
       const request = {
         data: data,
         auth: { uid: "user123", token: {} },
@@ -158,7 +164,7 @@ describe("Payments Cloud Functions (V2)", () => {
 
       mercadopagoMock.preferences.create.resolves({ body: { id: "pref_123" } });
 
-      const result = await createMercadoPagoPreference(request);
+      const result = await paymentsFunctions.createMercadoPagoPreference(request);
 
       assert.deepStrictEqual(result, { preferenceId: "pref_123" });
       assert.isTrue(mercadopagoMock.preferences.create.calledOnce);
@@ -170,7 +176,7 @@ describe("Payments Cloud Functions (V2)", () => {
 
     it("deve lançar 'unauthenticated' se o usuário não estiver logado", async () => {
       try {
-        await createMercadoPagoPreference({ data: {}, auth: null });
+        await paymentsFunctions.createMercadoPagoPreference({ data: {}, auth: null });
         assert.fail("A função deveria ter lançado um erro");
       } catch (err) {
         assert.equal(err.code, "unauthenticated");
@@ -183,7 +189,7 @@ describe("Payments Cloud Functions (V2)", () => {
         auth: { uid: "user123", token: {} },
       };
       try {
-        await createMercadoPagoPreference(request);
+        await paymentsFunctions.createMercadoPagoPreference(request);
         assert.fail("A função deveria ter lançado um erro");
       } catch (err) {
         assert.equal(err.code, "invalid-argument");
