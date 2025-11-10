@@ -16,6 +16,7 @@
       referrerpolicy="no-referrer"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
   </head>
   <body class="bg-slate-900 flex flex-col min-h-screen">
     <!-- Header -->
@@ -176,9 +177,15 @@
                                     <option value="agencias">Agências de Viagens</option><option value="aluguel">Aluguel de Carros, Motos e Bicicletas</option><option value="bares">Bares e Vida Noturna</option><option value="camping">Camping</option><option value="ecoturismo">Ecoturismo e Aventura</option><option value="experiencias">Experiências Culturais</option><option value="fotografos">Fotógrafos de Viagem</option><option value="guias">Guias de Turismo</option><option value="hospedagem">Hotéis e Pousadas</option><option value="mergulho">Mergulho</option><option value="passeios_barco">Passeios de Barco / Lancha</option><option value="restaurantes">Restaurantes</option><option value="transfer">Transfer e Receptivo</option><option value="turismo_rural">Turismo Rural</option>
                                 </select>
                             </div>
-                            <div>
-                                <label for="ad-description" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-align-left mr-2"></i>Descrição do Negócio</label>
-                                <textarea id="ad-description" name="description" rows="4" required class="form-input"></textarea>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="ad-description" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-align-left mr-2"></i>Descrição (suporta Markdown)</label>
+                                    <textarea id="ad-description" name="description" rows="8" required class="form-input"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white text-sm font-semibold mb-3"><i class="fas fa-eye mr-2"></i>Pré-visualização</label>
+                                    <div id="ad-description-preview" class="itinerary-content h-full p-4 bg-slate-900 rounded-lg border border-slate-700 min-h-[210px]"></div>
+                                </div>
                             </div>
                             <div>
                                 <label for="ad-tags" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-hashtag mr-2"></i>Tags (separadas por vírgula)</label>

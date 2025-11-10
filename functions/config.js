@@ -47,6 +47,7 @@ const CONTROL_CODE_PREFIXES = {
 
 // Parâmetros de ambiente seguro para as chaves de API
 const mpAccessToken = defineSecret("MERCADOPAGO_ACCESS_TOKEN");
+const mpPublicKey = defineSecret("MERCADOPAGO_PUBLIC_KEY"); // Chave pública para o frontend
 const openAIKey = defineString("OPENAI_API_KEY");
 const telegramToken = defineString("TELEGRAM_TOKEN");
 const telegramChatId = defineString("TELEGRAM_CHAT_ID");
@@ -69,6 +70,7 @@ module.exports = {
   TRANSACTION_TYPES,
   CONTROL_CODE_PREFIXES,
   mpAccessToken,
+  mpPublicKey,
   openAIKey,
   telegramToken,
   telegramChatId,

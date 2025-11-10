@@ -1,73 +1,102 @@
-<!-- Forçar atualização de cache: 2025-10-13 15:30 -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sua Viagem Aqui - A plataforma definitiva para viajantes e agências</title>
-    <meta name="description" content="Encontre os melhores parceiros, agências e roteiros de viagem. Use nossa IA para criar o itinerário perfeito.">
-    <link rel="manifest" href="/manifest.json" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://viacep.com.br wss://*.firebaseio.com https://*.googleapis.com; frame-src 'self' https://*.mercadolibre.com;">
-    <meta name="theme-color" content="#f59e0b" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <title>Sua Viagem Aqui</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- NOVO: Script do Mercado Pago -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
 </head>
 <body class="bg-slate-900">
-    
-    <!-- Header -->
+    <!-- Header Premium -->
     <header id="main-header" class="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-slate-700">
-        <!-- O cabeçalho será carregado aqui pelo layout.js -->
+        <!-- O cabeçalho será carregado aqui -->
     </header>
-
-    <!-- Hero Section -->
-    <section id="hero-section" class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <!-- Hero Section Premium -->
+    <section id="hero-section" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background -->
         <div class="absolute inset-0 z-0">
             <div class="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-black/70 to-slate-900/90 z-10"></div>
             <img src="https://images.unsplash.com/photo-1534237693999-d89bda11091f?q=80&w=2400&auto=format&fit=crop"
-                  class="w-full h-full object-cover" alt="Paisagem noturna de cidade com luzes neon refletidas na água">
+                  class="w-full h-full object-cover" alt="Paisagem noturna de cidade">
+            <!-- Elementos flutuantes decorativos -->
+            <div class="absolute top-20 left-10 w-20 h-20 bg-amber-500/10 rounded-full blur-xl float-animation"></div>
+            <div class="absolute bottom-32 right-20 w-32 h-32 bg-white/5 rounded-full blur-2xl float-animation" style="animation-delay: 2s;"></div>
         </div>
         <div class="relative z-20 container mx-auto px-4 text-center">
-            <div class="animate-fade-in-up">
-                <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
-                    A sua próxima aventura
+            <!-- Título principal -->
+            <div class="slide-in-up">
+                <h1 class="hero-title text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+                    A plataforma definitiva para
                     <span class="text-gradient-gold">
-                        começa aqui
+                        agências de viagens
                     </span>
                 </h1>
-                <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto font-light">
-                    Encontre os melhores parceiros, crie roteiros com IA e transforme seus sonhos em viagens inesquecíveis.
+                <p class="hero-subtitle text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto font-light">
+                    Eleve a experiência dos seus clientes com ferramentas exclusivas e acesso a pacotes premium.
                 </p>
             </div>
             <!-- Formulário de busca -->
-            <div class="max-w-4xl mx-auto animate-fade-in-up" style="animation-delay: 0.3s;">
-                <div class="glass-effect rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center gap-4">
-                    <div class="relative w-full">
-                        <i class="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-where-input" placeholder="Para onde você vai?" class="w-full bg-slate-800 border border-slate-600 rounded-xl pl-12 pr-4 py-4 text-white placeholder-slate-400 focus:bg-slate-700 focus:border-amber-400 transition-all">
+            <div class="max-w-4xl mx-auto slide-in-up" style="animation-delay: 0.3s;">
+                <div class="glass-effect rounded-3xl p-8 shadow-2xl">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Destino -->
+                        <div class="relative">
+                            <label class="block text-white text-sm font-semibold mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i>Para onde quero ir
+                            </label>
+                            <input type="text" id="destino-input"
+                                    placeholder="Ex: Maldivas, Tóquio"
+                                    class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white placeholder-slate-400 focus:bg-slate-700 focus:border-amber-400 transition-all">
+                        </div>
+                        <!-- Data -->
+                        <div class="relative">
+                            <label class="block text-white text-sm font-semibold mb-3">
+                                <i class="fas fa-calendar-alt mr-2"></i>Dia que Gostaria
+                            </label>
+                            <input type="date" id="data-input"
+                                   class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white focus:bg-slate-700 focus:border-amber-400 transition-all">
+                        </div>
+                        <!-- Categoria -->
+                        <div class="relative">
+                            <label class="block text-white text-sm font-semibold mb-3">
+                                <i class="fas fa-tags mr-2"></i>Categoria
+                            </label>
+                            <select id="categoria-select" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white focus:bg-slate-700 focus:border-amber-400 transition-all">
+                                    <option value="todos" class="text-gray-800">Todas as Categorias</option>
+                                    <option value="agencias">Agências de Viagens</option>
+                                    <option value="aluguel">Aluguel de Carros, Motos e Bicicletas</option>
+                                    <option value="bares">Bares e Vida Noturna</option>
+                                    <option value="camping">Camping</option>
+                                    <option value="ecoturismo">Ecoturismo e Aventura</option>
+                                    <option value="experiencias">Experiências Culturais</option>
+                                    <option value="fotografos">Fotógrafos de Viagem</option>
+                                    <option value="guias">Guias de Turismo</option>
+                                    <option value="hospedagem">Hotéis e Pousadas</option>
+                                    <option value="mergulho">Mergulho</option>
+                                    <option value="passeios_barco">Passeios de Barco / Lancha</option>
+                                    <option value="restaurantes">Restaurantes</option>
+                                    <option value="transfer">Transfer e Receptivo</option>
+                                    <option value="turismo_rural">Turismo Rural</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="relative w-full md:w-auto">
-                        <select id="search-category-select" class="w-full md:w-64 bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white appearance-none focus:bg-slate-700 focus:border-amber-400 transition-all">
-                            <option value="todos">Todas as Categorias</option>
-                            <option value="agencias">Agências</option>
-                            <option value="hospedagem">Hospedagem</option>
-                            <option value="restaurantes">Restaurantes</option>
-                            <option value="ecoturismo">Ecoturismo</option>
-                            <option value="guias">Guias</option>
-                            <option value="passeios_barco">Passeios de Barco</option>
-                        </select>
-                    </div>
-                    <button id="search-btn" class="btn-primary w-full md:w-auto px-8 py-4 rounded-xl text-lg flex items-center justify-center">
-                        <span id="search-text"><i class="fas fa-search mr-3"></i>Buscar</span>
-                        <span id="search-loading" class="hidden"><div class="modern-spinner-btn mr-2"></div>Buscando...</span>
+                    <button id="search-btn" class="btn-modern pulse-glow w-full md:w-auto mx-auto bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-4 px-12 rounded-2xl text-lg shadow-2xl hover:shadow-amber-500/25 transform hover:-translate-y-1 transition-all">
+                        <span id="search-text" class="flex items-center justify-center">
+                            <i class="fas fa-search mr-3"></i>Buscar
+                        </span>
+                        <span id="search-loading" class="hidden items-center justify-center">
+                            <div class="modern-spinner mr-3" style="border-top-color: #111827;"></div>Buscando...
+                        </span>
                     </button>
                 </div>
             </div>
         </div>
         <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <a href="#como-funciona" class="text-white/80 hover:text-white transition-colors" aria-label="Rolar para baixo">
+            <a href="#como-funciona" class="text-white/80 hover:text-white transition-colors">
                 <i class="fas fa-chevron-down text-2xl"></i>
             </a>
         </div>
@@ -75,15 +104,14 @@
 
     <!-- Resultados da Busca -->
     <section id="search-results-section" class="hidden container mx-auto px-4 py-16">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
+        <div class="flex justify-between items-center mb-12">
             <h2 class="text-4xl font-bold text-white">Resultados da Busca</h2>
-            <button id="clear-search-btn" class="btn-secondary py-3 px-6 rounded-lg transition">
-                <i class="fas fa-times mr-2"></i>Limpar Busca e Ver Tudo
+            <button id="clear-search-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Limpar Busca
             </button>
         </div>
         <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- Os resultados da busca serão inseridos aqui -->
-        </div>
+            </div>
         <div id="no-results-message" class="hidden text-center py-16">
             <i class="fas fa-exclamation-circle text-5xl text-amber-400 mb-4"></i>
             <h3 class="text-2xl font-bold text-white">Nenhum resultado encontrado</h3>
@@ -94,178 +122,253 @@
     <!-- Conteúdo Principal -->
     <main id="main-content" class="container mx-auto px-4 py-16">
 
-        <!-- Sugestão de Destino com IA -->
-        <section id="surprise-me-section" class="py-20 bg-slate-900/50 rounded-3xl my-20">
-            <div class="text-center mb-12 max-w-2xl mx-auto">
-                <h2 class="text-4xl font-bold text-white mb-4">Não Sabe Para Onde Ir?</h2>
-                <p class="text-xl text-slate-400">Deixe nossa IA escolher sua próxima aventura no Brasil.</p>
-            </div>
-            <div class="text-center">
-                <button id="surprise-btn" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
-                    <span id="surprise-btn-text" class="flex items-center justify-center">
-                        <i class="fas fa-magic mr-3"></i>Me Surpreenda!
-                    </span>
-                     <span id="surprise-btn-loading" class="hidden flex items-center justify-center">
-                        <div class="modern-spinner-btn mr-3" style="border-top-color: #fff;"></div>
-                        Sorteando...
-                    </span>
-                </button>
-            </div>
-            <div id="surprise-result-container" class="hidden mt-12 max-w-2xl mx-auto">
-                <!-- Result card will be injected here -->
+        <!-- Previsão do Tempo -->
+        <section id="weather-section" class="mb-20">
+            <div id="weather-widget" class="max-w-lg mx-auto glass-effect rounded-2xl p-6 shadow-lg flex items-center">
+                <div class="text-center text-slate-400 w-full">Carregando previsão do tempo...</div>
             </div>
         </section>
 
         <!-- Como Funciona -->
         <section id="como-funciona" class="mb-20">
-            <!-- ... (conteúdo existente) ... -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-white mb-4">Como Funciona</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Conectamos viajantes a experiências únicas em 3 passos simples.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto text-center">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                    <i class="fas fa-search text-4xl text-amber-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">1. Busque</h3>
+                    <p class="text-slate-400">Use nossos filtros para encontrar exatamente o que você precisa para sua viagem.</p>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                    <i class="fas fa-handshake text-4xl text-amber-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">2. Conecte-se</h3>
+                    <p class="text-slate-400">Entre em contato direto com os melhores parceiros e agências do mercado.</p>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                    <i class="fas fa-plane-departure text-4xl text-amber-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">3. Viaje</h3>
+                    <p class="text-slate-400">Negocie e planeje sua viagem diretamente com o fornecedor, sem intermediários.</p>
+                </div>
+            </div>
         </section>
         
-        <!-- Agências Premium -->
-        <section id="agencies-section" class="mb-20">
+        <!-- Carrossel de Agências Premium -->
+        <section id="agencias" class="mb-20">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-white mb-4">Nossas Agências em Destaque</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Conheça alguns dos nossos parceiros que confiam em nossa plataforma.</p>
+                <h2 class="text-4xl font-bold text-white mb-4">Nossas Agências Premium</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Conheça alguns dos nossos parceiros de elite que confiam em nossa plataforma.</p>
             </div>
-            <div class="relative max-w-6xl mx-auto">
-                <div class="overflow-hidden">
+            <div id="agencies-carousel-wrapper" class="relative max-w-6xl mx-auto">
+                <div id="carousel-container" class="overflow-hidden">
                     <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
-                        <!-- Skeleton loader -->
-                        <div class="skeleton h-96 w-full sm:w-1/2 md:w-1/3 p-4 flex-shrink-0"></div>
-                        <div class="skeleton h-96 w-full sm:w-1/2 md:w-1/3 p-4 flex-shrink-0"></div>
-                        <div class="skeleton h-96 w-full sm:w-1/2 md:w-1/3 p-4 flex-shrink-0"></div>
+                        <!-- Slides serão inseridos e randomizados pelo JS -->
                     </div>
                 </div>
-                <button id="prev-btn" aria-label="Anterior" class="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
-                <button id="next-btn" aria-label="Próximo" class="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-right"></i></button>
+                <button id="prev-btn" class="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="next-btn" class="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </section>
 
-        <!-- Parceiros Premium (Rolagem Infinita) -->
-        <section class="mb-20 overflow-hidden">
+        <!-- Carrossel de Parceiros Premium -->
+        <section id="parceiros-premium" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-white mb-4">Explore Nossos Parceiros Premium</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Experiências selecionadas para elevar sua viagem.</p>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Experiências selecionadas para elevar a viagem dos seus clientes.</p>
             </div>
-            <div class="relative w-full">
-                <div id="partners-carousel-track" class="flex animate-scroll">
-                     <!-- Skeleton loader -->
-                     <div class="skeleton h-60 w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6 p-4 flex-shrink-0"></div>
-                     <div class="skeleton h-60 w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6 p-4 flex-shrink-0"></div>
+            <div class="relative max-w-full mx-auto">
+                <div id="partners-carousel-container" class="overflow-hidden relative">
+                    <div id="partners-carousel-track" class="flex">
+                        <!-- Slides serão inseridos pelo JS -->
+                    </div>
                 </div>
+                <button id="partners-prev-btn" class="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="partners-next-btn" class="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </section>
 
         <!-- Mais Parceiros -->
-        <section class="mb-20">
+        <section id="mais-agencias" class="mb-20">
              <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-white mb-4">Mais Parceiros para sua Viagem</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Uma seleção de nossos parceiros para você descobrir.</p>
+                <h2 class="text-4xl font-bold text-white mb-4">Mais Parceiros para seu Passeio</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Uma seleção aleatória de nossos parceiros Basic e Plus para você descobrir.</p>
             </div>
             <div id="advertiser-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Skeleton loader -->
-                <div class="skeleton h-80"></div>
-                <div class="skeleton h-80 hidden sm:block"></div>
-                <div class="skeleton h-80 hidden lg:block"></div>
-                <div class="skeleton h-80 hidden lg:block"></div>
+                <!-- Cards de anunciantes serão inseridos aqui pelo JS -->
             </div>
             <div class="mt-8 text-center text-sm text-slate-500 italic">
-                <p><strong>Aviso Importante:</strong> A plataforma Sua Viagem Aqui atua exclusivamente como uma vitrine. Toda a negociação e contratação são realizadas diretamente com o parceiro, que é o único responsável pela transação.</p>
+                <p><strong>Aviso Importante:</strong> A plataforma Sua Viagem Aqui atua exclusivamente como uma vitrine para conectar viajantes a fornecedores de serviços. Toda a negociação, contratação, pagamento e execução dos pacotes e serviços são realizados diretamente com o parceiro anunciante, que é o único responsável pela transação.</p>
             </div>
         </section>
 
-        <!-- Planos para Parceiros -->
+        <!-- Planos de Assinatura -->
         <section id="planos" class="mb-20">
-            <!-- ... (conteúdo existente) ... -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Planos de Assinatura para Parceiros</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Escolha o plano ideal para divulgar seu negócio e alcançar mais viajantes.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Plano Basic -->
+                <div class="bg-slate-800 rounded-2xl p-8 border-2 border-slate-700 flex flex-col">
+                    <h3 class="text-2xl font-bold text-amber-300">Basic</h3>
+                    <p class="text-slate-400 mt-2 flex-grow">Ideal para guias de turismo e pequenos negócios.</p>
+                    <div class="text-4xl font-bold text-white my-6">R$ 99<span class="text-lg font-normal text-slate-400">/mês</span></div>
+                    <ul class="space-y-3 text-slate-300">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Perfil Básico na plataforma</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 5 fotos na galeria</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Visibilidade em buscas locais</li>
+                    </ul>
+                    <button data-plan-title="Plano Basic" data-plan-price="99.00" class="subscribe-btn mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
+                </div>
+                <!-- Plano Plus -->
+                <div class="bg-slate-800 rounded-2xl p-8 border-2 border-amber-400 relative flex flex-col">
+                    <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-900 px-4 py-1 rounded-full text-sm font-bold">OFERTA DE LANÇAMENTO</div>
+                    <h3 class="text-2xl font-bold text-amber-400">Plus</h3>
+                    <p class="text-slate-400 mt-2 flex-grow">Perfeito para pousadas, restaurantes e agências em crescimento.</p>
+                    <div class="my-6">
+                        <span class="text-2xl font-bold text-slate-500 line-through">R$ 199</span>
+                        <span class="text-4xl font-bold text-white">R$ 99<span class="text-lg font-normal text-slate-400">/mês</span></span>
+                        <p class="text-amber-400 font-semibold">para os 100 primeiros parceiros!</p>
+                    </div>
+                    <ul class="space-y-3 text-slate-300">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Tudo do plano Basic, e mais:</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Perfil Destacado</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 20 fotos e 1 vídeo</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Link para site e redes sociais</li>
+                    </ul>
+                     <button data-plan-title="Plano Plus (Lançamento)" data-plan-price="99.00" class="subscribe-btn mt-8 w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-lg transition">Aproveite a Oferta</button>
+                </div>
+                <!-- Plano Advance -->
+                <div class="bg-slate-800 rounded-2xl p-8 border-2 border-slate-700 flex flex-col">
+                    <h3 class="text-2xl font-bold text-amber-300">Advance</h3>
+                    <p class="text-slate-400 mt-2 flex-grow">Para hotéis, resorts e grandes operadores que buscam máxima visibilidade.</p>
+                    <div class="text-4xl font-bold text-white my-6">R$ 399<span class="text-lg font-normal text-slate-400">/mês</span></div>
+                    <ul class="space-y-3 text-slate-300">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Tudo do plano Plus, e mais:</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Destaque na página principal</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Galeria ilimitada</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Relatórios de desempenho</li>
+                    </ul>
+                    <button data-plan-title="Plano Advance" data-plan-price="399.00" class="subscribe-btn mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
+                </div>
+            </div>
+            <!-- Container para o botão de pagamento do Mercado Pago -->
+            <div id="wallet_container" class="mt-8"></div>
         </section>
         
-        <!-- Depoimentos -->
         <section id="depoimentos" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">O Que Dizem Sobre Nós</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Experiências reais de parceiros e viajantes.</p>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Experiências reais de parceiros e viajantes que confiam na nossa plataforma.</p>
             </div>
-            <div class="relative max-w-4xl mx-auto">
-                <div class="overflow-hidden">
+            <div id="testimonials-carousel-wrapper" class="relative max-w-4xl mx-auto">
+                <div id="testimonials-container" class="overflow-hidden">
                     <div id="testimonials-track" class="flex transition-transform duration-500 ease-in-out">
-                         <!-- Skeleton loader -->
-                         <div class="skeleton h-80 w-full p-4 flex-shrink-0"></div>
+                        <!-- Depoimentos serão inseridos aqui pelo JS -->
                     </div>
                 </div>
-                <button id="testimonials-prev-btn" aria-label="Anterior" class="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
-                <button id="testimonials-next-btn" aria-label="Próximo" class="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-right"></i></button>
+                <button id="testimonials-prev-btn" class="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="testimonials-next-btn" class="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-slate-700/50 hover:bg-amber-500 text-white hover:text-slate-900 rounded-full w-12 h-12 flex items-center justify-center transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </section>
-
-        <!-- Ferramenta de IA -->
         <section id="ferramentas" class="mb-20">
             <div class="text-center mb-12">
                 <div class="inline-block bg-slate-800 border border-slate-700 rounded-full px-6 py-2 mb-4">
                     <span class="text-amber-400 font-semibold text-sm">✨ FERRAMENTA EXCLUSIVA</span>
                 </div>
-                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Construtor de Roteiros com IA</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Crie e personalize itinerários completos em minutos.</p>
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Construtor de Roteiros para Clientes
+                </h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">
+                    Crie e personalize itinerários completos em minutos com nossa IA, e envie propostas profissionais para seus clientes.
+                </p>
             </div>
             <div class="max-w-4xl mx-auto bg-slate-800/50 rounded-3xl shadow-2xl p-8 md:p-12 border border-slate-700">
                 <div class="grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <h3 class="text-2xl font-bold text-white mb-6">Descreva sua viagem dos sonhos</h3>
-                        <textarea id="ai-prompt" rows="6" class="form-input" placeholder="Ex: Casal em lua de mel, 10 dias na Itália. Buscam romance, gastronomia e passeios privativos. Orçamento elevado."></textarea>
-                        <button id="generate-ai-btn" class="w-full mt-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-bold py-4 rounded-xl text-lg">
-                            <span id="ai-btn-text"><i class="fas fa-magic mr-2"></i>Gerar Roteiro</span>
-                            <span id="ai-btn-loading" class="hidden"><div class="modern-spinner-btn mr-2"></div>Gerando...</span>
+                        <h3 class="text-2xl font-bold text-white mb-6">Descreva o perfil do cliente e da viagem</h3>
+                        <div class="space-y-4 mb-6">
+                            <textarea id="ai-prompt" rows="6"
+                                       class="w-full bg-slate-900 border-2 border-slate-600 rounded-xl p-4 text-white focus:border-amber-500 focus:ring-amber-500 resize-none transition-all"
+                                      placeholder="Ex: Casal em lua de mel, 10 dias na Itália. Buscam romance, gastronomia e passeios privativos. Orçamento elevado."></textarea>
+                        </div>
+                        <button id="generate-ai-btn" class="btn-modern w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-bold py-4 rounded-xl text-lg shadow-lg transition-all">
+                            <span id="ai-btn-text">
+                                <i class="fas fa-magic mr-2"></i>Criar Roteiro
+                            </span>
+                            <span id="ai-btn-loading" class="hidden">
+                                <div class="modern-spinner mr-2" style="border-top-color: #111827;"></div>Criando proposta...
+                            </span>
                         </button>
                     </div>
-                    <div id="ai-result-container" class="hidden md:block rounded-xl bg-slate-900 p-6 border border-slate-600 min-h-[200px] itinerary-content">
-                        <p id="ai-result-text" class="text-slate-400">Seu roteiro aparecerá aqui...</p>
+                    <div class="text-center">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
+                                  class="w-full max-w-sm mx-auto rounded-2xl shadow-xl float-animation" alt="Representação visual de IA">
+                            <div class="absolute -top-4 -right-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+                                IA Ativa
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- ... (resto do conteúdo como planos e comunidade) ... -->
-        
+        <section id="comunidade" class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Junte-se à Nossa Comunidade</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">Conecte-se, receba dicas e fique por dentro das novidades em nossos grupos exclusivos.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center">
+                    <i class="fab fa-telegram text-5xl text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white">SVA | Alertas de Viagem</h3>
+                    <p class="text-slate-400 mt-2 mb-4">Receba as melhores ofertas e alertas de pacotes diretamente no seu Telegram.</p>
+                    <a href="https://t.me/SuaviagemaquiBot" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Entrar no Grupo</a>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center">
+                    <i class="fab fa-telegram text-5xl text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white">Parceiros de Sucesso SVA</h3>
+                    <p class="text-slate-400 mt-2 mb-4">Grupo exclusivo para anunciantes trocarem experiências e receberem dicas.</p>
+                    <a href="https://t.me/+gtw1opf1MsE4YjRh" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Entrar no Grupo</a>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center">
+                    <i class="fab fa-telegram text-5xl text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white">Exploradores SVA</h3>
+                    <p class="text-slate-400 mt-2 mb-4">Para viajantes que amam compartilhar dicas, fotos e histórias de suas aventuras.</p>
+                    <a href="https://t.me/+CtoX6DT5HdM4NmRh" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Entrar no Grupo</a>
+                </div>
+            </div>
+        </section>
     </main>
-
-    <!-- Footer -->
     <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
-        <!-- O rodapé será carregado aqui pelo layout.js -->
+        <!-- O rodapé será carregado aqui -->
     </footer>
+    
+    <!-- Modal de Alerta -->
+    <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
+            <p id="alert-message" class="text-white text-lg mb-6"></p>
+            <button id="alert-close-btn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-lg transition">OK</button>
+        </div>
+    </div>
 
     <!-- Chatbot Container -->
     <div id="chatbot-container"></div>
     
-    <!-- Modal de Alerta -->
-    <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-[200] flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
-            <p id="alert-message" class="text-white text-lg mb-6"></p>
-            <button id="alert-close-btn" class="btn-primary py-3 px-8 rounded-lg">OK</button>
-        </div>
-    </div>
-    
-    <!-- Banner de Cookies -->
-    <div id="cookie-consent-banner" class="hidden fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700 p-4 z-[100]">
-      <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-slate-300 text-center md:text-left">
-          Nós usamos cookies para melhorar sua experiência. Ao continuar a
-          navegar, você concorda com a nossa
-          <a
-            href="politica_de_privacidade.html"
-            class="font-bold text-amber-400 hover:underline"
-            >Política de Privacidade</a
-          >.
-        </p>
-        <button
-          id="accept-cookies-btn"
-          class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-6 rounded-lg transition-colors flex-shrink-0"
-        >
-          Aceitar
-        </button>
-      </div>
-    </div>
-
-
     <script type="module" src="/src/layout.js"></script>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/index-page.js"></script>
 </body>
 </html>

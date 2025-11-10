@@ -182,13 +182,28 @@ protectPage("advertiser", (user, partnerData) => {
   }
 
   function setupAdEditing() {
+    const adDescriptionInput = document.getElementById("ad-description");
+    const adDescriptionPreview = document.getElementById("ad-description-preview");
+    const converter = new showdown.Converter({ simpleLineBreaks: true });
+
     editAdBtn.addEventListener("click", () => {
         adViewContainer.classList.add("hidden");
         // Populate form with current data
+        const currentDescription = currentPartnerData.description || "";
         document.getElementById("ad-category").value = currentPartnerData.category || "";
-        document.getElementById("ad-description").value = currentPartnerData.description || "";
+        adDescriptionInput.value = currentDescription;
         document.getElementById("ad-tags").value = (currentPartnerData.tags || []).join(", ");
+        
+        // Update preview on open
+        adDescriptionPreview.innerHTML = converter.makeHtml(currentDescription);
+        
         adEditContainer.classList.remove("hidden");
+    });
+    
+    // Live preview listener
+    adDescriptionInput.addEventListener("input", () => {
+        const markdownText = adDescriptionInput.value;
+        adDescriptionPreview.innerHTML = converter.makeHtml(markdownText);
     });
 
     document.getElementById("cancel-ad-btn").addEventListener("click", () => {
