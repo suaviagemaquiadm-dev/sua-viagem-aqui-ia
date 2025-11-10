@@ -30,7 +30,7 @@ const docStub = sinon.stub();
 const collectionStub = sinon.stub();
 const dbStub = { collection: collectionStub };
 const { HttpsError } = require("firebase-functions/v2/https");
-const originalConfig = require("../functions/config");
+const originalConfig = require("../config");
 
 
 // Import the functions to be tested using proxyquire to inject mocks
@@ -39,7 +39,7 @@ const paymentsFunctions = proxyquire(
   {
     "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError },
     mercadopago: mercadopagoMock,
-    "../config": { // Path is relative to src/payments.js
+    "../config": { // Mock the config file relative to src/payments.js
       ...originalConfig,
       db: dbStub,
       adminAuth: adminAuthStub,
