@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const proxyquire = require("proxyquire").noCallThru();
 
 // Stubs for V2 functions to allow direct handler testing.
-const onCallStub = (handler) => handler;
+const onCallStub = (options, handler) => handler || options; // FIX: Handle both onCall signatures
 const onRequestStub = (options, handler) => handler || options;
 
 // Mock 'mercadopago' before it's imported by the functions file.
