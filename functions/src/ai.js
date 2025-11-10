@@ -1,8 +1,9 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, Type } = require("@google/genai");
 
 // A chave de API do Gemini/OpenAI deve ser configurada como um segredo
 const { openAIKey } = require("../config");
@@ -99,3 +100,60 @@ exports.generateItinerary = onCall(
       );
     }
   });
+
+/**
+ * Sugere um destino de viagem aleatório usando a API do Gemini.
+ * Esta função é pública e não requer autenticação.
+ */
+exports.suggestDestination = onCall({ secrets: [openAIKey], region: "southamerica-east1" }, async (request) => {
+    try {
+        const apiKey = openAIKey.value();
+        if (!apiKey) {
+            throw new HttpsError("internal", "A chave da API do Gemini não está configurada.");
+        }
+        const ai = new GoogleGenAI({apiKey: apiKey});
+
+        const systemInstruction = `
+            Você é um especialista em viagens criativo para a plataforma "Sua Viagem Aqui".
+            Sua tarefa é sugerir um destino de viagem único e interessante no Brasil.
+            Evite destinos extremamente óbvios como Rio de Janeiro ou São Paulo, a menos que seja um ângulo muito específico.
+            Foque em lugares com beleza natural, cultura rica ou experiências únicas.
+            Sempre responda no formato JSON solicitado.
+        `;
+        
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: "Sugira um destino de viagem surpreendente no Brasil.",
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        destination: {
+                            type: Type.STRING,
+                            description: "O nome do destino, incluindo cidade/região e estado. Ex: 'Jalapão, TO'",
+                        },
+                        description: {
+                            type: Type.STRING,
+                            description: "Uma descrição curta e atrativa do lugar, com no máximo 2-3 frases, para despertar o interesse do viajante.",
+                        },
+                    },
+                    required: ["destination", "description"],
+                },
+                temperature: 0.9,
+            },
+        });
+        
+        const result = JSON.parse(response.text);
+
+        return { success: true, data: result };
+
+    } catch (error) {
+        logger.error("Erro na API do Gemini ao sugerir destino:", error);
+        throw new HttpsError(
+            "internal",
+            "Não foi possível obter uma sugestão no momento. Tente novamente."
+        );
+    }
+});

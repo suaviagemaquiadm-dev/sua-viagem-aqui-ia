@@ -93,6 +93,28 @@
     <!-- Conteúdo Principal -->
     <main id="main-content" class="container mx-auto px-4 py-16">
 
+        <!-- Sugestão de Destino com IA -->
+        <section id="surprise-me-section" class="py-20 bg-slate-900/50 rounded-3xl my-20">
+            <div class="text-center mb-12 max-w-2xl mx-auto">
+                <h2 class="text-4xl font-bold text-white mb-4">Não Sabe Para Onde Ir?</h2>
+                <p class="text-xl text-slate-400">Deixe nossa IA escolher sua próxima aventura no Brasil.</p>
+            </div>
+            <div class="text-center">
+                <button id="surprise-btn" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
+                    <span id="surprise-btn-text" class="flex items-center justify-center">
+                        <i class="fas fa-magic mr-3"></i>Me Surpreenda!
+                    </span>
+                     <span id="surprise-btn-loading" class="hidden flex items-center justify-center">
+                        <div class="modern-spinner-btn mr-3" style="border-top-color: #fff;"></div>
+                        Sorteando...
+                    </span>
+                </button>
+            </div>
+            <div id="surprise-result-container" class="hidden mt-12 max-w-2xl mx-auto">
+                <!-- Result card will be injected here -->
+            </div>
+        </section>
+
         <!-- Como Funciona -->
         <section id="como-funciona" class="mb-20">
             <!-- ... (conteúdo existente) ... -->

@@ -5,7 +5,7 @@
 # 2. No console do seu projeto Firebase > Configurações do projeto > Contas de serviço.
 # 3. Clique em "Gerar nova chave privada" e salve o arquivo JSON.
 # 4. No seu repositório GitHub, vá para Settings > Secrets and variables > Actions.
-# 5. Crie um novo "repository secret" com o nome `FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A`.
+# 5. Crie um novo "repository secret" com o nome `FIREBASE_SERVICE_ACCOUNT`.
 # 6. Cole todo o conteúdo do arquivo JSON como o valor do segredo.
 
 name: Build, Test and Deploy to Firebase
@@ -59,6 +59,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           channelId: live
           projectId: gemini-cli-98f4a

@@ -52,6 +52,7 @@ Object.defineProperty(exports, "toggleFollowUser", { get: () => loadFunctions("u
 
 // Funções relacionadas à IA
 Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
+Object.defineProperty(exports, "suggestDestination", { get: () => loadFunctions("ai").suggestDestination });
 
 // Funções de Contato
 Object.defineProperty(exports, "sendContactEmail", { get: () => loadFunctions("contact").sendContactEmail }); // Adicionada nova função
