@@ -1,15 +1,17 @@
 # Este workflow constrói, testa e implanta seu projeto Firebase.
 #
-# !! AÇÃO NECESSÁRIA !!
-# Para que o deploy funcione, você DEVE configurar um segredo no GitHub:
+# !! AÇÃO NECESSÁRIA PARA CORRIGIR O ERRO DE DEPLOY !!
+# O erro 'firebaseServiceAccount not supplied' indica que o segredo não foi configurado corretamente.
+# Para corrigir, siga estes passos EXATAMENTE:
+#
 # 1. Vá para as configurações do seu repositório no GitHub.
 # 2. Navegue até "Secrets and variables" > "Actions".
 # 3. Clique em "New repository secret".
-# 4. Use o nome `FIREBASE_SERVICE_ACCOUNT` para o segredo.
+# 4. Use o nome `FIREBASE_SERVICE_ACCOUNT_JSON` para o segredo. (ATENÇÃO: o nome foi alterado para forçar a re-configuração).
 # 5. Cole o CONTEÚDO COMPLETO do seu arquivo JSON da conta de serviço do Firebase no valor do segredo.
-#    (Obtenha este arquivo no Console do Firebase > Configurações > Contas de serviço > Gerar nova chave privada)
-#    Se o erro "Input required and not supplied: firebaseServiceAccount" persistir,
-#    verifique se o nome do segredo no GitHub está escrito EXATAMENTE como `FIREBASE_SERVICE_ACCOUNT`.
+#    (Obtenha este arquivo no Console do Firebase > Configurações > Contas de serviço > Gerar nova chave privada).
+#
+# Verifique se não há espaços extras e se o nome do segredo é idêntico a `FIREBASE_SERVICE_ACCOUNT_JSON`.
 
 name: Build, Test and Deploy to Firebase
 
@@ -62,6 +64,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           channelId: live
           projectId: gemini-cli-98f4a

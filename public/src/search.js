@@ -1,4 +1,5 @@
 
+
 import { showAlert } from "./ui/alert.js";
 import { trackEvent } from "./analytics.js";
 import { db, collection, getDocs, query, where } from "./firebase.js";
@@ -161,6 +162,14 @@ export function initSearch() {
         cardWrapper.href = `ad_details.html?id=${partner.id}`;
         cardWrapper.className =
           "bg-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover";
+        const ratingHTML = partner.averageRating
+          ? `<div class="flex items-center text-xs">
+               <i class="fas fa-star text-amber-400 mr-1"></i>
+               <span class="font-bold text-white">${partner.averageRating.toFixed(1)}</span>
+               <span class="text-slate-400 ml-1">(${partner.reviewCount || 0})</span>
+             </div>`
+          : `<span class="text-xs text-slate-400">Sem avaliações</span>`;
+
         cardWrapper.innerHTML = `
                     <div class="relative overflow-hidden h-48">
                         <img src="${getResizedImageUrl(partner.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="${partner.businessName}" class="w-full h-full object-cover">
@@ -168,7 +177,10 @@ export function initSearch() {
                     <div class="p-4 flex flex-col flex-grow">
                         <h3 class="text-lg font-bold text-white">${partner.businessName}</h3>
                         <p class="text-sm text-amber-400 capitalize">${(partner.category || "").replace(/_/g, " ")}</p>
-                        <p class="text-xs text-slate-400 mt-2"><i class="fas fa-map-marker-alt mr-2"></i>${partner.city}, ${partner.state}</p>
+                        <div class="flex justify-between items-center mt-2">
+                          <p class="text-xs text-slate-400"><i class="fas fa-map-marker-alt mr-2"></i>${partner.city}, ${partner.state}</p>
+                          ${ratingHTML}
+                        </div>
                     </div>
                 `;
         searchResultsGrid.appendChild(cardWrapper);

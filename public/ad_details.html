@@ -26,6 +26,50 @@
             </div>
             <!-- Conteúdo será inserido aqui pelo JS -->
         </div>
+
+         <!-- Seção de Avaliações -->
+        <section id="reviews-section" class="hidden max-w-4xl mx-auto mt-12">
+            <div class="glass-effect rounded-2xl shadow-2xl p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Avaliações</h2>
+                
+                <!-- Sumário de Avaliações -->
+                <div id="reviews-summary" class="flex items-center gap-4 mb-8">
+                    <!-- Será preenchido por JS -->
+                </div>
+
+                <!-- Lista de Avaliações -->
+                <div id="reviews-list" class="space-y-6">
+                    <!-- Será preenchido por JS -->
+                    <p id="no-reviews-message" class="text-slate-400">Este parceiro ainda não possui avaliações.</p>
+                </div>
+
+                <!-- Formulário para Nova Avaliação -->
+                <div id="review-form-container" class="hidden mt-10 pt-6 border-t border-slate-700">
+                    <h3 class="text-2xl font-bold text-white mb-4">Deixe sua avaliação</h3>
+                    <form id="review-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-2">Sua nota</label>
+                            <div id="rating-stars" class="flex items-center text-3xl text-slate-500">
+                                <i class="far fa-star cursor-pointer" data-value="1"></i>
+                                <i class="far fa-star cursor-pointer" data-value="2"></i>
+                                <i class="far fa-star cursor-pointer" data-value="3"></i>
+                                <i class="far fa-star cursor-pointer" data-value="4"></i>
+                                <i class="far fa-star cursor-pointer" data-value="5"></i>
+                            </div>
+                            <input type="hidden" id="rating-value" name="rating" required>
+                        </div>
+                         <div>
+                            <label for="review-comment" class="block text-sm font-semibold text-slate-300 mb-2">Seu comentário</label>
+                            <textarea id="review-comment" name="comment" rows="4" class="form-input" placeholder="Compartilhe sua experiência..."></textarea>
+                        </div>
+                        <button type="submit" id="submit-review-btn" class="btn-primary">
+                            <span class="submit-text">Enviar Avaliação</span>
+                            <span class="submit-loading hidden"><div class="modern-spinner-btn mr-2"></div>Enviando...</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->

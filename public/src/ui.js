@@ -1,4 +1,5 @@
 
+
 import { getResizedImageUrl } from "./utils.js";
 
 // --- MÓDULO DE CARROSSÉIS ---
@@ -70,10 +71,10 @@ export class AgencyCarousel extends Carousel {
     slide.className = "flex-shrink-0 w-full sm:w-1/2 md:w-1/3 px-4 box-border";
     slide.innerHTML = `
       <div class="bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 h-full flex flex-col transform transition-all duration-300 hover:scale-[1.02] hover:shadow-amber-500/10">
-        <a href="public_partner_details.html?id=${agency.id}" class="relative h-48 block">
+        <a href="ad_details.html?id=${agency.id}" class="relative h-48 block">
           <img src="${getResizedImageUrl(agency.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="Imagem de ${agency.businessName}" class="w-full h-full object-cover" loading="lazy">
-          <div class="absolute top-4 right-4 bg-amber-500 text-slate-900 px-3 py-1 rounded-full text-sm font-bold flex items-center">
-            <i class="fas fa-star mr-1 text-xs"></i> ${agency.averageRating || "N/A"}
+           <div class="absolute top-4 right-4 bg-slate-900/70 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center backdrop-blur-sm">
+            <i class="fas fa-star mr-1 text-xs text-amber-400"></i> ${agency.averageRating ? agency.averageRating.toFixed(1) : "N/A"}
           </div>
         </a>
         <div class="p-6 flex-grow flex flex-col">
@@ -85,7 +86,7 @@ export class AgencyCarousel extends Carousel {
             </div>
           </div>
           <p class="text-sm text-slate-300 flex-grow"><strong class="text-amber-400">Especialidade:</strong> ${(agency.tags && agency.tags[0]) || agency.category.replace(/_/g, " ")}</p>
-          <a href="public_partner_details.html?id=${agency.id}" class="mt-4 text-center bg-slate-700 hover:bg-amber-500 hover:text-slate-900 text-white font-bold py-2 px-4 rounded-lg transition-colors">Ver Detalhes</a>
+          <a href="ad_details.html?id=${agency.id}" class="mt-4 text-center bg-slate-700 hover:bg-amber-500 hover:text-slate-900 text-white font-bold py-2 px-4 rounded-lg transition-colors">Ver Detalhes</a>
         </div>
       </div>`;
     return slide;
@@ -134,7 +135,7 @@ export class InfiniteCarousel {
       const slide = document.createElement("div");
       slide.className = "flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6 px-4 box-border";
       slide.innerHTML = `
-        <a href="public_partner_details.html?id=${item.id}" class="block bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 group transition-all duration-300 hover:border-amber-400">
+        <a href="ad_details.html?id=${item.id}" class="block bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 group transition-all duration-300 hover:border-amber-400">
           <img src="${getResizedImageUrl(item.image, '300x200')}" alt="${item.businessName}" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
           <div class="p-4">
             <h4 class="text-md font-bold text-white truncate">${item.businessName}</h4>
@@ -197,7 +198,7 @@ export function initAdvertiserGrid(advertisers) {
     card.className = `bg-slate-800 rounded-2xl overflow-hidden shadow-lg border-2 ${isPlus ? "border-amber-400" : "border-slate-700"} h-full flex flex-col transform transition-all duration-300 hover:scale-[1.02] hover:shadow-amber-500/10`;
     card.innerHTML = `
       <div class="relative h-48">
-        <a href="public_partner_details.html?id=${ad.id}">
+        <a href="ad_details.html?id=${ad.id}">
           <img src="${getResizedImageUrl(ad.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="${ad.businessName}" class="w-full h-full object-cover" loading="lazy">
         </a>
         <div class="absolute top-2 left-2 bg-slate-900/70 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">${(ad.category || "").replace(/_/g, " ")}</div>
@@ -206,7 +207,7 @@ export function initAdvertiserGrid(advertisers) {
       <div class="p-5 flex-grow flex flex-col">
         <h3 class="text-xl font-bold text-white">${ad.businessName}</h3>
         <p class="text-sm text-slate-400 mb-4 flex-grow">${ad.city}, ${ad.state}</p>
-        <a href="public_partner_details.html?id=${ad.id}" class="mt-auto text-center ${isPlus ? "bg-amber-500 hover:bg-amber-600 text-slate-900" : "bg-slate-700 hover:bg-slate-600 text-white"} font-bold py-2 px-4 rounded-lg transition-colors">Ver Detalhes</a>
+        <a href="ad_details.html?id=${ad.id}" class="mt-auto text-center ${isPlus ? "bg-amber-500 hover:bg-amber-600 text-slate-900" : "bg-slate-700 hover:bg-slate-600 text-white"} font-bold py-2 px-4 rounded-lg transition-colors">Ver Detalhes</a>
       </div>`;
     grid.appendChild(card);
   });

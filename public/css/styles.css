@@ -2,6 +2,7 @@
 
 
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -239,4 +240,34 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Review System Styles */
+.star-rating .fa-star {
+    color: #f59e0b; /* amber-500 */
+}
+.star-rating .far.fa-star {
+    color: #64748b; /* slate-500 */
+}
+
+#rating-stars .fa-star {
+    transition: color 0.2s;
+}
+#rating-stars:hover .fa-star {
+    color: #fcd34d; /* amber-300 */
+}
+#rating-stars .fa-star:hover ~ .fa-star {
+    color: #64748b; /* slate-500 */
+}
+
+#rating-stars .fa-star.selected {
+    color: #f59e0b;
+}
+
+#rating-stars .fa-star.selected ~ .fa-star {
+    color: #64748b;
+}
+
+.review-card {
+    @apply bg-slate-800/50 border border-slate-700 rounded-xl p-6;
 }

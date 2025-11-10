@@ -96,14 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardWrapper = document.createElement("div");
         cardWrapper.className = "bg-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover relative";
         const verifiedBadge = partner.verified ? ' <i class="fas fa-check-circle text-blue-400 text-sm" title="Parceiro Verificado"></i>' : "";
+        
+        const ratingHTML = partner.averageRating
+          ? `<div class="flex items-center text-xs">
+               <i class="fas fa-star text-amber-400 mr-1"></i>
+               <span class="font-bold text-white">${partner.averageRating.toFixed(1)}</span>
+               <span class="text-slate-400 ml-1">(${partner.reviewCount || 0})</span>
+             </div>`
+          : ``;
 
         cardWrapper.innerHTML = `
-            <a href="public_partner_details.html?id=${partner.id}" class="block">
+            <a href="ad_details.html?id=${partner.id}" class="block">
                 <img src="${partner.image || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="Imagem de ${partner.businessName}" loading="lazy" decoding="async" class="w-full h-48 object-cover">
                 <div class="p-4 flex flex-col flex-grow">
                     <h3 class="text-lg font-bold text-white">${partner.businessName}${verifiedBadge}</h3>
                     <p class="text-sm text-amber-400 capitalize">${(partner.category || "").replace(/_/g, " ")}</p>
-                    <p class="text-xs text-slate-400 mt-2"><i class="fas fa-map-marker-alt mr-2"></i>${partner.city}, ${partner.state}</p>
+                    <div class="flex justify-between items-center mt-2">
+                        <p class="text-xs text-slate-400"><i class="fas fa-map-marker-alt mr-2"></i>${partner.city}, ${partner.state}</p>
+                        ${ratingHTML}
+                    </div>
                 </div>
             </a>
         `;

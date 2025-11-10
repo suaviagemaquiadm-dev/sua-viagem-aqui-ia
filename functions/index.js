@@ -14,7 +14,8 @@ const functionsMap = {
   users: null,
   ai: null,
   contact: null,
-  chatbot: null, // Adicionado novo módulo de chatbot
+  chatbot: null,
+  reviews: null, // Adicionado novo módulo de avaliações
 };
 
 /**
@@ -49,14 +50,18 @@ Object.defineProperty(exports, "createMercadoPagoPreference", { get: () => loadF
 // Funções relacionadas a Usuários
 Object.defineProperty(exports, "updateUserProfile", { get: () => loadFunctions("users").updateUserProfile });
 Object.defineProperty(exports, "cleanupUserData", { get: () => loadFunctions("users").cleanupUserData });
-Object.defineProperty(exports, "toggleFollowUser", { get: () => loadFunctions("users").toggleFollowUser }); // Adicionada nova função
+Object.defineProperty(exports, "toggleFollowUser", { get: () => loadFunctions("users").toggleFollowUser });
 
 // Funções relacionadas à IA
 Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
 Object.defineProperty(exports, "suggestDestination", { get: () => loadFunctions("ai").suggestDestination });
 
 // Funções de Contato
-Object.defineProperty(exports, "sendContactEmail", { get: () => loadFunctions("contact").sendContactEmail }); // Adicionada nova função
+Object.defineProperty(exports, "sendContactEmail", { get: () => loadFunctions("contact").sendContactEmail });
 
 // Funções do Chatbot
-Object.defineProperty(exports, "askChatbot", { get: () => loadFunctions("chatbot").askChatbot }); // Adicionada nova função
+Object.defineProperty(exports, "askChatbot", { get: () => loadFunctions("chatbot").askChatbot });
+
+// Funções de Avaliações (Reviews)
+Object.defineProperty(exports, "submitReview", { get: () => loadFunctions("reviews").submitReview });
+Object.defineProperty(exports, "updatePartnerRating", { get: () => loadFunctions("reviews").updatePartnerRating });
