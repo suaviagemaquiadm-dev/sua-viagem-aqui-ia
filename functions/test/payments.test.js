@@ -1,20 +1,13 @@
 
-const test = require("firebase-functions-test")(
-  {
-    projectId: "gemini-cli-98f4a",
-  },
-  "test/service-account.json",
-);
+const test = require("firebase-functions-test")();
 const { assert } = require("chai");
 const sinon = require("sinon");
 const crypto = require("crypto");
 const proxyquire = require("proxyquire").noCallThru();
 
-// Stubs a V2 onCall function for direct handler testing.
+// Stubs for V2 functions to allow direct handler testing.
 const onCallStub = (handler) => handler;
-// Stubs a V2 onRequest function for direct handler testing.
 const onRequestStub = (options, handler) => handler || options;
-
 
 // Mock 'mercadopago' before it's imported by the functions file.
 const mercadopagoMock = {
@@ -31,20 +24,22 @@ const WEBHOOK_SECRET = "test-secret-12345";
 const ACCESS_TOKEN = "test-access-token";
 
 // Mocks for firebase-admin services
-const adminAuthStub = { setCustomUserClaims: sinon.stub().resolves() };
-const updateStub = sinon.stub().resolves();
-const docStub = sinon.stub().returns({ update: updateStub });
-const collectionStub = sinon.stub().returns({ doc: docStub });
+const adminAuthStub = { setCustomUserClaims: sinon.stub() };
+const updateStub = sinon.stub();
+const docStub = sinon.stub();
+const collectionStub = sinon.stub();
 const dbStub = { collection: collectionStub };
+const { HttpsError } = require("firebase-functions/v2/https");
 const originalConfig = require("../config");
 
-// Import the functions to be tested using proxyquire to inject mocks for dependencies
+
+// Import the functions to be tested using proxyquire to inject mocks
 const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
   "../src/payments.js",
   {
-    "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError: require("firebase-functions/v2/https").HttpsError },
+    "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError },
     mercadopago: mercadopagoMock,
-    "../config": { // Mock the config file
+    "../config": { // Mock the config file relative to src/payments.js
       ...originalConfig,
       db: dbStub,
       adminAuth: adminAuthStub,
@@ -56,8 +51,13 @@ const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
 
 describe("Payments Cloud Functions (V2)", () => {
   beforeEach(() => {
-    // Reset history of all stubs before each test
+    // Reset history and behavior of all stubs before each test
     sinon.reset();
+    // Re-establish default stub behaviors that were cleared by sinon.reset()
+    docStub.returns({ update: updateStub });
+    collectionStub.returns({ doc: docStub });
+    adminAuthStub.setCustomUserClaims.resolves();
+    updateStub.resolves();
   });
 
   after(() => {

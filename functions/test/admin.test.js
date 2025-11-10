@@ -11,16 +11,16 @@ const onCallStub = (handler) => handler;
 // Mocks e stubs para dependências
 const adminAuthStub = {
   createUser: sinon.stub(),
-  deleteUser: sinon.stub().resolves(),
+  deleteUser: sinon.stub(),
   getUser: sinon.stub(),
   getUserByEmail: sinon.stub(),
-  setCustomUserClaims: sinon.stub().resolves(),
+  setCustomUserClaims: sinon.stub(),
   listUsers: sinon.stub(),
 };
 const setStub = sinon.stub();
 const updateStub = sinon.stub();
-const docStub = sinon.stub().returns({ set: setStub, update: updateStub });
-const collectionStub = sinon.stub().returns({ doc: docStub });
+const docStub = sinon.stub();
+const collectionStub = sinon.stub();
 const dbStub = { collection: collectionStub };
 const { FieldValue, PARTNER_STATUS } = require("../config"); // Constantes reais
 
@@ -45,6 +45,11 @@ describe("Admin Cloud Functions (V2)", () => {
 
   beforeEach(() => {
     sinon.reset(); // Limpa stubs antes de cada teste
+    // Re-define o comportamento dos stubs que é limpo pelo sinon.reset()
+    docStub.returns({ set: setStub, update: updateStub });
+    collectionStub.returns({ doc: docStub });
+    adminAuthStub.deleteUser.resolves();
+    adminAuthStub.setCustomUserClaims.resolves();
   });
 
   describe("createPartnerAccount", () => {
