@@ -1,5 +1,4 @@
-
-const test = require("firebase-functions-test")(
+st = require("firebase-functions-test")(
   {
     projectId: "gemini-cli-98f4a",
   },
@@ -30,11 +29,11 @@ const updateStub = sinon.stub().resolves();
 const docStub = sinon.stub().returns({ update: updateStub });
 const collectionStub = sinon.stub().returns({ doc: docStub });
 const dbStub = { collection: collectionStub };
-const originalConfig = require("../functions/config");
+const originalConfig = require("../config");
 
 // Import the functions to be tested using proxyquire to inject mocks for dependencies
 const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
-  "../functions/src/payments.js",
+  "../src/payments.js",
   {
     mercadopago: mercadopagoMock,
     "../config": { // Mock the config file
@@ -191,3 +190,4 @@ describe("Payments Cloud Functions (V2)", () => {
     });
   });
 });
+
