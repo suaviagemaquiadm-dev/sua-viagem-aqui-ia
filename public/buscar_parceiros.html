@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buscar Parceiros - Sua Viagem Aqui</title>
     <link rel="manifest" href="/manifest.json" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://viacep.com.br wss://*.firebaseio.com https://*.googleapis.com; frame-src 'self' https://*.mercadolibre.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://maps.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com https://maps.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://viacep.com.br wss://*.firebaseio.com https://*.googleapis.com https://maps.googleapis.com; frame-src 'self' https://*.mercadolibre.com;">
     <link rel="stylesheet" href="/css/styles.css" />
     <link
       rel="stylesheet"
@@ -36,105 +36,106 @@
         </p>
       </div>
 
-      <!-- Filtros de Busca -->
-      <div
-        class="mb-10 p-6 bg-slate-800/50 rounded-2xl border border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
-      >
-        <div>
-          <label
-            for="search-text"
-            class="block text-sm font-semibold text-slate-300 mb-2"
-            >Buscar por nome</label
-          >
-          <input
-            type="text"
-            id="search-text"
-            placeholder="Nome do hotel, restaurante..."
-            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
-          />
-        </div>
-        <div>
-          <label
-            for="filter-category"
-            class="block text-sm font-semibold text-slate-300 mb-2"
-            >Filtrar por categoria</label
-          >
-          <select
-            id="filter-category"
-            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white appearance-none"
-          >
-            <option value="">Todas as Categorias</option>
-            <option value="agencias">Agências de Viagens</option>
-            <option value="aluguel">
-              Aluguel de Carros, Motos e Bicicletas
-            </option>
-            <option value="bares">Bares e Vida Noturna</option>
-            <option value="camping">Camping</option>
-            <option value="ecoturismo">Ecoturismo e Aventura</option>
-            <option value="experiencias">Experiências Culturais</option>
-            <option value="familia">Viagens em Família</option>
-            <option value="fotografos">Fotógrafos de Viagem</option>
-            <option value="guias">Guias de Turismo</option>
-            <option value="hospedagem">Hotéis e Pousadas</option>
-            <option value="mergulho">Mergulho</option>
-            <option value="passeios_barco">Passeios de Barco / Lancha</option>
-            <option value="pet_friendly">Pet Friendly</option>
-            <option value="restaurantes">Restaurantes</option>
-            <option value="transfer">Transfer e Receptivo</option>
-            <option value="turismo_rural">Turismo Rural</option>
-          </select>
-        </div>
-        <div>
-          <button
-            id="clear-filters-btn"
-            class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition"
-          >
-            Limpar Filtros
-          </button>
-        </div>
-      </div>
+      <!-- Layout principal com mapa -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Coluna de Filtros e Resultados -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Filtros de Busca -->
+            <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <div>
+                  <label
+                    for="search-text"
+                    class="block text-sm font-semibold text-slate-300 mb-2"
+                    >Buscar por nome</label
+                  >
+                  <input
+                    type="text"
+                    id="search-text"
+                    placeholder="Nome do hotel, restaurante..."
+                    class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="filter-category"
+                    class="block text-sm font-semibold text-slate-300 mb-2"
+                    >Filtrar por categoria</label
+                  >
+                  <select
+                    id="filter-category"
+                    class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white appearance-none"
+                  >
+                    <option value="">Todas as Categorias</option>
+                    <option value="agencias">Agências de Viagens</option>
+                    <option value="aluguel">
+                      Aluguel de Carros, Motos e Bicicletas
+                    </option>
+                    <option value="bares">Bares e Vida Noturna</option>
+                    <option value="camping">Camping</option>
+                    <option value="ecoturismo">Ecoturismo e Aventura</option>
+                    <option value="experiencias">Experiências Culturais</option>
+                    <option value="familia">Viagens em Família</option>
+                    <option value="fotografos">Fotógrafos de Viagem</option>
+                    <option value="guias">Guias de Turismo</option>
+                    <option value="hospedagem">Hotéis e Pousadas</option>
+                    <option value="mergulho">Mergulho</option>
+                    <option value="passeios_barco">Passeios de Barco / Lancha</option>
+                    <option value="pet_friendly">Pet Friendly</option>
+                    <option value="restaurantes">Restaurantes</option>
+                    <option value="transfer">Transfer e Receptivo</option>
+                    <option value="turismo_rural">Turismo Rural</option>
+                  </select>
+                </div>
+                <div>
+                  <button
+                    id="clear-filters-btn"
+                    class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition"
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
+            </div>
 
-      <!-- Skeleton Loaders -->
-      <div
-        id="loading-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-      >
-        <!-- Repetir este bloco para criar o efeito de skeleton -->
-        <div class="skeleton h-72"></div>
-        <div class="skeleton h-72 hidden sm:block"></div>
-        <div class="skeleton h-72 hidden lg:block"></div>
-        <div class="skeleton h-72 hidden lg:block"></div>
-      </div>
+            <!-- Skeleton Loaders -->
+            <div id="loading-container" class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div class="skeleton h-72"></div>
+                <div class="skeleton h-72 hidden sm:block"></div>
+            </div>
 
-      <!-- Grid de Resultados -->
-      <div
-        id="partners-grid"
-        class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-      >
-        <!-- Cards de parceiros serão inseridos aqui -->
-      </div>
+            <!-- Grid de Resultados -->
+            <div id="partners-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <!-- Cards de parceiros serão inseridos aqui -->
+            </div>
 
-      <!-- Mensagem de Nenhum Resultado Aprimorada -->
-      <div
-        id="no-results-message"
-        class="hidden text-center py-16 bg-slate-800/50 rounded-3xl"
-      >
-        <i class="fas fa-map-signs text-5xl text-amber-400 mb-6"></i>
-        <h3 class="text-3xl font-bold text-white">
-          Nenhum parceiro encontrado
-        </h3>
-        <p class="text-slate-400 mt-4 max-w-md mx-auto">
-          Não encontramos resultados para sua busca. Tente ajustar os filtros ou
-          explorar outras categorias.
-        </p>
-        <button
-          id="clear-filters-btn-empty"
-          class="mt-8 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-lg transition"
-        >
-          Limpar Filtros e Ver Todos
-        </button>
+            <!-- Mensagem de Nenhum Resultado Aprimorada -->
+            <div id="no-results-message" class="hidden text-center py-16 bg-slate-800/50 rounded-3xl">
+                <i class="fas fa-map-signs text-5xl text-amber-400 mb-6"></i>
+                <h3 class="text-3xl font-bold text-white">
+                  Nenhum parceiro encontrado
+                </h3>
+                <p class="text-slate-400 mt-4 max-w-md mx-auto">
+                  Não encontramos resultados para sua busca. Tente ajustar os filtros ou
+                  explorar outras categorias.
+                </p>
+                <button
+                  id="clear-filters-btn-empty"
+                  class="mt-8 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-lg transition"
+                >
+                  Limpar Filtros e Ver Todos
+                </button>
+            </div>
+        </div>
+
+        <!-- Coluna do Mapa -->
+        <div class="lg:col-span-1 h-96 lg:h-[80vh] sticky top-24">
+            <div id="map" class="w-full h-full bg-slate-800 rounded-2xl border border-slate-700 flex items-center justify-center">
+                <p class="text-slate-400">Carregando mapa...</p>
+            </div>
+        </div>
       </div>
     </main>
+
 
     <!-- Footer -->
     <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">

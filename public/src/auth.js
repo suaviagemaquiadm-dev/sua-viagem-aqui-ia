@@ -6,12 +6,69 @@ import {
   doc,
   getDoc,
   getIdTokenResult,
+  onSnapshot,
+  collection,
+  query,
+  orderBy,
+  httpsCallable,
+  functions,
 } from "./firebase.js";
 import { getWithTTL, setWithTTL } from "./cache.js";
 
 const USER_ROLES = {
   ADVERTISER: "advertiser",
 };
+
+/**
+ * Initializes the notification system for a logged-in user.
+ * @param {string} userId The UID of the current user.
+ */
+function initNotifications(userId) {
+  const notificationBtn = document.getElementById('notification-btn');
+  const notificationPanel = document.getElementById('notification-panel');
+  const notificationBadge = document.getElementById('notification-badge');
+
+  if (!notificationBtn || !notificationPanel || !notificationBadge) return;
+  
+  const notificationsRef = collection(db, 'users', userId, 'notifications');
+  const q = query(notificationsRef, orderBy('createdAt', 'desc'));
+
+  onSnapshot(q, (snapshot) => {
+    let unreadCount = 0;
+    if (snapshot.empty) {
+      notificationPanel.innerHTML = '<p class="text-slate-400 text-center p-4">Nenhuma notificação.</p>';
+      notificationBadge.classList.add('hidden');
+      return;
+    }
+
+    notificationPanel.innerHTML = ''; // Clear old notifications
+    snapshot.forEach(doc => {
+      const notification = doc.data();
+      if (!notification.read) {
+        unreadCount++;
+      }
+      const notifElement = document.createElement('a');
+      notifElement.href = notification.link || '#';
+      notifElement.className = `block p-3 hover:bg-slate-700 border-b border-slate-700 ${!notification.read ? 'bg-slate-700/50' : ''}`;
+      notifElement.innerHTML = `
+        <p class="text-sm text-white">${notification.message}</p>
+        <p class="text-xs text-slate-400 mt-1">${new Date(notification.createdAt.toDate()).toLocaleString('pt-BR')}</p>
+      `;
+      notificationPanel.appendChild(notifElement);
+    });
+
+    if (unreadCount > 0) {
+      notificationBadge.classList.remove('hidden');
+      notificationBadge.classList.add('active'); // Para o CSS
+    } else {
+      notificationBadge.classList.add('hidden');
+      notificationBadge.classList.remove('active');
+    }
+  }, (error) => {
+    console.error("Erro ao ouvir notificações:", error);
+  });
+}
+
 
 /**
  * Renderiza o cabeçalho do usuário com base nos dados fornecidos.
@@ -38,7 +95,7 @@ function renderUserHeader(userData, cacheKey) {
     : "";
   
   const notificationContainerHTML = `
-    <div id="notification-container" class="relative ${userData.role !== USER_ROLES.ADVERTISER ? '' : 'hidden'}">
+    <div id="notification-container" class="relative ${userData.role === USER_ROLES.ADVERTISER ? 'hidden' : ''}">
       <button id="notification-btn" class="text-white px-3 py-2 rounded-full hover:bg-slate-800 transition-all" aria-label="Ver notificações">
         <i class="fas fa-bell text-lg"></i>
         <span id="notification-badge" class="hidden absolute top-0 right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
@@ -64,9 +121,16 @@ function renderUserHeader(userData, cacheKey) {
   // Adiciona lógica para o painel de notificações
   const notificationBtn = document.getElementById('notification-btn');
   const notificationPanel = document.getElementById('notification-panel');
+  const notificationBadge = document.getElementById('notification-badge');
+
   if (notificationBtn && notificationPanel) {
       notificationBtn.addEventListener('click', () => {
-          notificationPanel.classList.toggle('hidden');
+          const isHidden = notificationPanel.classList.toggle('hidden');
+          // Se o painel estiver visível e houver notificações não lidas, marca como lidas.
+          if (!isHidden && notificationBadge.classList.contains('active')) {
+              const markNotificationsAsRead = httpsCallable(functions, 'markNotificationsAsRead');
+              markNotificationsAsRead().catch(err => console.error("Falha ao marcar notificações como lidas", err));
+          }
       });
   }
 }
@@ -114,6 +178,10 @@ export function initAuth() {
 
           if (!cachedUser || JSON.stringify(cachedUser) !== JSON.stringify(userData)) {
             renderUserHeader(userData, cacheKey);
+          }
+          // Initialize notifications for travelers
+          if (userData.role !== USER_ROLES.ADVERTISER) {
+              initNotifications(user.uid);
           }
         } else {
             console.warn("Documento de perfil não encontrado para o usuário:", user.uid);

@@ -65,6 +65,11 @@ protectPage("advertiser", (user, partnerData) => {
   const postsList = document.getElementById("posts-list");
   const noPostsMessage = document.getElementById("no-posts-message");
 
+  // Analytics
+  const profileViewsStat = document.getElementById("stats-profile-views");
+  const whatsappClicksStat = document.getElementById("stats-whatsapp-clicks");
+  const favoritesStat = document.getElementById("stats-favorites");
+
   // --- Main Initialization ---
   function initializeDashboard() {
     loadingContainer.classList.add("hidden");
@@ -109,6 +114,7 @@ protectPage("advertiser", (user, partnerData) => {
       // Load content for tab if needed
       if (tabName === "offers") loadOffers();
       if (tabName === "blog") loadPosts();
+      if (tabName === "analytics") loadAnalytics();
       if (tabName === "messages") {
         document.getElementById('tab-messages').innerHTML = `
             <div class="glass-effect rounded-3xl p-8 text-center">
@@ -119,6 +125,13 @@ protectPage("advertiser", (user, partnerData) => {
         `;
       }
     });
+  }
+
+  // --- Analytics Logic ---
+  function loadAnalytics() {
+    profileViewsStat.textContent = currentPartnerData.profileViews || 0;
+    whatsappClicksStat.textContent = currentPartnerData.whatsappClicks || 0;
+    favoritesStat.textContent = currentPartnerData.favoritesCount || 0; // Será 0 por enquanto
   }
 
   // --- Profile Logic ---

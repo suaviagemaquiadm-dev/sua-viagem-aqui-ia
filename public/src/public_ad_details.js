@@ -53,6 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const partner = { id: docSnap.id, ...docSnap.data() };
         document.title = `${partner.businessName} - Sua Viagem Aqui`;
         await renderPartnerDetails(partner);
+
+        // Rastreia a visualização do perfil (uma vez por sessão)
+        if (currentUser) {
+            const sessionKey = `viewed_${id}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+                const trackProfileView = httpsCallable(functions, 'trackProfileView');
+                trackProfileView({ partnerId: id }); // Fire-and-forget, não precisa esperar
+                sessionStorage.setItem(sessionKey, 'true');
+            }
+        }
+        
         await loadAndRenderReviews(partner.id); // Carrega as avaliações
         loadingState.classList.add("hidden");
         reviewsSection.classList.remove("hidden");
@@ -122,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
              <a href="https://wa.me/55${(partner.whatsapp || "").replace(
                /\D/g,
                "",
-             )}" target="_blank" rel="noopener noreferrer" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg">
+             )}" target="_blank" rel="noopener noreferrer" id="whatsapp-btn" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg">
                 <i class="fab fa-whatsapp mr-3"></i>Contatar via WhatsApp
              </a>
           </div>
@@ -130,6 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
     await setupFavoriteButton(partner.id);
+
+    // Adiciona listener para rastrear clique no WhatsApp
+    const whatsappBtn = document.getElementById('whatsapp-btn');
+    if (whatsappBtn && currentUser) {
+        whatsappBtn.addEventListener('click', () => {
+            const trackWhatsappClick = httpsCallable(functions, 'trackWhatsappClick');
+            trackWhatsappClick({ partnerId: partner.id }); // Fire-and-forget
+        });
+    }
   }
 
   async function loadAndRenderReviews(partnerId) {

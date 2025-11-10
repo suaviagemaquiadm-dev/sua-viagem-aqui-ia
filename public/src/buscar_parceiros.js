@@ -1,4 +1,4 @@
-import { db, collection, getDocs, query, where, orderBy, limit, startAfter } from "./firebase.js";
+import { db, collection, getDocs, query, where, orderBy, limit, startAfter, httpsCallable, functions } from "./firebase.js";
 import { getResizedImageUrl } from "./utils.js";
 import { initApp } from './app.js';
 
@@ -9,6 +9,79 @@ let currentQueryConstraints = [];
 const loadingContainer = document.getElementById("loading-container");
 const grid = document.getElementById("partners-grid");
 const noResultsMessage = document.getElementById("no-results-message");
+
+let map;
+let infoWindow;
+let markers = [];
+
+/**
+ * Loads the Google Maps script dynamically.
+ * @param {string} apiKey The Google Maps API Key.
+ * @returns {Promise<void>}
+ */
+function loadGoogleMapsScript(apiKey) {
+    if (window.google && window.google.maps) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+
+/**
+ * Initializes the map and adds markers for partners.
+ * @param {Array} partnersData - The list of partners to display on the map.
+ */
+function initMap(partnersData) {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer || !window.google) return;
+    
+    // Dark mode styles for Google Maps from Snazzy Maps
+    const mapStyles = [ { "elementType": "geometry", "stylers": [ { "color": "#242f3e" } ] }, { "elementType": "labels.text.fill", "stylers": [ { "color": "#746855" } ] }, { "elementType": "labels.text.stroke", "stylers": [ { "color": "#242f3e" } ] }, { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] }, { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] }, { "featureType": "poi.park", "elementType": "geometry", "stylers": [ { "color": "#263c3f" } ] }, { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [ { "color": "#6b9a76" } ] }, { "featureType": "road", "elementType": "geometry", "stylers": [ { "color": "#38414e" } ] }, { "featureType": "road", "elementType": "geometry.stroke", "stylers": [ { "color": "#212a37" } ] }, { "featureType": "road", "elementType": "labels.text.fill", "stylers": [ { "color": "#9ca5b3" } ] }, { "featureType": "road.highway", "elementType": "geometry", "stylers": [ { "color": "#746855" } ] }, { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [ { "color": "#1f2835" } ] }, { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [ { "color": "#f3d19c" } ] }, { "featureType": "transit", "elementType": "geometry", "stylers": [ { "color": "#2f3948" } ] }, { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] }, { "featureType": "water", "elementType": "geometry", "stylers": [ { "color": "#17263c" } ] }, { "featureType": "water", "elementType": "labels.text.fill", "stylers": [ { "color": "#515c6d" } ] }, { "featureType": "water", "elementType": "labels.text.stroke", "stylers": [ { "color": "#17263c" } ] } ];
+
+    map = new google.maps.Map(mapContainer, {
+        center: { lat: -14.235, lng: -51.9253 }, // Center of Brazil
+        zoom: 4,
+        styles: mapStyles,
+        mapTypeControl: false,
+    });
+
+    infoWindow = new google.maps.InfoWindow();
+
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+
+    partnersData.forEach(partner => {
+        // Assume partner documents have latitude and longitude fields
+        if (partner.latitude && partner.longitude) {
+            const marker = new google.maps.Marker({
+                position: { lat: partner.latitude, lng: partner.longitude },
+                map: map,
+                title: partner.businessName,
+            });
+
+            marker.addListener('click', () => {
+                const content = `
+                    <div class="text-slate-900 p-1 max-w-xs">
+                        <h4 class="font-bold text-base">${partner.businessName}</h4>
+                        <p class="text-sm">${partner.city}, ${partner.state}</p>
+                        <a href="/ad_details.html?id=${partner.id}" target="_blank" class="text-cyan-600 font-semibold text-sm hover:underline">Ver detalhes</a>
+                    </div>`;
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+            });
+            markers.push(marker);
+        }
+    });
+}
 
 /**
  * Renderiza a lista de parceiros no grid.
@@ -79,11 +152,9 @@ async function performSearch() {
   if (category) {
       currentQueryConstraints.push(where("category", "==", category));
   }
-  // A busca por texto é feita no lado do cliente após a consulta inicial
-  // O ideal seria usar um serviço como Algolia para busca de texto completa no backend.
 
   try {
-    const q = query(collection(db, "partners"), ...currentQueryConstraints, orderBy("businessName"), limit(12));
+    const q = query(collection(db, "partners"), ...currentQueryConstraints, orderBy("businessName"), limit(24));
     const querySnapshot = await getDocs(q);
     
     lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -97,16 +168,36 @@ async function performSearch() {
 
     renderPartners(filteredPartners);
 
+    // Atualiza o mapa com os parceiros filtrados
+    if (window.google && map) {
+        initMap(filteredPartners);
+    }
+
   } catch (error) {
     console.error("Erro ao buscar parceiros:", error);
-    loadingContainer.innerHTML = '<p class="text-red-400 text-center">Não foi possível carregar os parceiros. Tente novamente mais tarde.</p>';
+    loadingContainer.innerHTML = '<p class="text-red-400 text-center col-span-full">Não foi possível carregar os parceiros. Tente novamente mais tarde.</p>';
   } finally {
     loadingContainer.classList.add("hidden");
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     initApp();
+
+    // Busca a configuração e carrega o script do mapa primeiro
+    try {
+        const getFrontendConfig = httpsCallable(functions, 'getFrontendConfig');
+        const result = await getFrontendConfig();
+        const apiKey = result.data.googleMapsApiKey;
+        await loadGoogleMapsScript(apiKey);
+    } catch (error) {
+        console.error("Falha ao carregar o Google Maps:", error);
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-center p-4 text-red-400">Não foi possível carregar o mapa.</p></div>';
+        }
+    }
+    
     performSearch(); // Carga inicial
 
     const searchInput = document.getElementById("search-text");

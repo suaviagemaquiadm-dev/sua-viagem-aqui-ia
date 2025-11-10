@@ -1,5 +1,3 @@
-
-
 /**
  * Ponto de entrada principal para todas as Cloud Functions.
  * Este arquivo utiliza "lazy loading" para carregar os módulos de função sob demanda,
@@ -15,7 +13,10 @@ const functionsMap = {
   ai: null,
   contact: null,
   chatbot: null,
-  reviews: null, // Adicionado novo módulo de avaliações
+  reviews: null,
+  analytics: null, // Novo
+  notifications: null, // Novo
+  frontend_config: null, // Novo
 };
 
 /**
@@ -65,3 +66,13 @@ Object.defineProperty(exports, "askChatbot", { get: () => loadFunctions("chatbot
 // Funções de Avaliações (Reviews)
 Object.defineProperty(exports, "submitReview", { get: () => loadFunctions("reviews").submitReview });
 Object.defineProperty(exports, "updatePartnerRating", { get: () => loadFunctions("reviews").updatePartnerRating });
+
+// Funções de Analytics
+Object.defineProperty(exports, "trackProfileView", { get: () => loadFunctions("analytics").trackProfileView });
+Object.defineProperty(exports, "trackWhatsappClick", { get: () => loadFunctions("analytics").trackWhatsappClick });
+
+// Funções de Notificações
+Object.defineProperty(exports, "markNotificationsAsRead", { get: () => loadFunctions("notifications").markNotificationsAsRead });
+
+// Funções de Configuração do Frontend
+Object.defineProperty(exports, "getFrontendConfig", { get: () => loadFunctions("frontend_config").getFrontendConfig });
