@@ -106,24 +106,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check for Firebase Service Account Secret
+      - name: Debug and Verify Firebase Secret
         env:
           FIREBASE_SA_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "$FIREBASE_SA_SECRET" ]; then
+          SECRET_LENGTH=${#FIREBASE_SA_SECRET}
+          echo "Verificando o segredo FIREBASE_SERVICE_ACCOUNT..."
+          echo "Comprimento do segredo detectado: $SECRET_LENGTH caracteres."
+
+          if [ "$SECRET_LENGTH" -lt "100" ]; then
             echo "===================================================================="
-            echo "====== ERRO CRÍTICO: SEGREDOS DO GITHUB NÃO CONFIGURADOS ======"
+            echo "====== 🛑 ERRO: O SEGREDO PARECE INVÁLIDO OU AUSENTE 🛑 ======"
             echo "===================================================================="
             echo ""
-            echo "O segredo 'FIREBASE_SERVICE_ACCOUNT' não foi encontrado."
-            echo "Isto NÃO é um erro no código. Você precisa configurar os segredos"
-            echo "nas configurações do seu repositório no GitHub."
+            echo "O comprimento do segredo é muito curto ($SECRET_LENGTH caracteres)."
+            echo "Isso confirma que o segredo 'FIREBASE_SERVICE_ACCOUNT' não está configurado corretamente."
             echo ""
-            echo "=> POR FAVOR, SIGA AS INSTRUÇÕES NO TOPO DESTE ARQUIVO"
-            echo "   ('.github/workflows/firebase-ci.yml') PARA RESOLVER."
+            echo "POR FAVOR, REVISE COM MÁXIMA ATENÇÃO AS INSTRUÇÕES NO TOPO DESTE ARQUIVO."
+            echo "Causas comuns: nome errado, segredo colado incorretamente, ou criado como 'variável' em vez de 'segredo'."
             echo ""
             echo "===================================================================="
             exit 1
+          else
+            echo "✅ Verificação do segredo passou. O comprimento parece válido."
           fi
 
       # A ação `action-hosting-deploy` lida com o deploy de Functions e Hosting.

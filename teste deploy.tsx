@@ -1,4 +1,2 @@
-<!-- Testando o deploy automático -->
-<!DOCTYPE html>
-<html lang="pt-br">
-...teste de deploy
+// This file appeared to be a temporary test file with invalid TSX syntax.
+// It has been cleared to resolve compilation errors.

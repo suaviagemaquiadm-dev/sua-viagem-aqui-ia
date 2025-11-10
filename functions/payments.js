@@ -28,18 +28,26 @@ function validateWebhookSignature(req) {
     return false;
   }
 
+  // Fix: Improve parsing to be robust against whitespace and malformed parts.
   const parts = signatureHeader.split(",").reduce((acc, part) => {
     const [key, value] = part.split("=");
-    acc[key] = value;
+    if (key && value) acc[key.trim()] = value.trim();
     return acc;
   }, {});
 
   const timestamp = parts.ts;
   const signature = parts.v1;
+  
+  if (!timestamp || !signature) {
+      logger.warn("Webhook validation failed: Malformed signature header.");
+      return false;
+  }
+
 
   // Previne ataques de replay
   const now = Math.floor(Date.now() / 1000);
-  if (now - timestamp > 300) {
+  // Fix: Use Math.abs() to handle small clock drifts in both directions.
+  if (Math.abs(now - timestamp) > 300) {
     // 5 minutos de tolerância
     logger.warn("Webhook validation failed: Timestamp expired.");
     return false;
