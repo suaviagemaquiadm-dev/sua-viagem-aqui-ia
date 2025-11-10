@@ -6,7 +6,8 @@ const proxyquire = require("proxyquire").noCallThru();
 
 // Stubs a V2 onCall function para retornar apenas o handler,
 // permitindo o teste direto da lógica de negócio.
-const onCallStub = (handler) => handler;
+const onCallStub = (options, handler) => handler || options;
+
 
 // Mocks e stubs para dependências
 const adminAuthStub = {

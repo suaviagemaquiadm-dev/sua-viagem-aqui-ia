@@ -1,4 +1,5 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("../config");
