@@ -2,62 +2,27 @@
 # # 🛑 AÇÃO NECESSÁRIA: Seu deploy está falhando! Por favor, leia isto. 🛑      #
 # ############################################################################
 #
-# O erro "Input required and not supplied: firebaseServiceAccount" significa
-# que seu repositório do GitHub não tem as credenciais necessárias para fazer o deploy no
-# Firebase. Este é um problema de CONFIGURAÇÃO, não um bug no código.
+# O erro "Input required and not supplied" significa que o GitHub não tem as
+# credenciais para fazer o deploy no Firebase. Este é um problema de
+# CONFIGURAÇÃO, não um bug no código.
 #
-# Por favor, siga estes passos CUIDADOSAMENTE para corrigir permanentemente:
-#
-# ----------------------------------------------------------------------------
-# 🎯 PASSO 1: VÁ PARA OS SEGREDOS DO GITHUB
-# ----------------------------------------------------------------------------
-#    1. No seu repositório GitHub, clique na aba "Settings".
-#    2. Na barra lateral esquerda, navegue para "Secrets and variables" > "Actions".
-#    3. Você verá uma seção chamada "Repository secrets".
+# O nome do segredo DEVE ser EXATAMENTE: FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A
 #
 # ----------------------------------------------------------------------------
-# 🎯 PASSO 2: APAGUE SEGREDOS ANTIGOS/INCORRETOS (IMPORTANTE!)
+# 🎯 PASSO 1: CONFIRME O SEGREDO NO GITHUB
 # ----------------------------------------------------------------------------
-#    - Procure por qualquer segredo chamado `FIREBASE_SERVICE_ACCOUNT` ou similar.
-#    - Se encontrar, clique no ícone de lixeira 🗑️ para deletá-lo.
-#    - Isso garante que você comece do zero e evite problemas de configuração antiga.
+#    1. No seu repositório GitHub, vá para "Settings" > "Secrets and variables" > "Actions".
+#    2. Confirme que existe um segredo chamado `FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A`.
 #
 # ----------------------------------------------------------------------------
-# 🎯 PASSO 3: CRIE O NOVO SEGREDO
+# 🎯 PASSO 2: SE NÃO FUNCIONAR, REFAÇA O SEGREDO
 # ----------------------------------------------------------------------------
-#    1. Clique no botão "New repository secret".
-#    2. No campo "Name", copie e cole EXATAMENTE isto:
+#    1. Clique no ícone de lixeira 🗑️ para DELETAR o segredo existente.
+#    2. Clique em "New repository secret".
+#    3. No campo "Name", cole EXATAMENTE: FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A
+#    4. No campo "Secret", COLE o conteúdo COMPLETO do arquivo .json que você baixou do Firebase.
+#    5. Clique em "Add secret".
 #
-#          FIREBASE_SERVICE_ACCOUNT
-#
-# ----------------------------------------------------------------------------
-# 🎯 PASSO 4: PEGUE O VALOR DO SEGREDO NO FIREBASE
-# ----------------------------------------------------------------------------
-#    1. Abra seu projeto do Firebase: https://console.firebase.google.com/
-#    2. Clique no ícone de engrenagem ⚙️ ao lado de "Visão geral do projeto" e selecione "Configurações do projeto".
-#    3. Vá para a aba "Contas de serviço".
-#    4. Clique no botão "Gerar nova chave privada".
-#    5. Um arquivo `.json` será baixado para o seu computador.
-#    6. Abra este arquivo com um editor de texto simples (como Bloco de Notas, VS Code, TextEdit).
-#    7. Selecione TUDO no arquivo (Ctrl+A ou Cmd+A) e COPIE (Ctrl+C ou Cmd+C).
-#       O conteúdo começa com `{` e termina com `}`.
-#
-# ----------------------------------------------------------------------------
-# 🎯 PASSO 5: COLE O VALOR NO GITHUB
-# ----------------------------------------------------------------------------
-#    1. Volte para a página de criação de segredo do GitHub.
-#    2. Na caixa de texto grande "Secret", COLE todo o conteúdo JSON que você acabou de copiar.
-#    3. Clique no botão "Add secret".
-#
-# ----------------------------------------------------------------------------
-# 🤔 ERROS COMUNS A EVITAR
-# ----------------------------------------------------------------------------
-#    ❌ NOME ERRADO: Usar `firebaseServiceAccount` ou qualquer outra variação. DEVE SER `FIREBASE_SERVICE_ACCOUNT`.
-#    ❌ VALOR INCOMPLETO: Não copiar todo o conteúdo JSON, incluindo o `{` e `}`.
-#    ❌ VARIÁVEL, NÃO SEGREDO: Criar uma "Action Variable" em vez de um "Action Secret". Segredos são criptografados.
-#    ❌ REPOSITÓRIO ERRADO: Fazer isso nas configurações de um repositório diferente.
-#
-# Depois disso, o deploy deve funcionar no seu próximo push para a branch `main`.
 # ############################################################################
 
 name: Build, Test and Deploy to Firebase
@@ -69,6 +34,7 @@ on:
   pull_request:
     branches:
       - main # Aciona em pull requests para a branch principal
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build_and_test:
@@ -86,7 +52,6 @@ jobs:
           cache-dependency-path: 'functions/package.json'
 
       - name: Install Functions Dependencies
-        # Usa 'npm install' como fallback para ambientes sem package-lock.json
         run: npm install --prefix functions
 
       - name: Audit for Security Vulnerabilities
@@ -97,10 +62,9 @@ jobs:
 
   deploy:
     name: Deploy to Firebase
-    needs: build_and_test # Depende do sucesso do job 'build_and_test'
+    needs: build_and_test
     runs-on: ubuntu-latest
-    # Apenas executa este job em pushes para a branch 'main', não em pull requests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -108,10 +72,10 @@ jobs:
 
       - name: Debug and Verify Firebase Secret
         env:
-          FIREBASE_SA_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SA_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}
         run: |
           SECRET_LENGTH=${#FIREBASE_SA_SECRET}
-          echo "Verificando o segredo FIREBASE_SERVICE_ACCOUNT..."
+          echo "Verificando o segredo FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A..."
           echo "Comprimento do segredo detectado: $SECRET_LENGTH caracteres."
 
           if [ "$SECRET_LENGTH" -lt "100" ]; then
@@ -120,7 +84,7 @@ jobs:
             echo "===================================================================="
             echo ""
             echo "O comprimento do segredo é muito curto ($SECRET_LENGTH caracteres)."
-            echo "Isso confirma que o segredo 'FIREBASE_SERVICE_ACCOUNT' não está configurado corretamente."
+            echo "Isso confirma que o segredo 'FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A' não está configurado corretamente."
             echo ""
             echo "POR FAVOR, REVISE COM MÁXIMA ATENÇÃO AS INSTRUÇÕES NO TOPO DESTE ARQUIVO."
             echo "Causas comuns: nome errado, segredo colado incorretamente, ou criado como 'variável' em vez de 'segredo'."
@@ -131,11 +95,10 @@ jobs:
             echo "✅ Verificação do segredo passou. O comprimento parece válido."
           fi
 
-      # A ação `action-hosting-deploy` lida com o deploy de Functions e Hosting.
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEMINI_CLI_98F4A }}
           channelId: live
           projectId: gemini-cli-98f4a
