@@ -1,3 +1,4 @@
+
 import {
   auth,
   db,
@@ -65,6 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const card = document.createElement("div");
     card.className =
       "glass-effect rounded-2xl p-6 flex flex-col justify-between card-hover";
+      
+    const isPublic = itinerary.public === true;
+
     card.innerHTML = `
             <div>
                 <h3 class="text-xl font-bold text-white truncate">${
@@ -78,12 +82,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 }</p>
             </div>
             <div class="flex gap-2 mt-6 border-t border-slate-700 pt-4">
-                <button class="view-btn w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition" aria-label="Ver roteiro ${
+                <button class="view-btn flex-grow bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition" aria-label="Ver roteiro ${
                   itinerary.title
                 }"><i class="fas fa-eye mr-2"></i>Ver</button>
                 <button class="share-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition" aria-label="Compartilhar roteiro ${
                   itinerary.title
                 }"><i class="fas fa-share-alt"></i></button>
+                 <button class="toggle-privacy-btn ${
+                   isPublic
+                     ? "bg-blue-600 hover:bg-blue-700"
+                     : "bg-slate-600 hover:bg-slate-700"
+                 } text-white font-bold py-2 px-4 rounded-lg transition" aria-label="Tornar roteiro ${
+      isPublic ? "privado" : "público"
+    }">
+                    <i class="fas ${isPublic ? "fa-globe-americas" : "fa-lock"}"></i>
+                </button>
                 <button class="delete-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition" aria-label="Excluir roteiro ${
                   itinerary.title
                 }"><i class="fas fa-trash-alt"></i></button>
@@ -119,12 +132,59 @@ document.addEventListener("DOMContentLoaded", () => {
         "itineraries",
         itinerary.id,
       );
-      await updateDoc(itineraryRef, { public: true });
+      // Garante que o roteiro seja público antes de compartilhar
+      if (!itinerary.public) {
+        await updateDoc(itineraryRef, { public: true });
+        itinerary.public = true;
+        // Atualiza o botão de privacidade na UI
+        const toggleBtn = card.querySelector(".toggle-privacy-btn");
+        toggleBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
+        toggleBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        toggleBtn.querySelector('i').classList.remove('fa-lock');
+        toggleBtn.querySelector('i').classList.add('fa-globe-americas');
+      }
 
       const shareUrl = `${window.location.origin}/roteiro_publico.html?user=${currentUserId}&id=${itinerary.id}`;
       document.getElementById("share-link-input").value = shareUrl;
       document.getElementById("share-modal").classList.remove("hidden");
     });
+    
+    // Event listener para o novo botão de privacidade
+    const togglePrivacyBtn = card.querySelector(".toggle-privacy-btn");
+    togglePrivacyBtn.addEventListener("click", async () => {
+        togglePrivacyBtn.disabled = true;
+        const currentIsPublic = itinerary.public === true;
+        const newStatus = !currentIsPublic;
+        const itineraryRef = doc(db, "users", currentUserId, "itineraries", itinerary.id);
+
+        try {
+            await updateDoc(itineraryRef, { public: newStatus });
+            itinerary.public = newStatus;
+
+            const icon = togglePrivacyBtn.querySelector('i');
+            if (newStatus) {
+                togglePrivacyBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
+                togglePrivacyBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                icon.classList.remove('fa-lock');
+                icon.classList.add('fa-globe-americas');
+                togglePrivacyBtn.setAttribute('aria-label', 'Tornar roteiro privado');
+                showAlert("Roteiro agora é público.");
+            } else {
+                togglePrivacyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                togglePrivacyBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                icon.classList.remove('fa-globe-americas');
+                icon.classList.add('fa-lock');
+                togglePrivacyBtn.setAttribute('aria-label', 'Tornar roteiro público');
+                showAlert("Roteiro agora é privado.");
+            }
+        } catch (error) {
+            console.error("Erro ao alterar privacidade do roteiro:", error);
+            showAlert("Não foi possível alterar a privacidade. Tente novamente.");
+        } finally {
+            togglePrivacyBtn.disabled = false;
+        }
+    });
+
 
     // Funcionalidade do botão "Ver" para abrir o modal
     card.querySelector(".view-btn").addEventListener("click", () => {

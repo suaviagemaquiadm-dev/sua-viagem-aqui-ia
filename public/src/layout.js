@@ -1,4 +1,6 @@
+
 import { initApp } from './app.js';
+import { initChatbot } from './chatbot.js';
 
 /**
  * Carrega um componente HTML de um arquivo para um seletor específico no DOM.
@@ -12,7 +14,7 @@ async function loadComponent(selector, filePath) {
     const content = await response.text();
     const element = document.querySelector(selector);
     if (element) element.innerHTML = content;
-  } catch (error) {
+  } catch (error)
     console.error(`Failed to load component into '${selector}':`, error);
   }
 }
@@ -65,10 +67,12 @@ async function initLayout() {
   await Promise.all([
     loadComponent('#main-header', '/components/header.html'),
     loadComponent('#main-footer', '/components/footer.html'),
+    loadComponent('#chatbot-container', '/components/chatbot.html'),
   ]);
 
   // Inicializa a lógica principal da aplicação (auth, etc.) APÓS o header estar no DOM
   initApp();
+  initChatbot();
   initCookieBanner();
   registerServiceWorker();
 }

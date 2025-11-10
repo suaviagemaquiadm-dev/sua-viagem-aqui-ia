@@ -1,25 +1,26 @@
 
-const functions = require("firebase-functions");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { beforeUserDeleted } = require("firebase-functions/v2/auth");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
-const { deleteCollectionRecursive } = require("./utils");
+const { deleteCollectionRecursive } = require("../utils");
 
 /**
- * Função para permitir que um usuário autenticado atualize seu próprio perfil (v1).
+ * Função para permitir que um usuário autenticado atualize seu próprio perfil.
  */
-exports.updateUserProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+exports.updateUserProfile = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "A função só pode ser chamada por um usuário autenticado.",
     );
   }
 
-  const userId = context.auth.uid;
-  const { name, photoURL } = data;
+  const userId = request.auth.uid;
+  const { name, photoURL } = request.data;
 
   if (!name && !photoURL) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "invalid-argument",
       "Pelo menos um campo (name ou photoURL) deve ser fornecido.",
     );
@@ -39,17 +40,18 @@ exports.updateUserProfile = functions.https.onCall(async (data, context) => {
     return { success: true, message: "Perfil atualizado com sucesso!" };
   } catch (error) {
     logger.error(`Erro ao atualizar o perfil do usuário ${userId}:`, error);
-    throw new functions.https.HttpsError("internal", "Não foi possível atualizar o perfil.");
+    throw new HttpsError("internal", "Não foi possível atualizar o perfil.");
   }
 });
 
 /**
  * Trigger que limpa os dados de um usuário no Firestore e subcoleções
- * DEPOIS que a conta correspondente é deletada do Firebase Authentication (v1).
+ * ANTES que a conta correspondente seja deletada do Firebase Authentication.
  */
-exports.cleanupUserData = functions.auth.user().onDelete(async (user) => {
+exports.cleanupUserData = beforeUserDeleted(async (event) => {
+  const user = event.data;
   const userId = user.uid;
-  logger.info(`Iniciando limpeza de dados para o usuário deletado: ${userId}`);
+  logger.info(`Iniciando limpeza de dados para o usuário prestes a ser deletado: ${userId}`);
 
   try {
     const userDocRef = db.collection("users").doc(userId);
@@ -71,7 +73,63 @@ exports.cleanupUserData = functions.auth.user().onDelete(async (user) => {
     logger.info(`Documento do usuário ${userId} deletado do Firestore.`);
     
   } catch (error) {
-    // Não re-lança o erro, pois a exclusão do usuário no Auth já ocorreu.
-    logger.error(`Erro ao limpar dados do usuário ${userId} no Firestore:`, error);
+    // Não re-lança o erro para não impedir a exclusão do usuário no Auth
+    logger.error(`Erro ao limpar dados do usuário ${userId} no Firestore (a exclusão do Auth continuará):`, error);
+  }
+});
+
+/**
+ * Adiciona ou remove um usuário da lista de 'following' do usuário atual
+ * e da lista de 'followers' do usuário alvo, de forma transacional.
+ */
+exports.toggleFollowUser = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Você precisa estar logado para seguir alguém.");
+  }
+  
+  const currentUserId = request.auth.uid;
+  const { targetUserId } = request.data;
+
+  if (!targetUserId) {
+    throw new HttpsError("invalid-argument", "O ID do usuário alvo é obrigatório.");
+  }
+
+  if (currentUserId === targetUserId) {
+    throw new HttpsError("invalid-argument", "Você não pode seguir a si mesmo.");
+  }
+
+  const currentUserRef = db.collection("users").doc(currentUserId);
+  const targetUserRef = db.collection("users").doc(targetUserId);
+
+  try {
+    await db.runTransaction(async (transaction) => {
+      const currentUserDoc = await transaction.get(currentUserRef);
+      const targetUserDoc = await transaction.get(targetUserRef);
+
+      if (!currentUserDoc.exists() || !targetUserDoc.exists()) {
+        throw new HttpsError("not-found", "Usuário não encontrado.");
+      }
+
+      const currentUserFollowing = currentUserDoc.data().following || [];
+      const isFollowing = currentUserFollowing.includes(targetUserId);
+
+      if (isFollowing) {
+        // Unfollow
+        transaction.update(currentUserRef, { following: FieldValue.arrayRemove(targetUserId) });
+        transaction.update(targetUserRef, { followers: FieldValue.arrayRemove(currentUserId) });
+      } else {
+        // Follow
+        transaction.update(currentUserRef, { following: FieldValue.arrayUnion(targetUserId) });
+        transaction.update(targetUserRef, { followers: FieldValue.arrayUnion(currentUserId) });
+      }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    logger.error(`Erro ao seguir/deixar de seguir ${targetUserId} por ${currentUserId}:`, error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError("internal", "Ocorreu um erro ao processar a solicitação.");
   }
 });

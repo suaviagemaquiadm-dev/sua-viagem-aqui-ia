@@ -1,5 +1,5 @@
 
-const functions = require("firebase-functions");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
 const { GoogleGenAI } = require("@google/genai");
@@ -11,34 +11,39 @@ const { openAIKey } = require("../config");
  * Gera um roteiro de viagem usando a API do Gemini.
  * Apenas para usuários com a role 'traveler_plus'.
  */
-exports.generateItinerary = functions
-  .runWith({ secrets: [openAIKey.name] })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+exports.generateItinerary = onCall(
+  { secrets: [openAIKey] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "A função só pode ser chamada por um usuário autenticado.",
       );
     }
 
     // Defesa em Profundidade: Verifica as custom claims do usuário no backend
-    if (context.auth.token.role !== "traveler_plus") {
-      throw new functions.https.HttpsError(
+    if (request.auth.token.role !== "traveler_plus") {
+      throw new HttpsError(
         "permission-denied",
         "Apenas assinantes do plano Viajante Plus podem usar esta funcionalidade.",
       );
     }
 
-    const prompt = data.prompt;
+    const prompt = request.data.prompt;
     if (!prompt || typeof prompt !== "string" || prompt.length < 10) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "O prompt fornecido é inválido ou muito curto.",
       );
     }
 
     try {
-      const ai = new GoogleGenAI({apiKey: process.env.OPENAI_API_KEY});
+      // O nome do segredo é convertido para maiúsculas no process.env
+      const apiKey = openAIKey.value();
+      if (!apiKey) {
+        throw new Error("A chave de API do Gemini não está configurada no ambiente.");
+      }
+      const ai = new GoogleGenAI({apiKey: apiKey});
       
       const systemInstruction = `
           Você é um especialista em viagens e um assistente para a plataforma "Sua Viagem Aqui".
@@ -66,17 +71,13 @@ exports.generateItinerary = functions
 
       const itineraryMarkdown = response.text;
       
-      // Extrai o destino do prompt para o título
-      const destinationMatch = prompt.match(/Destino:\s*([^.]+)/i);
-      const destination = destinationMatch ? destinationMatch[1].trim() : "seu destino";
-
       // Salva o roteiro no Firestore
-      const userItinerariesRef = db.collection('users').doc(context.auth.uid).collection('itineraries');
+      const userItinerariesRef = db.collection('users').doc(request.auth.uid).collection('itineraries');
       const newItineraryRef = await userItinerariesRef.add({
-          title: `Roteiro para ${destination}`,
+          title: `Roteiro para ${request.data.destination || 'seu destino'}`,
           prompt: prompt,
           itineraryMarkdown: itineraryMarkdown,
-          ownerId: context.auth.uid,
+          ownerId: request.auth.uid,
           createdAt: FieldValue.serverTimestamp(),
           public: false, // Roteiros são privados por padrão
       });
@@ -88,10 +89,10 @@ exports.generateItinerary = functions
         itinerariesGenerated: FieldValue.increment(1),
       });
 
-      return { success: true, roteiroId: newItineraryRef.id };
+      return { success: true, roteiroId: newItineraryRef.id, itinerary: itineraryMarkdown };
     } catch (error) {
       logger.error("Erro na API do Gemini ao gerar roteiro:", error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "internal",
         "Falha ao comunicar com a IA para gerar o roteiro.",
         error.message,

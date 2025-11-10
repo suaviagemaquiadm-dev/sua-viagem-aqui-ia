@@ -1,5 +1,5 @@
 
-const functions = require("firebase-functions");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("../config");
 const { deleteCollectionRecursive } = require("./utils");
@@ -7,14 +7,14 @@ const { deleteCollectionRecursive } = require("./utils");
 /**
  * Helper para verificar se o autor da chamada é um administrador.
  * Lança um erro HttpsError 'permission-denied' se não for.
- * @param {object} context - O contexto da função callable.
+ * @param {object} auth - O objeto de autenticação da requisição v2.
  */
-const ensureIsAdmin = (context) => {
-  if (context.auth?.token?.admin !== true) {
+const ensureIsAdmin = (auth) => {
+  if (auth?.token?.admin !== true) {
     logger.warn(
-      `Usuário não-admin '${context.auth?.uid || "não autenticado"}' tentou acessar uma função restrita.`,
+      `Usuário não-admin '${auth?.uid || "não autenticado"}' tentou acessar uma função restrita.`,
     );
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "permission-denied",
       "Apenas administradores podem realizar esta ação.",
     );
@@ -25,13 +25,13 @@ const ensureIsAdmin = (context) => {
  * Função Callable para criar uma nova conta de parceiro.
  * Protegida para ser chamada apenas por administradores.
  */
-exports.createPartnerAccount = functions.https.onCall(async (data, context) => {
-  ensureIsAdmin(context);
+exports.createPartnerAccount = onCall(async (request) => {
+  ensureIsAdmin(request.auth);
 
-  const { businessName, ownerName, email, password, plan } = data;
+  const { businessName, ownerName, email, password, plan } = request.data;
 
   if (!businessName || !ownerName || !email || !password || !plan) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "invalid-argument",
       "Todos os campos são obrigatórios.",
     );
@@ -71,12 +71,12 @@ exports.createPartnerAccount = functions.https.onCall(async (data, context) => {
     }
 
     if (error.code === "auth/email-already-exists") {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "already-exists",
         "O e-mail fornecido já está em uso.",
       );
     }
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "internal",
       "Falha ao criar a conta do parceiro.",
       error.message,
@@ -87,11 +87,11 @@ exports.createPartnerAccount = functions.https.onCall(async (data, context) => {
 /**
  * Deleta uma conta de parceiro e todos os seus dados.
  */
-exports.deletePartnerAccount = functions.https.onCall(async (data, context) => {
-    ensureIsAdmin(context);
-    const { partnerId } = data;
+exports.deletePartnerAccount = onCall(async (request) => {
+    ensureIsAdmin(request.auth);
+    const { partnerId } = request.data;
     if (!partnerId) {
-        throw new functions.https.HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
+        throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
     }
 
     try {
@@ -116,7 +116,7 @@ exports.deletePartnerAccount = functions.https.onCall(async (data, context) => {
         if (error.code === 'auth/user-not-found') {
             return { success: true, message: "Dados do parceiro deletados do Firestore. O usuário do Auth não foi encontrado (pode já ter sido removido)." };
         }
-        throw new functions.https.HttpsError("internal", "Erro ao deletar conta do parceiro.", error.message);
+        throw new HttpsError("internal", "Erro ao deletar conta do parceiro.", error.message);
     }
 });
 
@@ -124,16 +124,16 @@ exports.deletePartnerAccount = functions.https.onCall(async (data, context) => {
 /**
  * Altera o status de um parceiro.
  */
-exports.setPartnerStatus = functions.https.onCall(async (data, context) => {
-    ensureIsAdmin(context);
-    const { partnerId, newStatus, reason } = data;
+exports.setPartnerStatus = onCall(async (request) => {
+    ensureIsAdmin(request.auth);
+    const { partnerId, newStatus, reason } = request.data;
 
     if (!partnerId || !newStatus || !Object.values(PARTNER_STATUS).includes(newStatus)) {
-        throw new functions.https.HttpsError("invalid-argument", "ID do parceiro ou novo status inválido.");
+        throw new HttpsError("invalid-argument", "ID do parceiro ou novo status inválido.");
     }
     
     if (newStatus === PARTNER_STATUS.SUSPENDED && !reason) {
-        throw new functions.https.HttpsError("invalid-argument", "Um motivo é obrigatório para suspender um parceiro.");
+        throw new HttpsError("invalid-argument", "Um motivo é obrigatório para suspender um parceiro.");
     }
 
     try {
@@ -146,19 +146,19 @@ exports.setPartnerStatus = functions.https.onCall(async (data, context) => {
         return { success: true, message: `Status do parceiro alterado para ${newStatus}.` };
     } catch (error) {
         logger.error(`Erro ao alterar status do parceiro ${partnerId}:`, error);
-        throw new functions.https.HttpsError("internal", "Não foi possível alterar o status do parceiro.");
+        throw new HttpsError("internal", "Não foi possível alterar o status do parceiro.");
     }
 });
 
 /**
  * Concede o papel de administrador a um usuário.
  */
-exports.grantAdminRole = functions.https.onCall(async (data, context) => {
-  ensureIsAdmin(context);
+exports.grantAdminRole = onCall(async (request) => {
+  ensureIsAdmin(request.auth);
 
-  const email = data.email;
+  const email = request.data.email;
   if (!email) {
-    throw new functions.https.HttpsError("invalid-argument", "O e-mail do usuário é obrigatório.");
+    throw new HttpsError("invalid-argument", "O e-mail do usuário é obrigatório.");
   }
 
   try {
@@ -174,25 +174,25 @@ exports.grantAdminRole = functions.https.onCall(async (data, context) => {
   } catch (error) {
     logger.error("Erro ao conceder papel de administrador:", error);
     if (error.code === "auth/user-not-found") {
-      throw new functions.https.HttpsError("not-found", "Usuário com o e-mail fornecido não encontrado.");
+      throw new HttpsError("not-found", "Usuário com o e-mail fornecido não encontrado.");
     }
-    throw new functions.https.HttpsError("internal", "Erro ao conceder privilégios de administrador.", error.message);
+    throw new HttpsError("internal", "Erro ao conceder privilégios de administrador.", error.message);
   }
 });
 
 /**
  * Revoga o papel de administrador de um usuário.
  */
-exports.revokeAdminRole = functions.https.onCall(async (data, context) => {
-  ensureIsAdmin(context);
+exports.revokeAdminRole = onCall(async (request) => {
+  ensureIsAdmin(request.auth);
 
-  const { targetUid } = data;
+  const { targetUid } = request.data;
   if (!targetUid) {
-    throw new functions.https.HttpsError("invalid-argument", "O UID do usuário é obrigatório.");
+    throw new HttpsError("invalid-argument", "O UID do usuário é obrigatório.");
   }
   
-  if (targetUid === context.auth.uid) {
-    throw new functions.https.HttpsError("failed-precondition", "Um administrador não pode revogar os próprios privilégios.");
+  if (targetUid === request.auth.uid) {
+    throw new HttpsError("failed-precondition", "Um administrador não pode revogar os próprios privilégios.");
   }
 
   try {
@@ -200,7 +200,7 @@ exports.revokeAdminRole = functions.https.onCall(async (data, context) => {
     const listUsersResult = await adminAuth.listUsers();
     const admins = listUsersResult.users.filter((u) => u.customClaims?.admin === true);
     if (admins.length <= 1 && admins[0]?.uid === targetUid) {
-      throw new functions.https.HttpsError("failed-precondition", "Não é possível revogar o privilégio do último administrador.");
+      throw new HttpsError("failed-precondition", "Não é possível revogar o privilégio do último administrador.");
     }
 
     const user = await adminAuth.getUser(targetUid);
@@ -214,18 +214,18 @@ exports.revokeAdminRole = functions.https.onCall(async (data, context) => {
     return { success: true, message: `Privilégios de administrador revogados para ${user.email}.` };
   } catch (error) {
     logger.error("Erro ao revogar papel de administrador:", error);
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     }
-    throw new functions.https.HttpsError("internal", "Erro ao revogar privilégios de administrador.", error.message);
+    throw new HttpsError("internal", "Erro ao revogar privilégios de administrador.", error.message);
   }
 });
 
 /**
  * Lista os administradores atuais.
  */
-exports.listAdmins = functions.https.onCall(async (data, context) => {
-  ensureIsAdmin(context);
+exports.listAdmins = onCall(async (request) => {
+  ensureIsAdmin(request.auth);
 
   try {
     const listUsersResult = await adminAuth.listUsers();
@@ -242,6 +242,6 @@ exports.listAdmins = functions.https.onCall(async (data, context) => {
     return admins;
   } catch (error) {
     logger.error("Erro ao listar administradores:", error);
-    throw new functions.https.HttpsError("internal", "Erro ao listar administradores.", error.message);
+    throw new HttpsError("internal", "Erro ao listar administradores.", error.message);
   }
 });

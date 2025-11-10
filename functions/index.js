@@ -1,3 +1,4 @@
+
 /**
  * Ponto de entrada principal para todas as Cloud Functions.
  * Este arquivo utiliza "lazy loading" para carregar os módulos de função sob demanda,
@@ -11,6 +12,8 @@ const functionsMap = {
   payments: null,
   users: null,
   ai: null,
+  contact: null,
+  chatbot: null, // Adicionado novo módulo de chatbot
 };
 
 /**
@@ -45,6 +48,13 @@ Object.defineProperty(exports, "createMercadoPagoPreference", { get: () => loadF
 // Funções relacionadas a Usuários
 Object.defineProperty(exports, "updateUserProfile", { get: () => loadFunctions("users").updateUserProfile });
 Object.defineProperty(exports, "cleanupUserData", { get: () => loadFunctions("users").cleanupUserData });
+Object.defineProperty(exports, "toggleFollowUser", { get: () => loadFunctions("users").toggleFollowUser }); // Adicionada nova função
 
 // Funções relacionadas à IA
 Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
+
+// Funções de Contato
+Object.defineProperty(exports, "sendContactEmail", { get: () => loadFunctions("contact").sendContactEmail }); // Adicionada nova função
+
+// Funções do Chatbot
+Object.defineProperty(exports, "askChatbot", { get: () => loadFunctions("chatbot").askChatbot }); // Adicionada nova função

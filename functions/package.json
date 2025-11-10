@@ -26,7 +26,7 @@
     "firebase-functions": "^6.6.0",
     "jsdom": "^24.1.0",
     "mercadopago": "^2.0.11",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^6.9.14"
   },
   "devDependencies": {
     "chai": "^4.3.7",

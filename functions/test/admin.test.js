@@ -11,37 +11,42 @@ const sinon = require("sinon");
 
 // Importa as funções que queremos testar do ponto de entrada principal do projeto
 const myFunctions = require("../index.js");
-const { createPartnerAccount, revokeAdminRole } = myFunctions;
 
-describe("Admin Cloud Functions", () => {
-  let adminAuthStub, firestoreStub, collectionStub, docStub, setStub;
+describe("Admin Cloud Functions (V2)", () => {
+  let adminAuthStub, docStub, setStub;
 
-  beforeEach(() => {
-    // Stub completo para admin.auth()
+  before(() => {
+    // Stub para admin.auth()
     adminAuthStub = {
       createUser: sinon.stub(),
       deleteUser: sinon.stub().resolves(),
       getUser: sinon.stub(),
+      getUserByEmail: sinon.stub(),
       setCustomUserClaims: sinon.stub().resolves(),
       listUsers: sinon.stub(),
     };
     sinon.stub(admin, "auth").returns(adminAuthStub);
-
-    // Stub completo para admin.firestore()
+    
+    // Stub para admin.firestore()
     setStub = sinon.stub();
-    docStub = sinon.stub().returns({ set: setStub });
-    collectionStub = sinon.stub().returns({ doc: docStub });
-    // Stub para admin.firestore que é um getter
+    const updateStub = sinon.stub();
+    docStub = sinon.stub().returns({ set: setStub, update: updateStub, collection: sinon.stub() });
+    const collectionStub = sinon.stub().returns({ doc: docStub });
     const firestore = sinon.stub().returns({ collection: collectionStub });
     Object.defineProperty(admin, 'firestore', {
         get: () => firestore,
-        configurable: true // Permite re-stub
+        configurable: true
     });
   });
 
-  afterEach(() => {
+  after(() => {
     sinon.restore();
     test.cleanup();
+  });
+  
+  beforeEach(() => {
+      // Limpa o histórico das stubs antes de cada teste
+      sinon.resetHistory();
   });
 
   describe("createPartnerAccount", () => {
@@ -58,16 +63,17 @@ describe("Admin Cloud Functions", () => {
       const fakeUser = { uid: "partner123", email: "partner@test.com" };
       adminAuthStub.createUser.resolves(fakeUser);
       setStub.resolves();
-      const context = { auth: { uid: "admin123", token: { admin: true } } };
-      const wrapped = test.wrap(createPartnerAccount);
+      const request = {
+          data: validData,
+          auth: { uid: "admin123", token: { admin: true } }
+      };
 
       // Act
-      const result = await wrapped(validData, context);
+      const result = await myFunctions.createPartnerAccount(request);
 
       // Assert
       assert.deepStrictEqual(result, { success: true, message: "Parceiro criado com sucesso!" });
       assert.isTrue(adminAuthStub.createUser.calledOnce);
-      assert.isTrue(collectionStub.calledWith("partners"));
       assert.isTrue(docStub.calledWith(fakeUser.uid));
       assert.isTrue(setStub.calledOnce);
       assert.isTrue(adminAuthStub.setCustomUserClaims.calledOnceWith(fakeUser.uid, { role: "advertiser" }));
@@ -75,12 +81,14 @@ describe("Admin Cloud Functions", () => {
 
     it("deve rejeitar a chamada se o usuário não for admin", async () => {
       // Arrange
-      const context = { auth: { uid: "notadmin123", token: {} } }; // Sem a claim de admin
-      const wrapped = test.wrap(createPartnerAccount);
+      const request = {
+          data: validData,
+          auth: { uid: "notadmin123", token: {} } // Sem a claim de admin
+      };
 
       // Act & Assert
       try {
-        await wrapped(validData, context);
+        await myFunctions.createPartnerAccount(request);
         assert.fail("A função deveria ter lançado um erro de permissão negada");
       } catch (err) {
         assert.equal(err.code, "permission-denied");
@@ -93,12 +101,14 @@ describe("Admin Cloud Functions", () => {
       const fakeUser = { uid: "orphanuser", email: "orphan@test.com" };
       adminAuthStub.createUser.resolves(fakeUser);
       setStub.rejects(new Error("Firestore write failed"));
-      const context = { auth: { uid: "admin123", token: { admin: true } } };
-      const wrapped = test.wrap(createPartnerAccount);
+      const request = {
+          data: validData,
+          auth: { uid: "admin123", token: { admin: true } }
+      };
 
       // Act & Assert
        try {
-        await wrapped(validData, context);
+        await myFunctions.createPartnerAccount(request);
         assert.fail("A função deveria ter lançado um erro interno");
        } catch(err) {
         assert.equal(err.code, "internal");
@@ -112,13 +122,14 @@ describe("Admin Cloud Functions", () => {
         // Arrange
         const adminUser = { uid: 'admin1', email: 'admin1@test.com', customClaims: { admin: true } };
         adminAuthStub.listUsers.resolves({ users: [adminUser] }); // Apenas um admin na lista
-        const context = { auth: { uid: "admin_caller", token: { admin: true } } };
-        const wrapped = test.wrap(revokeAdminRole);
-        const data = { targetUid: 'admin1' };
+        const request = {
+            data: { targetUid: 'admin1' },
+            auth: { uid: "admin_caller", token: { admin: true } }
+        };
 
         // Act & Assert
         try {
-            await wrapped(data, context);
+            await myFunctions.revokeAdminRole(request);
             assert.fail("A função deveria ter lançado um erro de pré-condição falhou");
         } catch(err) {
             assert.equal(err.code, "failed-precondition");

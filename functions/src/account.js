@@ -1,19 +1,19 @@
 
-const functions = require("firebase-functions");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db } = require("../config");
 
 /**
  * Generates a unique control code for a user or partner.
  */
-exports.generateAndAssignControlCode = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "A função só pode ser chamada por um usuário autenticado.");
+exports.generateAndAssignControlCode = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "A função só pode ser chamada por um usuário autenticado.");
     }
 
-    const { userId, userType } = data;
+    const { userId, userType } = request.data;
     if (!userId || !userType) {
-        throw new functions.https.HttpsError("invalid-argument", "O ID do usuário e o tipo são obrigatórios.");
+        throw new HttpsError("invalid-argument", "O ID do usuário e o tipo são obrigatórios.");
     }
 
     const prefix = userType === 'vj' ? 'VJ' : 'AN';
@@ -46,7 +46,7 @@ exports.generateAndAssignControlCode = functions.https.onCall(async (data, conte
 
     if (!isUnique) {
         logger.error(`Não foi possível gerar um código de controle único para o usuário ${userId} após 10 tentativas.`);
-        throw new functions.https.HttpsError("internal", "Não foi possível gerar um código de controle único. Tente novamente.");
+        throw new HttpsError("internal", "Não foi possível gerar um código de controle único. Tente novamente.");
     }
 
     try {
@@ -56,6 +56,6 @@ exports.generateAndAssignControlCode = functions.https.onCall(async (data, conte
         return { success: true, controlCode: controlCode };
     } catch (error) {
         logger.error(`Erro ao atribuir código de controle para ${userId}:`, error);
-        throw new functions.https.HttpsError("internal", "Falha ao salvar o código de controle.");
+        throw new HttpsError("internal", "Falha ao salvar o código de controle.");
     }
 });

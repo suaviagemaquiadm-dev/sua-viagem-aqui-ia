@@ -1,3 +1,5 @@
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -152,4 +154,68 @@ body {
 :focus-visible {
     outline: 3px solid #f59e0b;
     outline-offset: 2px;
+}
+
+/* Animação de rolagem infinita */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-scroll {
+  animation: scroll 60s linear infinite;
+}
+
+/* Chatbot Styles */
+.chat-message {
+    @apply max-w-xs md:max-w-sm p-3 rounded-2xl;
+}
+.chat-message-user {
+    @apply bg-amber-500 text-slate-900 rounded-br-none ml-auto;
+}
+.chat-message-bot {
+    @apply bg-slate-700 text-slate-200 rounded-bl-none mr-auto;
+}
+
+.chat-message-bot p { @apply mb-2; }
+.chat-message-bot ul { @apply list-disc list-inside pl-2 mb-2; }
+.chat-message-bot a { @apply text-cyan-400 hover:underline; }
+
+.grounding-links {
+    @apply mt-3 pt-3 border-t border-slate-600;
+}
+.grounding-links strong {
+    @apply text-xs text-slate-400;
+}
+.grounding-links ul {
+    @apply text-sm space-y-1 mt-1;
+}
+.grounding-links a {
+    @apply text-amber-400 hover:underline;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+}
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #94a3b8;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: typing 1s infinite;
+}
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
 }

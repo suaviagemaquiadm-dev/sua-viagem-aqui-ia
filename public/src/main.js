@@ -1,3 +1,4 @@
+
 import {
   db,
   collection,
@@ -7,7 +8,7 @@ import {
   limit,
 } from "./firebase.js";
 import { initSearch } from "./search.js";
-import { initWeatherWidget, AgencyCarousel, InfiniteCarousel, TestimonialsCarousel, initCarouselFavorites, initAdvertiserGrid } from "./ui.js";
+import { AgencyCarousel, InfiniteCarousel, TestimonialsCarousel, initAdvertiserGrid } from "./ui.js";
 import { initMap } from "./map.js";
 import { initAIRouteBuilder } from "./ai.js";
 
@@ -15,7 +16,6 @@ import { initAIRouteBuilder } from "./ai.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Inicializa funções que não dependem de dados do Firestore
-  new LanguageSwitcher().init();
   initSearch();
   initMap();
   initAIRouteBuilder();
@@ -37,9 +37,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
- * NOVO: Carrega os dados dinâmicos do Firestore e inicializa os componentes.
+ * Carrega os dados dinâmicos do Firestore e inicializa os componentes.
  */
 async function loadDynamicContent() {
+  const advertiserGrid = document.getElementById("advertiser-grid");
+
   try {
     // Busca parceiros com plano 'plus' ou 'advance' para os carrosséis
     const partnersRef = collection(db, "partners");
@@ -86,78 +88,14 @@ async function loadDynamicContent() {
     new InfiniteCarousel("partners-carousel-track", premiumPartners).init();
     new TestimonialsCarousel(testimonials).init();
     initAdvertiserGrid(basicPartners);
+
   } catch (error) {
     console.error("Erro ao carregar conteúdo dinâmico:", error);
-    // Aqui você poderia exibir uma mensagem de erro na UI
+    if (advertiserGrid) {
+      advertiserGrid.innerHTML = `<p class="text-center text-red-400 col-span-full">Não foi possível carregar os parceiros. Tente recarregar a página.</p>`;
+    }
   }
 }
 
 // Chama a função para carregar o conteúdo dinâmico
 loadDynamicContent();
-
-// --- MÓDULO DE INTERNACIONALIZAÇÃO (i18n) ---
-class LanguageSwitcher {
-  constructor() {
-    this.switcher = document.getElementById("language-switcher");
-    this.translations = {};
-  }
-
-  init() {
-    if (!this.switcher) return;
-
-    this.switcher.addEventListener("change", (e) => {
-      this.translatePage(e.target.value);
-    });
-
-    // Define o idioma inicial
-    this.loadAndTranslate(this.switcher.value);
-  }
-
-  async loadAndTranslate(lang) {
-    if (!this.translations[lang]) {
-      try {
-        const response = await fetch(`/locales/${lang}.json`);
-        this.translations[lang] = await response.json();
-      } catch (error) {
-        console.error(
-          `[i18n] Falha ao carregar o arquivo de idioma para '${lang}'`,
-          error,
-        );
-        return;
-      }
-    }
-    this.translatePage(lang);
-  }
-
-  translatePage(lang) {
-    const elements = document.querySelectorAll("[data-i18n]");
-    const attrElements = document.querySelectorAll("[data-i18n-attr]");
-    const langStrings = this.translations[lang];
-
-    // Traduz textos
-    elements.forEach((el) => {
-      const key = el.getAttribute("data-i18n");
-      if (langStrings[key]) {
-        el.innerHTML = langStrings[key];
-      } else {
-        console.warn(`[i18n] Chave '${key}' não encontrada para '${lang}'`);
-      }
-    });
-
-    // Traduz atributos (ex: placeholder)
-    attrElements.forEach((el) => {
-      const attrConfig = el.getAttribute("data-i18n-attr");
-      // Ex: "placeholder:search.placeholder,title:search.title"
-      attrConfig.split(",").forEach((conf) => {
-        const [attr, key] = conf.split(":");
-        if (langStrings[key]) {
-          el.setAttribute(attr, langStrings[key]);
-        } else {
-          console.warn(
-            `[i18n] Chave de atributo '${key}' não encontrada para '${lang}'`,
-          );
-        }
-      });
-    });
-  }
-}

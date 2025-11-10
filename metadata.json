@@ -1,5 +1,8 @@
+
 {
   "name": "Sua  Viagem Aqui. IA",
   "description": "Agencia de Viagens",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }
