@@ -84,6 +84,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for Firebase Service Account Secret
+        env:
+          FIREBASE_SA_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SA_SECRET" ]; then
+            echo "===================================================================="
+            echo "====== ERRO CRÍTICO: SEGREDOS DO GITHUB NÃO CONFIGURADOS ======"
+            echo "===================================================================="
+            echo ""
+            echo "O segredo 'FIREBASE_SERVICE_ACCOUNT' não foi encontrado."
+            echo "Isto NÃO é um erro no código. Você precisa configurar os segredos"
+            echo "nas configurações do seu repositório no GitHub."
+            echo ""
+            echo "=> POR FAVOR, SIGA AS INSTRUÇÕES NO TOPO DESTE ARQUIVO"
+            echo "   ('.github/workflows/firebase-ci.yml') PARA RESOLVER."
+            echo ""
+            echo "===================================================================="
+            exit 1
+          fi
+
       # A ação `action-hosting-deploy` lida com o deploy de Functions e Hosting.
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
