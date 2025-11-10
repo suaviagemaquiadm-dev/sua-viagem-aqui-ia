@@ -5,18 +5,12 @@ const { GoogleGenAI } = require("@google/genai");
 
 const { openAIKey } = require("../config");
 
-// Palavras-chave que indicam uma pergunta baseada em localização
-const LOCATION_KEYWORDS = [
-    "onde", "restaurante", "hotel", "ponto turístico", "localização",
-    "perto", "próximo a", "encontrar", "mapa", "endereço"
-];
-
 exports.askChatbot = onCall({ secrets: [openAIKey], region: "southamerica-east1" }, async (request) => {
     if (!request.auth) {
         throw new HttpsError("unauthenticated", "A função só pode ser chamada por um usuário autenticado.");
     }
 
-    const { message, history, userLocation } = request.data;
+    const { message, history } = request.data;
 
     if (!message || typeof message !== "string") {
         throw new HttpsError("invalid-argument", "A mensagem é obrigatória.");
@@ -28,35 +22,19 @@ exports.askChatbot = onCall({ secrets: [openAIKey], region: "southamerica-east1"
             throw new HttpsError("internal", "A chave da API do Gemini não está configurada.");
         }
         const ai = new GoogleGenAI({apiKey: apiKey});
+        
+        const modelName = "gemini-2.5-flash";
 
-        const userMessageLower = message.toLowerCase();
-        const isLocationQuery = LOCATION_KEYWORDS.some(keyword => userMessageLower.includes(keyword));
-
-        let modelName;
-        let tools = [];
-        let toolConfig = {};
-
-        if (isLocationQuery) {
-            modelName = "gemini-2.5-flash";
-            tools.push({ googleMaps: {} });
-            if (userLocation && userLocation.latitude && userLocation.longitude) {
-                toolConfig = {
-                    retrievalConfig: {
-                        latLng: {
-                            latitude: userLocation.latitude,
-                            longitude: userLocation.longitude
-                        }
-                    }
-                };
-            }
-             logger.info("Usando Gemini Flash com Google Maps Grounding.");
-        } else {
-            modelName = "gemini-2.5-flash-lite";
-             logger.info("Usando Gemini Flash Lite para resposta rápida.");
-        }
-
+        const systemInstruction = `
+            Você é um assistente de viagens amigável e prestativo para a plataforma "Sua Viagem Aqui".
+            Sua principal função é ajudar os usuários a planejar suas viagens, dar sugestões de destinos,
+            responder a perguntas sobre a plataforma e fornecer informações turísticas gerais.
+            Seja conciso e direto. Use formatação Markdown (como listas e negrito) para melhorar a legibilidade.
+            Nunca diga que você é uma IA. Aja como um especialista humano.
+        `;
+        
         const chatHistory = (history || []).map(msg => ({
-            role: msg.role,
+            role: msg.role === 'bot' ? 'model' : 'user',
             parts: [{ text: msg.text }],
         }));
 
@@ -66,17 +44,15 @@ exports.askChatbot = onCall({ secrets: [openAIKey], region: "southamerica-east1"
             model: modelName,
             contents: contents,
             config: {
-                tools: tools.length > 0 ? tools : undefined,
-                toolConfig: Object.keys(toolConfig).length > 0 ? toolConfig : undefined,
+                systemInstruction: systemInstruction,
             }
         });
 
         const responseText = response.text;
-        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-
+        
         return {
             text: responseText,
-            groundingChunks: groundingChunks
+            groundingChunks: []
         };
 
     } catch (error) {

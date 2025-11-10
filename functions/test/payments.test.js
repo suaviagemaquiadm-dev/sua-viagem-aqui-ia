@@ -30,12 +30,22 @@ const updateStub = sinon.stub().resolves();
 const docStub = sinon.stub().returns({ update: updateStub });
 const collectionStub = sinon.stub().returns({ doc: docStub });
 const dbStub = { collection: collectionStub };
-const originalConfig = require("../config");
+const originalConfig = require("../functions/config");
 
-// Import the functions to be tested using proxyquire to inject mocks for dependencies
+// Stubs V2 functions to return just the handler for direct testing.
+const onCallStub = (options, handler) => handler || options;
+const onRequestStub = (options, handler) => handler || options;
+
+
+// Import the functions to be tested using proxyquire to inject mocks
 const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
-  "../src/payments.js",
+  "../functions/src/payments.js",
   {
+    "firebase-functions/v2/https": {
+      onCall: onCallStub,
+      onRequest: onRequestStub,
+      HttpsError: require("firebase-functions/v2/https").HttpsError,
+    },
     mercadopago: mercadopagoMock,
     "../config": { // Mock the config file
       ...originalConfig,
@@ -169,8 +179,9 @@ describe("Payments Cloud Functions (V2)", () => {
     });
 
     it("deve lançar 'unauthenticated' se o usuário não estiver logado", async () => {
+      const request = { data: {}, auth: null };
       try {
-        await createMercadoPagoPreference({ data: {}, auth: null });
+        await createMercadoPagoPreference(request);
         assert.fail("A função deveria ter lançado um erro");
       } catch (err) {
         assert.equal(err.code, "unauthenticated");

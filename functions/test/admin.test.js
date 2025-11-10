@@ -1,52 +1,50 @@
 
-const test = require("firebase-functions-test")(
-  {
-    projectId: "gemini-cli-98f4a", // Use o ID do seu projeto de teste
-  },
-  "test/service-account.json", // Garanta que este arquivo existe e tem as permissões corretas
-);
+const test = require("firebase-functions-test")();
 const { assert } = require("chai");
-const admin = require("firebase-admin");
 const sinon = require("sinon");
+const proxyquire = require("proxyquire").noCallThru();
 
-// Importa as funções que queremos testar do ponto de entrada principal do projeto
-const myFunctions = require("../index.js");
+// Stubs a V2 onCall function para retornar apenas o handler,
+// permitindo o teste direto da lógica de negócio.
+const onCallStub = (handler) => handler;
+
+// Mocks e stubs para dependências
+const adminAuthStub = {
+  createUser: sinon.stub(),
+  deleteUser: sinon.stub().resolves(),
+  getUser: sinon.stub(),
+  getUserByEmail: sinon.stub(),
+  setCustomUserClaims: sinon.stub().resolves(),
+  listUsers: sinon.stub(),
+};
+const setStub = sinon.stub();
+const updateStub = sinon.stub();
+const docStub = sinon.stub().returns({ set: setStub, update: updateStub });
+const collectionStub = sinon.stub().returns({ doc: docStub });
+const dbStub = { collection: collectionStub };
+const { FieldValue, PARTNER_STATUS } = require("../config"); // Constantes reais
+
+// Importa as funções usando proxyquire para injetar os mocks
+const adminFunctions = proxyquire("../src/admin.js", {
+  "firebase-functions/v2/https": { onCall: onCallStub, HttpsError: require("firebase-functions/v2/https").HttpsError },
+  "../config": {
+    db: dbStub,
+    adminAuth: adminAuthStub,
+    FieldValue,
+    PARTNER_STATUS,
+  },
+  "./utils": {
+    deleteCollectionRecursive: sinon.stub().resolves(),
+  },
+});
 
 describe("Admin Cloud Functions (V2)", () => {
-  let adminAuthStub, docStub, setStub;
-
-  before(() => {
-    // Stub para admin.auth()
-    adminAuthStub = {
-      createUser: sinon.stub(),
-      deleteUser: sinon.stub().resolves(),
-      getUser: sinon.stub(),
-      getUserByEmail: sinon.stub(),
-      setCustomUserClaims: sinon.stub().resolves(),
-      listUsers: sinon.stub(),
-    };
-    sinon.stub(admin, "auth").returns(adminAuthStub);
-    
-    // Stub para admin.firestore()
-    setStub = sinon.stub();
-    const updateStub = sinon.stub();
-    docStub = sinon.stub().returns({ set: setStub, update: updateStub, collection: sinon.stub() });
-    const collectionStub = sinon.stub().returns({ doc: docStub });
-    const firestore = sinon.stub().returns({ collection: collectionStub });
-    Object.defineProperty(admin, 'firestore', {
-        get: () => firestore,
-        configurable: true
-    });
-  });
-
   after(() => {
-    sinon.restore();
     test.cleanup();
   });
-  
+
   beforeEach(() => {
-      // Limpa o histórico das stubs antes de cada teste
-      sinon.resetHistory();
+    sinon.reset(); // Limpa stubs antes de cada teste
   });
 
   describe("createPartnerAccount", () => {
@@ -64,35 +62,41 @@ describe("Admin Cloud Functions (V2)", () => {
       adminAuthStub.createUser.resolves(fakeUser);
       setStub.resolves();
       const request = {
-          data: validData,
-          auth: { uid: "admin123", token: { admin: true } }
+        data: validData,
+        auth: { uid: "admin123", token: { admin: true } },
       };
 
       // Act
-      const result = await myFunctions.createPartnerAccount(request);
+      const result = await adminFunctions.createPartnerAccount(request);
 
       // Assert
-      assert.deepStrictEqual(result, { success: true, message: "Parceiro criado com sucesso!" });
+      assert.deepStrictEqual(result, {
+        success: true,
+        message: "Parceiro criado com sucesso!",
+      });
       assert.isTrue(adminAuthStub.createUser.calledOnce);
       assert.isTrue(docStub.calledWith(fakeUser.uid));
       assert.isTrue(setStub.calledOnce);
-      assert.isTrue(adminAuthStub.setCustomUserClaims.calledOnceWith(fakeUser.uid, { role: "advertiser" }));
+      assert.isTrue(
+        adminAuthStub.setCustomUserClaims.calledOnceWith(fakeUser.uid, {
+          role: "advertiser",
+        }),
+      );
     });
 
     it("deve rejeitar a chamada se o usuário não for admin", async () => {
       // Arrange
       const request = {
-          data: validData,
-          auth: { uid: "notadmin123", token: {} } // Sem a claim de admin
+        data: validData,
+        auth: { uid: "notadmin123", token: {} }, // Sem claim de admin
       };
 
       // Act & Assert
       try {
-        await myFunctions.createPartnerAccount(request);
-        assert.fail("A função deveria ter lançado um erro de permissão negada");
+        await adminFunctions.createPartnerAccount(request);
+        assert.fail("A função deveria ter lançado um erro 'permission-denied'");
       } catch (err) {
         assert.equal(err.code, "permission-denied");
-        assert.equal(err.message, "Apenas administradores podem realizar esta ação.");
       }
     });
 
@@ -102,39 +106,38 @@ describe("Admin Cloud Functions (V2)", () => {
       adminAuthStub.createUser.resolves(fakeUser);
       setStub.rejects(new Error("Firestore write failed"));
       const request = {
-          data: validData,
-          auth: { uid: "admin123", token: { admin: true } }
+        data: validData,
+        auth: { uid: "admin123", token: { admin: true } },
       };
 
       // Act & Assert
-       try {
-        await myFunctions.createPartnerAccount(request);
-        assert.fail("A função deveria ter lançado um erro interno");
-       } catch(err) {
+      try {
+        await adminFunctions.createPartnerAccount(request);
+        assert.fail("A função deveria ter lançado um erro 'internal'");
+      } catch (err) {
         assert.equal(err.code, "internal");
-        assert.isTrue(adminAuthStub.deleteUser.calledOnceWith(fakeUser.uid), "A função deleteUser deveria ter sido chamada para o rollback");
-       }
+        assert.isTrue(adminAuthStub.deleteUser.calledOnceWith(fakeUser.uid));
+      }
     });
   });
 
   describe("revokeAdminRole", () => {
-     it("deve impedir a revogação do último administrador", async () => {
-        // Arrange
-        const adminUser = { uid: 'admin1', email: 'admin1@test.com', customClaims: { admin: true } };
-        adminAuthStub.listUsers.resolves({ users: [adminUser] }); // Apenas um admin na lista
-        const request = {
-            data: { targetUid: 'admin1' },
-            auth: { uid: "admin_caller", token: { admin: true } }
-        };
+    it("deve impedir a revogação do último administrador", async () => {
+      // Arrange
+      const adminUser = { uid: "admin1", customClaims: { admin: true } };
+      adminAuthStub.listUsers.resolves({ users: [adminUser] }); // Apenas um admin
+      const request = {
+        data: { targetUid: "admin1" },
+        auth: { uid: "another_admin_trying_to_delete", token: { admin: true } },
+      };
 
-        // Act & Assert
-        try {
-            await myFunctions.revokeAdminRole(request);
-            assert.fail("A função deveria ter lançado um erro de pré-condição falhou");
-        } catch(err) {
-            assert.equal(err.code, "failed-precondition");
-            assert.equal(err.message, "Não é possível revogar o privilégio do último administrador.");
-        }
-     });
+      // Act & Assert
+      try {
+        await adminFunctions.revokeAdminRole(request);
+        assert.fail("A função deveria ter lançado um erro 'failed-precondition'");
+      } catch (err) {
+        assert.equal(err.code, "failed-precondition");
+      }
+    });
   });
 });

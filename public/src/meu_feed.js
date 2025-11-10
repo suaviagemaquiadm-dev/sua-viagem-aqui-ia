@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (user) {
       await loadFeed(user.uid);
     } else {
-      window.location.href = "pagina_login.html";
+      window.location.href = `pagina_login.html?redirectTo=${encodeURIComponent(window.location.pathname)}`;
     }
   });
 
@@ -82,15 +82,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const authorSnaps = await Promise.all(authorPromises);
       const authors = authorSnaps.reduce((acc, snap) => {
           if (snap.exists()) {
-              acc[snap.id] = snap.data().name;
+              acc[snap.id] = snap.data();
           }
           return acc;
       }, {});
       
       allItineraries.forEach(itinerary => {
-        const authorName = authors[itinerary.ownerId] || "Viajante";
-        const card = createItineraryCard(itinerary, itinerary.ownerId, authorName);
-        feedGrid.appendChild(card);
+        const authorData = authors[itinerary.ownerId];
+        if (authorData) {
+            const card = createItineraryCard(itinerary, itinerary.ownerId, authorData);
+            feedGrid.appendChild(card);
+        }
       });
 
       loadingContainer.classList.add("hidden");
@@ -98,11 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Erro ao carregar feed:", error);
       loadingContainer.innerHTML =
-        '<p class="text-red-400">Não foi possível carregar seu feed. Verifique o console para um link de criação de índice no Firestore.</p>';
+        '<p class="text-red-400">Não foi possível carregar seu feed. Você pode precisar criar um índice no Firestore. Verifique o console para o link.</p>';
     }
   }
 
-  function createItineraryCard(itinerary, authorId, authorName) {
+  function createItineraryCard(itinerary, authorId, authorData) {
     const card = document.createElement("div");
     card.className =
       "glass-effect rounded-2xl p-6 flex flex-col justify-between card-hover";
@@ -111,9 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <a href="roteiro_publico.html?user=${authorId}&id=${itinerary.id}" class="block">
                     <h3 class="text-xl font-bold text-white truncate hover:text-amber-400">${itinerary.title}</h3>
                 </a>
-                <p class="text-sm text-slate-400 mt-1">por 
-                    <a href="perfil_publico.html?id=${authorId}" class="font-semibold hover:underline">${authorName}</a>
-                </p>
+                 <div class="flex items-center gap-3 mt-2">
+                    <img src="${authorData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorData.name)}&background=1f2937&color=fcd34d`}" alt="Foto de ${authorData.name}" class="w-8 h-8 rounded-full object-cover">
+                    <p class="text-sm text-slate-400">por 
+                        <a href="perfil_publico.html?id=${authorId}" class="font-semibold hover:underline">${authorData.name}</a>
+                    </p>
+                </div>
                 <p class="text-sm text-slate-300 mt-4 line-clamp-3">${itinerary.prompt}</p>
             </div>
             <div class="text-right text-amber-400 font-semibold mt-4">

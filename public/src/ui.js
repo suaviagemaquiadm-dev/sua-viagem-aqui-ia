@@ -1,3 +1,4 @@
+
 import { getResizedImageUrl } from "./utils.js";
 
 // --- MÓDULO DE CARROSSÉIS ---
@@ -55,6 +56,7 @@ export class AgencyCarousel extends Carousel {
   }
 
   populate() {
+    if (!this.track) return;
     const shuffledAgencies = [...this.agencies].sort(() => 0.5 - Math.random());
     this.track.innerHTML = "";
     shuffledAgencies.forEach((agency) => {
@@ -69,7 +71,7 @@ export class AgencyCarousel extends Carousel {
     slide.innerHTML = `
       <div class="bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 h-full flex flex-col transform transition-all duration-300 hover:scale-[1.02] hover:shadow-amber-500/10">
         <a href="public_partner_details.html?id=${agency.id}" class="relative h-48 block">
-          <img src="${agency.image || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="Imagem de ${agency.businessName}" class="w-full h-full object-cover" loading="lazy">
+          <img src="${getResizedImageUrl(agency.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="Imagem de ${agency.businessName}" class="w-full h-full object-cover" loading="lazy">
           <div class="absolute top-4 right-4 bg-amber-500 text-slate-900 px-3 py-1 rounded-full text-sm font-bold flex items-center">
             <i class="fas fa-star mr-1 text-xs"></i> ${agency.averageRating || "N/A"}
           </div>
@@ -90,6 +92,7 @@ export class AgencyCarousel extends Carousel {
   }
 
   update() {
+    if (!this.track) return;
     if (window.innerWidth < 640) this.itemsPerView = 1;
     else if (window.innerWidth < 768) this.itemsPerView = 2;
     else this.itemsPerView = 3;
@@ -124,6 +127,7 @@ export class InfiniteCarousel {
   }
 
   populate() {
+    if (this.items.length === 0) return;
     const allItems = [...this.items, ...this.items]; // Duplica para efeito contínuo
     this.track.innerHTML = "";
     allItems.forEach((item) => {
@@ -153,13 +157,14 @@ export class TestimonialsCarousel extends Carousel {
   }
 
   populate() {
+    if (!this.track) return;
     this.track.innerHTML = "";
     this.testimonials.forEach((testimonial) => {
       const slide = document.createElement("div");
       slide.className = "flex-shrink-0 w-full px-4 box-border";
       slide.innerHTML = `
         <div class="glass-effect rounded-2xl p-8 text-center h-full">
-          <img src="${getResizedImageUrl(testimonial.img, '200x200')}" alt="${testimonial.name}" class="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-amber-400 object-cover" loading="lazy">
+          <img src="${getResizedImageUrl(testimonial.img, '200x200') || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=0f172a&color=f59e0b`}" alt="${testimonial.name}" class="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-amber-400 object-cover" loading="lazy">
           <p class="text-lg italic text-slate-300 mb-6">"${testimonial.quote}"</p>
           <h4 class="text-xl font-bold text-white">${testimonial.name}</h4>
           <p class="text-sm text-amber-400">${testimonial.role}</p>
@@ -170,6 +175,7 @@ export class TestimonialsCarousel extends Carousel {
   }
   
   update() {
+    if (!this.track) return;
     this.itemsPerView = 1; // Sempre 1 por vez para depoimentos
     this.track.style.transform = `translateX(-${this.currentIndex * 100}%)`;
     this.prevBtn.disabled = this.currentIndex === 0;
@@ -192,7 +198,7 @@ export function initAdvertiserGrid(advertisers) {
     card.innerHTML = `
       <div class="relative h-48">
         <a href="public_partner_details.html?id=${ad.id}">
-          <img src="${getResizedImageUrl(ad.image, '400x300')}" alt="${ad.businessName}" class="w-full h-full object-cover" loading="lazy">
+          <img src="${getResizedImageUrl(ad.image, '400x300') || "https://placehold.co/400x300/1e293b/fcd34d?text=SVA"}" alt="${ad.businessName}" class="w-full h-full object-cover" loading="lazy">
         </a>
         <div class="absolute top-2 left-2 bg-slate-900/70 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">${(ad.category || "").replace(/_/g, " ")}</div>
         ${isPlus ? '<div class="absolute top-2 right-2 bg-amber-400 text-slate-900 px-3 py-1 rounded-full text-xs font-bold flex items-center"><i class="fas fa-star mr-1 text-xs"></i> PLUS</div>' : ""}

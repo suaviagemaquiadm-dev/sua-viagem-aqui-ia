@@ -1,3 +1,4 @@
+
 import { showAlert } from "./ui/alert.js";
 import { trackEvent } from "./analytics.js";
 import { db, collection, getDocs, query, where } from "./firebase.js";
@@ -146,7 +147,6 @@ export function initSearch() {
     heroSection.classList.remove("hidden");
     // Limpa todos os campos de busca
     document.getElementById("search-where-input").value = "";
-    document.getElementById("search-day-input").value = "";
     document.getElementById("search-category-select").value = "todos";
     window.scrollTo({ top: 0, behavior: "smooth" });
   });

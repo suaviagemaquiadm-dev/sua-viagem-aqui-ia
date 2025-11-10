@@ -5,6 +5,35 @@ import { showAlert } from "./ui/alert.js";
 let chatHistory = [];
 let converter;
 
+/**
+ * Salva o histórico do chat no sessionStorage.
+ */
+function saveHistory() {
+    try {
+        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+    } catch (error) {
+        console.warn("Não foi possível salvar o histórico do chat:", error);
+    }
+}
+
+/**
+ * Carrega o histórico do chat do sessionStorage.
+ */
+function loadHistory() {
+    try {
+        const savedHistory = sessionStorage.getItem("chatHistory");
+        if (savedHistory) {
+            chatHistory = JSON.parse(savedHistory);
+            const messagesContainer = document.getElementById("chat-messages");
+            messagesContainer.innerHTML = ''; // Limpa antes de recarregar
+            chatHistory.forEach(msg => addMessageToUI(msg.text, msg.role, false));
+        }
+    } catch (error) {
+        console.warn("Não foi possível carregar o histórico do chat:", error);
+        chatHistory = []; // Reseta em caso de erro
+    }
+}
+
 export function initChatbot() {
     const toggleButton = document.getElementById("chatbot-toggle");
     const widget = document.getElementById("chatbot-widget");
@@ -22,11 +51,15 @@ export function initChatbot() {
     } else {
         console.warn("Showdown.js não encontrado. O Markdown não será renderizado no chat.");
     }
+    
+    // Carrega o histórico da sessão ao inicializar
+    loadHistory();
 
     const toggleWidget = (show) => {
         if (show) {
             widget.classList.remove("hidden");
             toggleButton.classList.add("hidden");
+            // Adiciona mensagem de boas-vindas apenas se o chat estiver vazio
             if(chatHistory.length === 0) {
                  setTimeout(() => addMessageToUI("Olá! Como posso te ajudar a planejar sua viagem hoje?", "bot"), 200);
             }
@@ -53,26 +86,11 @@ export function initChatbot() {
             addMessageToUI(message, "user");
             input.value = "";
             showLoadingIndicator();
-            
-            // Tenta obter a localização do usuário para melhores resultados
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const userLocation = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    };
-                    callChatbotFunction(message, userLocation);
-                },
-                (error) => {
-                    console.warn("Não foi possível obter a localização:", error.message);
-                    callChatbotFunction(message, null);
-                },
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-            );
+            callChatbotFunction(message);
         }
     });
     
-    function addMessageToUI(message, role, groundingChunks = []) {
+    function addMessageToUI(message, role, shouldSave = true) {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("chat-message", `chat-message-${role}`);
         
@@ -83,23 +101,14 @@ export function initChatbot() {
             contentHTML = `<p>${message}</p>`;
         }
 
-        if (groundingChunks && groundingChunks.length > 0) {
-            contentHTML += '<div class="grounding-links"><strong>Fontes:</strong><ul>';
-            groundingChunks.forEach(chunk => {
-                if(chunk.maps) {
-                    contentHTML += `<li><a href="${chunk.maps.uri}" target="_blank" rel="noopener noreferrer">${chunk.maps.title}</a></li>`;
-                }
-            });
-            contentHTML += '</ul></div>';
-        }
-
         messageDiv.innerHTML = contentHTML;
 
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
-        if (role !== 'loading') {
+        if (role !== 'loading' && shouldSave) {
             chatHistory.push({ role, text: message });
+            saveHistory(); // Salva o histórico após adicionar uma nova mensagem
         }
     }
     
@@ -119,13 +128,15 @@ export function initChatbot() {
         }
     }
 
-    async function callChatbotFunction(message, userLocation) {
+    async function callChatbotFunction(message) {
         try {
             const askChatbot = httpsCallable(functions, "askChatbot");
-            const result = await askChatbot({ message, history: chatHistory, userLocation });
+            // Envia apenas o histórico recente para economizar tokens
+            const recentHistory = chatHistory.slice(-10); 
+            const result = await askChatbot({ message, history: recentHistory });
             
             removeLoadingIndicator();
-            addMessageToUI(result.data.text, "bot", result.data.groundingChunks);
+            addMessageToUI(result.data.text, "bot");
 
         } catch (error) {
             console.error("Erro ao chamar a função do chatbot:", error);

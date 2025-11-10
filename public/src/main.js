@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+  
+  // Carrega o conteúdo dinâmico após a inicialização básica
+  loadDynamicContent();
 });
 
 /**
@@ -96,6 +99,3 @@ async function loadDynamicContent() {
     }
   }
 }
-
-// Chama a função para carregar o conteúdo dinâmico
-loadDynamicContent();
