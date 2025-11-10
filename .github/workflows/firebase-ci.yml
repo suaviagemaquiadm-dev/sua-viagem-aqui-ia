@@ -1,57 +1,64 @@
-# ##############################################################################
-# ##############################################################################
-# ###                                                                        ###
-# ###      ATENÇÃO: AÇÃO MANUAL NECESSÁRIA PARA CORRIGIR O DEPLOY!           ###
-# ###                                                                        ###
-# ##############################################################################
-# ##############################################################################
+# ############################################################################
+# # 🛑 AÇÃO NECESSÁRIA: Seu deploy está falhando! Por favor, leia isto. 🛑      #
+# ############################################################################
 #
-# O erro de deploy ("Input required and not supplied: firebaseServiceAccount")
-# que está acontecendo NÃO é um erro de CÓDIGO. É um erro de CONFIGURAÇÃO
-# no seu repositório do GitHub.
+# O erro "Input required and not supplied: firebaseServiceAccount" significa
+# que seu repositório do GitHub não tem as credenciais necessárias para fazer o deploy no
+# Firebase. Este é um problema de CONFIGURAÇÃO, não um bug no código.
 #
-# SIGA ESTES PASSOS EXATAMENTE COMO DESCRITO:
+# Por favor, siga estes passos CUIDADOSAMENTE para corrigir permanentemente:
 #
-# --- PASSO 1: VÁ PARA AS CONFIGURAÇÕES DO SEU REPOSITÓRIO GITHUB ---
-#    - Vá para a página principal do seu repositório.
-#    - Clique em "Settings" (ícone de engrenagem).
-#    - No menu à esquerda, clique em "Secrets and variables" -> "Actions".
+# ----------------------------------------------------------------------------
+# 🎯 PASSO 1: VÁ PARA OS SEGREDOS DO GITHUB
+# ----------------------------------------------------------------------------
+#    1. No seu repositório GitHub, clique na aba "Settings".
+#    2. Na barra lateral esquerda, navegue para "Secrets and variables" > "Actions".
+#    3. Você verá uma seção chamada "Repository secrets".
 #
-# --- PASSO 2: APAGUE O SEGREDO ANTIGO (SE EXISTIR) ---
-#    - Na lista de "Repository secrets", procure por "FIREBASE_SERVICE_ACCOUNT".
-#    - Se encontrar, clique em "Remove" ou no ícone de lixeira para apagá-lo.
-#      É importante começar do zero para garantir que está correto.
+# ----------------------------------------------------------------------------
+# 🎯 PASSO 2: APAGUE SEGREDOS ANTIGOS/INCORRETOS (IMPORTANTE!)
+# ----------------------------------------------------------------------------
+#    - Procure por qualquer segredo chamado `FIREBASE_SERVICE_ACCOUNT` ou similar.
+#    - Se encontrar, clique no ícone de lixeira 🗑️ para deletá-lo.
+#    - Isso garante que você comece do zero e evite problemas de configuração antiga.
 #
-# --- PASSO 3: CRIE UM NOVO SEGREDO ---
-#    - Clique no botão "New repository secret".
-#    - No campo "Name", cole EXATAMENTE o seguinte nome:
+# ----------------------------------------------------------------------------
+# 🎯 PASSO 3: CRIE O NOVO SEGREDO
+# ----------------------------------------------------------------------------
+#    1. Clique no botão "New repository secret".
+#    2. No campo "Name", copie e cole EXATAMENTE isto:
 #
-#      FIREBASE_SERVICE_ACCOUNT
+#          FIREBASE_SERVICE_ACCOUNT
 #
-# --- PASSO 4: OBTENHA E COLE O VALOR DO SEGREDO ---
-#    - O valor é o CONTEÚDO COMPLETO do seu arquivo JSON da conta de serviço do Firebase.
-#    - Para obter este arquivo:
-#      1. Abra seu projeto no Console do Firebase: https://console.firebase.google.com/
-#      2. Clique na engrenagem (Configurações do projeto).
-#      3. Vá para a aba "Contas de serviço" (Service accounts).
-#      4. Clique no botão "Gerar nova chave privada" (Generate new private key).
-#      5. Um arquivo .json será baixado. Abra-o com um editor de texto simples (Bloco de Notas, VS Code, etc.).
-#      6. COPIE TUDO, desde o primeiro `{` até o último `}`.
-#      7. VOLTE PARA O GITHUB e COLE este conteúdo no campo "Secret".
+# ----------------------------------------------------------------------------
+# 🎯 PASSO 4: PEGUE O VALOR DO SEGREDO NO FIREBASE
+# ----------------------------------------------------------------------------
+#    1. Abra seu projeto do Firebase: https://console.firebase.google.com/
+#    2. Clique no ícone de engrenagem ⚙️ ao lado de "Visão geral do projeto" e selecione "Configurações do projeto".
+#    3. Vá para a aba "Contas de serviço".
+#    4. Clique no botão "Gerar nova chave privada".
+#    5. Um arquivo `.json` será baixado para o seu computador.
+#    6. Abra este arquivo com um editor de texto simples (como Bloco de Notas, VS Code, TextEdit).
+#    7. Selecione TUDO no arquivo (Ctrl+A ou Cmd+A) e COPIE (Ctrl+C ou Cmd+C).
+#       O conteúdo começa com `{` e termina com `}`.
 #
-# --- PASSO 5: SALVE O SEGREDO ---
-#    - Clique em "Add secret".
+# ----------------------------------------------------------------------------
+# 🎯 PASSO 5: COLE O VALOR NO GITHUB
+# ----------------------------------------------------------------------------
+#    1. Volte para a página de criação de segredo do GitHub.
+#    2. Na caixa de texto grande "Secret", COLE todo o conteúdo JSON que você acabou de copiar.
+#    3. Clique no botão "Add secret".
 #
-# ##############################################################################
-# ###                  TROUBLESHOOTING / ERROS COMUNS                        ###
-# ##############################################################################
+# ----------------------------------------------------------------------------
+# 🤔 ERROS COMUNS A EVITAR
+# ----------------------------------------------------------------------------
+#    ❌ NOME ERRADO: Usar `firebaseServiceAccount` ou qualquer outra variação. DEVE SER `FIREBASE_SERVICE_ACCOUNT`.
+#    ❌ VALOR INCOMPLETO: Não copiar todo o conteúdo JSON, incluindo o `{` e `}`.
+#    ❌ VARIÁVEL, NÃO SEGREDO: Criar uma "Action Variable" em vez de um "Action Secret". Segredos são criptografados.
+#    ❌ REPOSITÓRIO ERRADO: Fazer isso nas configurações de um repositório diferente.
 #
-# - NOME INCORRETO: O nome DEVE SER `FIREBASE_SERVICE_ACCOUNT`, sem espaços, tudo maiúsculo.
-# - VALOR INCOMPLETO: Você precisa copiar o arquivo JSON INTEIRO.
-# - VARIÁVEL VS. SEGREDO: Certifique-se de que você está criando um "Secret", não uma "Variable".
-# - REPOSITÓRIO ERRADO: Garanta que você está nas configurações do repositório correto.
-#
-# ##############################################################################
+# Depois disso, o deploy deve funcionar no seu próximo push para a branch `main`.
+# ############################################################################
 
 name: Build, Test and Deploy to Firebase
 
