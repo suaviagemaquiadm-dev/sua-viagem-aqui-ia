@@ -1,12 +1,15 @@
 # Este workflow constrói, testa e implanta seu projeto Firebase.
 #
-# Para usar este workflow, você precisa:
-# 1. Criar uma conta de serviço no Firebase com o papel "Administrador do Firebase".
-# 2. No console do seu projeto Firebase > Configurações do projeto > Contas de serviço.
-# 3. Clique em "Gerar nova chave privada" e salve o arquivo JSON.
-# 4. No seu repositório GitHub, vá para Settings > Secrets and variables > Actions.
-# 5. Crie um novo "repository secret" com o nome `FIREBASE_SERVICE_ACCOUNT`.
-# 6. Cole todo o conteúdo do arquivo JSON como o valor do segredo.
+# !! AÇÃO NECESSÁRIA !!
+# Para que o deploy funcione, você DEVE configurar um segredo no GitHub:
+# 1. Vá para as configurações do seu repositório no GitHub.
+# 2. Navegue até "Secrets and variables" > "Actions".
+# 3. Clique em "New repository secret".
+# 4. Use o nome `FIREBASE_SERVICE_ACCOUNT` para o segredo.
+# 5. Cole o CONTEÚDO COMPLETO do seu arquivo JSON da conta de serviço do Firebase no valor do segredo.
+#    (Obtenha este arquivo no Console do Firebase > Configurações > Contas de serviço > Gerar nova chave privada)
+#    Se o erro "Input required and not supplied: firebaseServiceAccount" persistir,
+#    verifique se o nome do segredo no GitHub está escrito EXATAMENTE como `FIREBASE_SERVICE_ACCOUNT`.
 
 name: Build, Test and Deploy to Firebase
 
@@ -58,7 +61,7 @@ jobs:
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: gemini-cli-98f4a

@@ -1,4 +1,5 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { GoogleGenAI } = require("@google/genai");
@@ -33,12 +34,14 @@ exports.askChatbot = onCall({ secrets: [openAIKey], region: "southamerica-east1"
             Nunca diga que você é uma IA. Aja como um especialista humano.
         `;
         
-        const chatHistory = (history || []).map(msg => ({
-            role: msg.role === 'bot' ? 'model' : 'user',
-            parts: [{ text: msg.text }],
-        }));
-
-        const contents = [...chatHistory, { role: 'user', parts: [{ text: message }] }];
+        // O SDK do Gemini espera um formato específico para o histórico
+        const contents = [
+            ...history.map(msg => ({
+                role: msg.role === 'bot' ? 'model' : 'user',
+                parts: [{ text: msg.text }],
+            })),
+            { role: 'user', parts: [{ text: message }] }
+        ];
 
         const response = await ai.models.generateContent({
             model: modelName,
@@ -52,7 +55,7 @@ exports.askChatbot = onCall({ secrets: [openAIKey], region: "southamerica-east1"
         
         return {
             text: responseText,
-            groundingChunks: []
+            groundingChunks: [] // Mantido para compatibilidade, caso usemos no futuro
         };
 
     } catch (error) {

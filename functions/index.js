@@ -1,4 +1,5 @@
 
+
 /**
  * Ponto de entrada principal para todas as Cloud Functions.
  * Este arquivo utiliza "lazy loading" para carregar os módulos de função sob demanda,

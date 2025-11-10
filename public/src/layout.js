@@ -1,4 +1,5 @@
 
+
 import { initApp } from './app.js';
 import { initChatbot } from './chatbot.js';
 
@@ -14,7 +15,7 @@ async function loadComponent(selector, filePath) {
     const content = await response.text();
     const element = document.querySelector(selector);
     if (element) element.innerHTML = content;
-  } catch (error)
+  } catch (error) {
     console.error(`Failed to load component into '${selector}':`, error);
   }
 }
