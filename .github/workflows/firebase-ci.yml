@@ -1,17 +1,42 @@
-# Este workflow constrói, testa e implanta seu projeto Firebase.
+# ==============================================================================
+# !! PARE E LEIA: AÇÃO NECESSÁRIA PARA CORRIGIR O ERRO DE DEPLOY !!
+# ==============================================================================
+# O erro "Input required and not supplied: firebaseServiceAccount" que está
+# acontecendo repetidamente NÃO é um problema no código da aplicação.
+# O problema é que o GitHub Actions não está encontrando a chave secreta
+# necessária para se autenticar no Firebase.
 #
-# !! AÇÃO NECESSÁRIA PARA CORRIGIR O ERRO DE DEPLOY !!
-# O erro 'firebaseServiceAccount not supplied' indica que o segredo não foi configurado corretamente.
-# Para corrigir, siga estes passos EXATAMENTE:
+# Para resolver isso PERMANENTEMENTE, siga os passos abaixo CUIDADOSAMENTE:
 #
-# 1. Vá para as configurações do seu repositório no GitHub.
-# 2. Navegue até "Secrets and variables" > "Actions".
-# 3. Clique em "New repository secret".
-# 4. Use o nome `FIREBASE_SERVICE_ACCOUNT_JSON` para o segredo. (ATENÇÃO: o nome foi alterado para forçar a re-configuração).
-# 5. Cole o CONTEÚDO COMPLETO do seu arquivo JSON da conta de serviço do Firebase no valor do segredo.
-#    (Obtenha este arquivo no Console do Firebase > Configurações > Contas de serviço > Gerar nova chave privada).
+# 1.  VÁ PARA SEU REPOSITÓRIO NO GITHUB.
 #
-# Verifique se não há espaços extras e se o nome do segredo é idêntico a `FIREBASE_SERVICE_ACCOUNT_JSON`.
+# 2.  CLIQUE EM "SETTINGS" (CONFIGURAÇÕES) no topo da página.
+#
+# 3.  NO MENU ESQUERDO, CLIQUE EM "SECRETS AND VARIABLES" E DEPOIS EM "ACTIONS".
+#
+# 4.  VERIFIQUE SE EXISTE UM SEGREDO CHAMADO `FIREBASE_SERVICE_ACCOUNT`.
+#     - Se existir, delete-o. Vamos criar um novo para garantir que está correto.
+#
+# 5.  CLIQUE NO BOTÃO "NEW REPOSITORY SECRET".
+#
+# 6.  NO CAMPO "NAME", DIGITE EXATAMENTE:
+#     FIREBASE_SERVICE_ACCOUNT
+#
+# 7.  NO CAMPO "SECRET", VOCÊ PRECISA COLAR O CONTEÚDO INTEIRO DO ARQUIVO JSON
+#     DA SUA CONTA DE SERVIÇO DO FIREBASE.
+#     - Para obter este arquivo:
+#       a. Abra seu projeto no Console do Firebase (https://console.firebase.google.com/).
+#       b. Clique na engrenagem ao lado de "Project Overview" e selecione "Project settings".
+#       c. Vá para a aba "Service accounts".
+#       d. Clique em "Generate new private key" e confirme.
+#       e. Um arquivo .json será baixado. Abra-o com um editor de texto.
+#       f. Copie TODO o conteúdo do arquivo (desde o `{` inicial até o `}` final).
+#       g. Cole esse conteúdo no campo "Secret" do GitHub.
+#
+# 8.  CLIQUE EM "ADD SECRET".
+#
+# Após seguir estes passos, o próximo deploy deverá funcionar.
+# ==============================================================================
 
 name: Build, Test and Deploy to Firebase
 
@@ -64,6 +89,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: gemini-cli-98f4a
