@@ -34,7 +34,6 @@ on:
   pull_request:
     branches:
       - main # Aciona em pull requests para a branch principal
-  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build_and_test:
@@ -64,7 +63,8 @@ jobs:
     name: Deploy to Firebase
     needs: build_and_test
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    # A condição foi alterada: agora o deploy só roda em 'push' para a branch 'main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
       - name: Checkout repository
