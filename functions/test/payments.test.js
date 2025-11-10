@@ -10,6 +10,12 @@ const sinon = require("sinon");
 const crypto = require("crypto");
 const proxyquire = require("proxyquire").noCallThru();
 
+// Stubs a V2 onCall function for direct handler testing.
+const onCallStub = (handler) => handler;
+// Stubs a V2 onRequest function for direct handler testing.
+const onRequestStub = (options, handler) => handler || options;
+
+
 // Mock 'mercadopago' before it's imported by the functions file.
 const mercadopagoMock = {
   configure: sinon.stub(),
@@ -36,6 +42,7 @@ const originalConfig = require("../config");
 const { createMercadoPagoPreference, mercadoPagoWebhook } = proxyquire(
   "../src/payments.js",
   {
+    "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError: require("firebase-functions/v2/https").HttpsError },
     mercadopago: mercadopagoMock,
     "../config": { // Mock the config file
       ...originalConfig,
