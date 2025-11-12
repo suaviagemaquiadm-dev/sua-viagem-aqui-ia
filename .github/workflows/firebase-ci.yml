@@ -1,8 +1,33 @@
-#
-# ARQUIVO INTENCIONALMENTE DESATIVADO
-#
-# O pipeline de CI/CD foi desativado para reverter para um processo de deploy manual,
-# a fim de remover bloqueios no desenvolvimento.
-#
-# Para instruções de deploy, consulte o arquivo DEPLOY.md na raiz do projeto.
-#
+name: CI/CD - Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - principal
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'functions/package-lock.json'
+
+      - name: Install dependencies for functions
+        run: |
+          cd functions
+          npm ci
+
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions,hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
