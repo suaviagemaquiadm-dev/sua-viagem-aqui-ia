@@ -18,6 +18,9 @@ jobs:
           node-version: '22'
           cache: 'npm' # Cache for root dependencies
       
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       - name: Install root dependencies (Vite)
         run: npm ci
 
