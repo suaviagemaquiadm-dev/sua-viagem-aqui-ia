@@ -1,4 +1,3 @@
-
 import { protectPage } from "./auth-guard.js";
 import {
   db,
@@ -94,6 +93,15 @@ protectPage("advertiser", (user, partnerData) => {
 
   // --- Tab Logic ---
   function setupTabs() {
+    tabsContainer.setAttribute("role", "tablist");
+    tabButtons.forEach(button => {
+        button.setAttribute("role", "tab");
+        const panelId = `tab-${button.dataset.tab}`;
+        button.setAttribute("aria-controls", panelId);
+        button.setAttribute("aria-selected", button.classList.contains("active"));
+    });
+
+
     tabsContainer.addEventListener("click", (e) => {
       const targetButton = e.target.closest(".tab-button");
       if (!targetButton) return;
@@ -104,8 +112,13 @@ protectPage("advertiser", (user, partnerData) => {
       if(offersUnsubscribe) offersUnsubscribe();
       if(postsUnsubscribe) postsUnsubscribe();
 
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabButtons.forEach((btn) => {
+          btn.classList.remove("active");
+          btn.setAttribute("aria-selected", "false");
+      });
       targetButton.classList.add("active");
+      targetButton.setAttribute("aria-selected", "true");
+
 
       tabPanels.forEach((panel) => {
         panel.classList.toggle("hidden", panel.id !== `tab-${tabName}`);

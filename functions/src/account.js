@@ -1,7 +1,9 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
-const { db } = require("../config");
+const nodemailer = require("nodemailer");
+const { db, adminAuth, gmailEmail, gmailAppPassword } = require("../config");
 
 /**
  * Generates a unique control code for a user or partner.
@@ -58,4 +60,57 @@ exports.generateAndAssignControlCode = onCall(async (request) => {
         logger.error(`Erro ao atribuir código de controle para ${userId}:`, error);
         throw new HttpsError("internal", "Falha ao salvar o código de controle.");
     }
+});
+
+
+/**
+ * Envia um e-mail de redefinição de senha de forma segura, sem revelar se o e-mail existe.
+ */
+exports.sendPasswordResetEmail = onCall({ secrets: [gmailAppPassword, "GMAIL_EMAIL"], region: "southamerica-east1" }, async (request) => {
+    const userGmail = process.env.GMAIL_EMAIL;
+    const appPassword = process.env.GMAIL_APP_PASSWORD;
+    const email = request.data.email;
+
+    if (!email) {
+      throw new HttpsError("invalid-argument", "O e-mail é obrigatório.");
+    }
+
+    try {
+      const user = await adminAuth.getUserByEmail(email);
+      const link = await adminAuth.generatePasswordResetLink(email);
+
+      const mailTransport = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: userGmail,
+          pass: appPassword,
+        },
+      });
+
+      const mailOptions = {
+        from: `"Sua Viagem Aqui" <${userGmail}>`,
+        to: email,
+        subject: "Redefinição de Senha - Sua Viagem Aqui",
+        html: `
+            <p>Olá ${user.displayName || ''},</p>
+            <p>Recebemos uma solicitação para redefinir sua senha. Clique no link abaixo para criar uma nova senha:</p>
+            <p><a href="${link}">Redefinir Senha</a></p>
+            <p>Se você não solicitou isso, pode ignorar este e-mail.</p>
+            <p>Atenciosamente,<br>Equipe Sua Viagem Aqui</p>
+        `,
+      };
+
+      await mailTransport.sendMail(mailOptions);
+      logger.info(`E-mail de redefinição de senha enviado para ${email}.`);
+
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        logger.info(`Solicitação de redefinição de senha para e-mail não existente: ${email}. Nenhuma ação tomada.`);
+      } else {
+        logger.error(`Erro ao processar redefinição de senha para ${email}:`, error);
+      }
+    }
+    
+    // Sempre retorna sucesso para o cliente para evitar enumeração de usuários.
+    return { success: true };
 });

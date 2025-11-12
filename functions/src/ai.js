@@ -1,5 +1,3 @@
-
-
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
@@ -13,7 +11,7 @@ const { openAIKey } = require("../config");
  * Apenas para usuários com a role 'traveler_plus'.
  */
 exports.generateItinerary = onCall(
-  { secrets: [openAIKey] },
+  { secrets: [openAIKey], region: "southamerica-east1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError(
@@ -39,12 +37,11 @@ exports.generateItinerary = onCall(
     }
 
     try {
-      // O nome do segredo é convertido para maiúsculas no process.env
-      const apiKey = openAIKey.value();
-      if (!apiKey) {
+      const geminiApiKey = openAIKey.value();
+      if (!geminiApiKey) {
         throw new Error("A chave de API do Gemini não está configurada no ambiente.");
       }
-      const ai = new GoogleGenAI({apiKey: apiKey});
+      const ai = new GoogleGenAI({apiKey: geminiApiKey});
       
       const systemInstruction = `
           Você é um especialista em viagens e um assistente para a plataforma "Sua Viagem Aqui".
@@ -71,6 +68,9 @@ exports.generateItinerary = onCall(
       });
 
       const itineraryMarkdown = response.text;
+      if (!itineraryMarkdown) {
+        throw new Error("A resposta da IA estava vazia.");
+      }
       
       // Salva o roteiro no Firestore
       const userItinerariesRef = db.collection('users').doc(request.auth.uid).collection('itineraries');
@@ -82,7 +82,6 @@ exports.generateItinerary = onCall(
           createdAt: FieldValue.serverTimestamp(),
           public: false, // Roteiros são privados por padrão
       });
-
 
       // Monitoramento (SRE): Incrementa o contador de roteiros gerados
       const metricsRef = db.doc("stats/metrics");
@@ -103,15 +102,14 @@ exports.generateItinerary = onCall(
 
 /**
  * Sugere um destino de viagem aleatório usando a API do Gemini.
- * Esta função é pública e não requer autenticação.
  */
 exports.suggestDestination = onCall({ secrets: [openAIKey], region: "southamerica-east1" }, async (request) => {
     try {
-        const apiKey = openAIKey.value();
-        if (!apiKey) {
+        const geminiApiKey = openAIKey.value();
+        if (!geminiApiKey) {
             throw new HttpsError("internal", "A chave da API do Gemini não está configurada.");
         }
-        const ai = new GoogleGenAI({apiKey: apiKey});
+        const ai = new GoogleGenAI({apiKey: geminiApiKey});
 
         const systemInstruction = `
             Você é um especialista em viagens criativo para a plataforma "Sua Viagem Aqui".
@@ -146,7 +144,6 @@ exports.suggestDestination = onCall({ secrets: [openAIKey], region: "southameric
         });
         
         const result = JSON.parse(response.text);
-
         return { success: true, data: result };
 
     } catch (error) {

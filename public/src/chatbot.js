@@ -1,5 +1,3 @@
-
-
 import { httpsCallable, functions, auth } from "./firebase.js";
 import { showAlert } from "./ui/alert.js";
 
@@ -41,28 +39,31 @@ export function initChatbot() {
     const closeButton = document.getElementById("chatbot-close");
     const form = document.getElementById("chat-input-form");
     const messagesContainer = document.getElementById("chat-messages");
+    const suggestionsContainer = document.getElementById("chat-suggestions");
 
     if (!toggleButton || !widget || !closeButton || !form) {
         console.warn("Elementos do chatbot não encontrados. O chatbot não será inicializado.");
         return;
     }
     
+    // As bibliotecas 'showdown' e 'DOMPurify' devem ser carregadas globalmente (ex: no HTML principal via CDN)
     if (typeof showdown !== 'undefined') {
         converter = new showdown.Converter();
     } else {
         console.warn("Showdown.js não encontrado. O Markdown não será renderizado no chat.");
     }
     
-    // Carrega o histórico da sessão ao inicializar
     loadHistory();
 
     const toggleWidget = (show) => {
         if (show) {
             widget.classList.remove("hidden");
             toggleButton.classList.add("hidden");
-            // Adiciona mensagem de boas-vindas apenas se o chat estiver vazio
             if(chatHistory.length === 0) {
-                 setTimeout(() => addMessageToUI("Olá! Como posso te ajudar a planejar sua viagem hoje?", "bot"), 200);
+                 setTimeout(() => {
+                    addMessageToUI("Olá! Sou seu assistente de viagem. Como posso te ajudar hoje?", "bot");
+                    renderSuggestions();
+                 }, 200);
             }
         } else {
             widget.classList.add("hidden");
@@ -82,6 +83,7 @@ export function initChatbot() {
 
         const input = document.getElementById("chat-input");
         const message = input.value.trim();
+        suggestionsContainer.innerHTML = ""; // Limpa sugestões
 
         if (message) {
             addMessageToUI(message, "user");
@@ -90,26 +92,55 @@ export function initChatbot() {
             callChatbotFunction(message);
         }
     });
+
+    function renderSuggestions() {
+        const suggestions = [
+            "Sugira um destino de praia",
+            "Como funciona o plano Plus?",
+            "Quero anunciar meu negócio"
+        ];
+        suggestionsContainer.innerHTML = "";
+        suggestions.forEach(text => {
+            const button = document.createElement("button");
+            button.className = "bg-slate-700 text-slate-200 text-sm px-3 py-1 rounded-full hover:bg-slate-600 transition-colors";
+            button.textContent = text;
+            button.onclick = () => {
+                if (!auth.currentUser) {
+                    showAlert("Por favor, faça login para usar o assistente.");
+                    return;
+                }
+                addMessageToUI(text, "user");
+                suggestionsContainer.innerHTML = ""; // Limpa sugestões após clique
+                showLoadingIndicator();
+                callChatbotFunction(text);
+            };
+            suggestionsContainer.appendChild(button);
+        });
+    }
     
     function addMessageToUI(message, role, shouldSave = true) {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("chat-message", `chat-message-${role}`);
         
-        let contentHTML;
-        if (converter) {
-            contentHTML = converter.makeHtml(message);
+        let sanitizedHtml;
+        if (converter && window.DOMPurify) {
+            const rawHtml = converter.makeHtml(message);
+            sanitizedHtml = window.DOMPurify.sanitize(rawHtml);
         } else {
-            contentHTML = `<p>${message}</p>`;
+            // Fallback seguro para texto puro se as bibliotecas não estiverem disponíveis
+            const p = document.createElement('p');
+            p.textContent = message;
+            sanitizedHtml = p.outerHTML;
         }
 
-        messageDiv.innerHTML = contentHTML;
+        messageDiv.innerHTML = sanitizedHtml;
 
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
         if (role !== 'loading' && shouldSave) {
             chatHistory.push({ role, text: message });
-            saveHistory(); // Salva o histórico após adicionar uma nova mensagem
+            saveHistory();
         }
     }
     
@@ -132,7 +163,6 @@ export function initChatbot() {
     async function callChatbotFunction(message) {
         try {
             const askChatbot = httpsCallable(functions, "askChatbot");
-            // Envia apenas o histórico recente para economizar tokens
             const recentHistory = chatHistory.slice(-10); 
             const result = await askChatbot({ message, history: recentHistory });
             

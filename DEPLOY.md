@@ -1,45 +1,33 @@
-# Guia de Deploy Manual - Sua Viagem Aqui
+# Guia de Deploy Automatizado (CI/CD) - Sua Viagem Aqui
 
-Este documento descreve o processo para fazer o deploy manual do projeto (Hosting e Functions) para o Firebase.
+Este documento descreve o processo de deploy da aplicação, que é 100% automatizado através de um pipeline de Integração Contínua e Entrega Contínua (CI/CD) utilizando GitHub Actions.
 
-## Pré-requisitos
+## Processo de Deploy
 
-1.  **Node.js:** Certifique-se de que o Node.js (versão 22 ou superior) está instalado.
-2.  **Firebase CLI:** Você precisa ter o Firebase Command Line Interface instalado globalmente.
+O deploy para o ambiente de produção (Firebase Hosting e Functions) é acionado automaticamente sempre que novas alterações são enviadas (`push`) ou mescladas (`merge`) na branch `principal` do repositório.
 
-## Passos para o Deploy
-
-### 1. Instalar o Firebase CLI
-
-Se você nunca instalou o Firebase CLI na sua máquina, execute o seguinte comando no seu terminal:
+**Para fazer o deploy de novas alterações, o único passo necessário é:**
 
 ```bash
-npm install -g firebase-tools
+git push origin principal
 ```
 
-### 2. Autenticar com o Firebase
+Ou, ao mesclar uma branch de funcionalidade na `principal` através de um Pull Request.
 
-Antes de fazer o deploy, você precisa fazer login na sua conta do Google associada ao projeto do Firebase.
+## O Que o Pipeline Faz?
 
-```bash
-firebase login
-```
+O workflow automatizado, definido em `.github/workflows/firebase-ci.yml`, executa as seguintes etapas críticas para garantir a segurança, qualidade e performance da aplicação:
 
-Este comando abrirá uma janela no seu navegador para que você possa autenticar. Se você já estiver logado, ele confirmará a conta ativa.
-
-### 3. Executar o Deploy
-
-Navegue até a pasta raiz do seu projeto no terminal e execute o seguinte comando:
-
-```bash
-firebase deploy
-```
-
-Este comando fará o seguinte:
-- **Compilará e publicará** suas Cloud Functions (da pasta `functions`).
-- **Publicará** os arquivos do seu site (da pasta `public`) no Firebase Hosting.
-
-Aguarde o processo ser concluído. O terminal exibirá o progresso e, ao final, confirmará que o deploy foi realizado com sucesso, mostrando as URLs do seu Hosting e das suas Functions.
+1.  **Instala as Dependências:** Instala as dependências do frontend (Vite) e do backend (Cloud Functions).
+2.  **Build do Frontend:** Executa o comando `npm run build`, que usa o Vite para compilar, otimizar e minificar todos os arquivos HTML, CSS e JavaScript, gerando uma versão de alta performance na pasta `dist`.
+3.  **Auditoria de Segurança:** Roda `npm audit` nas dependências do backend para detectar vulnerabilidades conhecidas.
+4.  **Execução de Testes:** Roda os testes unitários do backend para garantir que a lógica de negócio continua funcionando como esperado.
+5.  **Deploy Seguro:** Apenas se todas as etapas anteriores forem bem-sucedidas, o pipeline faz o deploy do frontend otimizado (pasta `dist`) e das Cloud Functions para o Firebase, usando um token de acesso temporário e seguro.
 
 ---
-**Observação:** Este processo manual foi adotado para agilizar o desenvolvimento. Um pipeline de CI/CD automatizado pode ser reintroduzido no futuro.
+
+### Processo Manual Obsoleto
+
+**Aviso:** O processo de deploy manual (`firebase deploy` executado a partir de uma máquina local) está **obsoleto e estritamente descontinuado**.
+
+Utilizá-lo representa um **risco de segurança** e contorna as etapas de verificação de qualidade e otimização de performance garantidas pelo nosso pipeline automatizado. O pipeline de CI/CD é a **única fonte de verdade** para os deploys.

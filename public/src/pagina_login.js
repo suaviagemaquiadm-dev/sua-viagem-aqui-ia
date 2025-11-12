@@ -1,6 +1,5 @@
 import {
   signInWithEmailAndPassword,
-  sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
@@ -159,18 +158,27 @@ document.addEventListener('DOMContentLoaded', () => {
         sendResetLinkBtn.disabled = true;
 
         try {
-            await sendPasswordResetEmail(auth, email);
+            const sendPasswordReset = httpsCallable(functions, 'sendPasswordResetEmail');
+            await sendPasswordReset({ email });
+            
             resetInstructions.classList.add("hidden");
             resetForm.style.display = "none";
-            resetConfirmation.textContent = "Um link para redefinição de senha foi enviado para o seu e-mail.";
+            resetConfirmation.textContent = "Se existir uma conta com este e-mail, um link para redefinição de senha foi enviado.";
             resetConfirmation.classList.remove("hidden");
         } catch(error) {
-            console.error("Erro ao enviar email de reset:", error);
-            showAlert("Erro ao enviar e-mail de redefinição. Verifique se o e-mail está correto.");
+            console.error("Erro ao chamar a função de reset:", error);
+            // Mostra a mesma mensagem de sucesso para o usuário para não vazar informação
+            resetInstructions.classList.add("hidden");
+            resetForm.style.display = "none";
+            resetConfirmation.textContent = "Se existir uma conta com este e-mail, um link para redefinição de senha foi enviado.";
+            resetConfirmation.classList.remove("hidden");
         } finally {
-            btnText.classList.remove("hidden");
-            btnLoading.classList.add("hidden");
-            sendResetLinkBtn.disabled = false;
+            // Não reativa o botão imediatamente para desencorajar spam
+            setTimeout(() => {
+                 btnText.classList.remove("hidden");
+                 btnLoading.classList.add("hidden");
+                 sendResetLinkBtn.disabled = false;
+            }, 2000);
         }
     });
 });

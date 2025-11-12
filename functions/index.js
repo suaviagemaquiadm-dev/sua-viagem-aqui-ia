@@ -1,86 +1,69 @@
 /**
  * Ponto de entrada principal para todas as Cloud Functions.
- * Este arquivo utiliza "lazy loading" para carregar os módulos de função sob demanda,
- * melhorando a performance de inicialização e prevenindo erros em ambientes de teste.
+ * O código foi refatorado para usar importações diretas, melhorando a clareza,
+ * a manutenibilidade e o rastreamento de erros.
  */
-
-// Objeto para carregar e armazenar módulos de forma preguiçosa
-const functionsMap = {
-  admin: null,
-  account: null,
-  payments: null,
-  users: null,
-  ai: null,
-  contact: null,
-  chatbot: null,
-  reviews: null,
-  analytics: null, // Novo
-  notifications: null, // Novo
-  frontend_config: null, // Novo
-  search: null,
-  partners: null,
-};
-
-/**
- * Carrega um módulo de função sob demanda para evitar a inicialização de todas as funções de uma vez.
- * @param {keyof functionsMap} moduleName O nome do módulo a ser carregado.
- * @returns {object} O módulo de funções exportado.
- */
-function loadFunctions(moduleName) {
-  if (functionsMap[moduleName] === null) {
-    functionsMap[moduleName] = require(`./src/${moduleName}`);
-  }
-  return functionsMap[moduleName];
-}
-
-// Exporta as funções usando getters para acionar o lazy loading
 
 // Funções de Administração
-Object.defineProperty(exports, "createPartnerAccount", { get: () => loadFunctions("admin").createPartnerAccount });
-Object.defineProperty(exports, "deletePartnerAccount", { get: () => loadFunctions("admin").deletePartnerAccount });
-Object.defineProperty(exports, "setPartnerStatus", { get: () => loadFunctions("admin").setPartnerStatus });
-Object.defineProperty(exports, "grantAdminRole", { get: () => loadFunctions("admin").grantAdminRole });
-Object.defineProperty(exports, "revokeAdminRole", { get: () => loadFunctions("admin").revokeAdminRole });
-Object.defineProperty(exports, "listAdmins", { get: () => loadFunctions("admin").listAdmins });
+const adminFunctions = require("./src/admin");
+exports.createPartnerAccount = adminFunctions.createPartnerAccount;
+exports.deletePartnerAccount = adminFunctions.deletePartnerAccount;
+exports.setPartnerStatus = adminFunctions.setPartnerStatus;
+exports.grantAdminRole = adminFunctions.grantAdminRole;
+exports.revokeAdminRole = adminFunctions.revokeAdminRole;
+exports.listAdmins = adminFunctions.listAdmins;
 
 // Funções de Contas
-Object.defineProperty(exports, "generateAndAssignControlCode", { get: () => loadFunctions("account").generateAndAssignControlCode });
+const accountFunctions = require("./src/account");
+exports.generateAndAssignControlCode = accountFunctions.generateAndAssignControlCode;
+exports.sendPasswordResetEmail = accountFunctions.sendPasswordResetEmail;
 
-// Funções relacionadas a Pagamentos
-Object.defineProperty(exports, "mercadoPagoWebhook", { get: () => loadFunctions("payments").mercadoPagoWebhook });
-Object.defineProperty(exports, "createMercadoPagoPreference", { get: () => loadFunctions("payments").createMercadoPagoPreference });
+// Funções de Pagamentos
+const paymentFunctions = require("./src/payments");
+exports.mercadoPagoWebhook = paymentFunctions.mercadoPagoWebhook;
+exports.createMercadoPagoPreference = paymentFunctions.createMercadoPagoPreference;
 
-// Funções relacionadas a Usuários
-Object.defineProperty(exports, "updateUserProfile", { get: () => loadFunctions("users").updateUserProfile });
-Object.defineProperty(exports, "cleanupUserData", { get: () => loadFunctions("users").cleanupUserData });
-Object.defineProperty(exports, "toggleFollowUser", { get: () => loadFunctions("users").toggleFollowUser });
+// Funções de Usuários
+const userFunctions = require("./src/users");
+exports.updateUserProfile = userFunctions.updateUserProfile;
+exports.cleanupUserData = userFunctions.cleanupUserData;
+exports.toggleFollowUser = userFunctions.toggleFollowUser;
 
-// Funções relacionadas à IA
-Object.defineProperty(exports, "generateItinerary", { get: () => loadFunctions("ai").generateItinerary });
-Object.defineProperty(exports, "suggestDestination", { get: () => loadFunctions("ai").suggestDestination });
+// Funções de IA
+const aiFunctions = require("./src/ai");
+exports.generateItinerary = aiFunctions.generateItinerary;
+exports.suggestDestination = aiFunctions.suggestDestination;
 
 // Funções de Contato
-Object.defineProperty(exports, "sendContactEmail", { get: () => loadFunctions("contact").sendContactEmail });
+const contactFunctions = require("./src/contact");
+exports.sendContactEmail = contactFunctions.sendContactEmail;
 
 // Funções do Chatbot
-Object.defineProperty(exports, "askChatbot", { get: () => loadFunctions("chatbot").askChatbot });
+const chatbotFunctions = require("./src/chatbot");
+exports.askChatbot = chatbotFunctions.askChatbot;
 
 // Funções de Avaliações (Reviews)
-Object.defineProperty(exports, "submitReview", { get: () => loadFunctions("reviews").submitReview });
-Object.defineProperty(exports, "updatePartnerRating", { get: () => loadFunctions("reviews").updatePartnerRating });
+const reviewFunctions = require("./src/reviews");
+exports.submitReview = reviewFunctions.submitReview;
+exports.updatePartnerRating = reviewFunctions.updatePartnerRating;
 
 // Funções de Analytics
-Object.defineProperty(exports, "trackProfileView", { get: () => loadFunctions("analytics").trackProfileView });
-Object.defineProperty(exports, "trackWhatsappClick", { get: () => loadFunctions("analytics").trackWhatsappClick });
+const analyticsFunctions = require("./src/analytics");
+exports.trackProfileView = analyticsFunctions.trackProfileView;
+exports.trackWhatsappClick = analyticsFunctions.trackWhatsappClick;
 
 // Funções de Notificações
-Object.defineProperty(exports, "markNotificationsAsRead", { get: () => loadFunctions("notifications").markNotificationsAsRead });
+const notificationFunctions = require("./src/notifications");
+exports.markNotificationsAsRead = notificationFunctions.markNotificationsAsRead;
 
 // Funções de Configuração do Frontend
-Object.defineProperty(exports, "getFrontendConfig", { get: () => loadFunctions("frontend_config").getFrontendConfig });
+const frontendConfigFunctions = require("./src/frontend_config");
+exports.getFrontendConfig = frontendConfigFunctions.getFrontendConfig;
 
 // Funções de Busca
-Object.defineProperty(exports, "searchPartners", { get: () => loadFunctions("search").searchPartners });
+const searchFunctions = require("./src/search");
+exports.searchPartners = searchFunctions.searchPartners;
 
 // Funções da Página Inicial
-Object.defineProperty(exports, "getHomePageData", { get: () => loadFunctions("partners").getHomePageData });
+const partnerFunctions = require("./src/partners");
+exports.getHomePageData = partnerFunctions.getHomePageData;
