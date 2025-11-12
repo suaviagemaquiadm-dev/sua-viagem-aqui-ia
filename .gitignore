@@ -1,1 +1,24 @@
-Criei este arquivo para instruir o Git a ignorar arquivos e diretórios desnecessários, como a pasta node_modules e a pasta de build dist. Isso mantém o repositório limpo, otimiza as operações do Git e é uma prática padrão de desenvolvimento de software.
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
