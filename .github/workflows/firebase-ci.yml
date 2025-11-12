@@ -16,16 +16,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm' # Cache for root dependencies
-      
-      - name: Update npm to latest version
-        run: npm install -g npm@latest
-
-      - name: Clean npm cache
-        run: npm cache clean --force
+          # A opção de cache foi removida para garantir um ambiente completamente
+          # limpo e diagnosticar problemas de corrupção de cache.
 
       - name: Install root dependencies (Vite)
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
