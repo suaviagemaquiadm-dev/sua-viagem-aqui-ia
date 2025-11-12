@@ -26,7 +26,7 @@ O workflow automatizado, definido em `.github/workflows/firebase-ci.yml`, execut
 
 ---
 
-### Processo Manual Obsoleto
+### Processo Manual Obsol9eto
 
 **Aviso:** O processo de deploy manual (`firebase deploy` executado a partir de uma máquina local) está **obsoleto e estritamente descontinuado**.
 

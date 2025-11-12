@@ -1,1 +1,24 @@
-Atualizei o conteúdo para as regras corretas que o Git deve ignorar. Isso é crucial para prevenir que arquivos desnecessários e pesados, como a pasta node_modules, sejam enviados para o repositório.
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
