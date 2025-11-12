@@ -18,18 +18,21 @@ jobs:
           node-version: '22'
           cache: 'npm' # Cache for root dependencies
       
+      - name: Update npm to latest version
+        run: npm install -g npm@latest
+
       - name: Clean npm cache
         run: npm cache clean --force
 
       - name: Install root dependencies (Vite)
-        run: npm ci
+        run: npm install
 
       - name: Build frontend
         run: npm run build
 
       - name: Install dependencies for functions
         working-directory: ./functions
-        run: npm ci
+        run: npm install
 
       - name: Run security audit
         working-directory: ./functions
