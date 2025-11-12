@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-br">
   <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cadastro de Viajante - Sua Viagem Aqui</title>
     <link rel="manifest" href="/manifest.json" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://viacep.com.br wss://*.firebaseio.com https://*.googleapis.com; frame-src 'self' https://*.mercadolibre.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://sdk.mercadopago.com https://maps.googleapis.com; style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: https://*.unsplash.com https://placehold.co https://ui-avatars.com https://*.firebasestorage.googleapis.com https://maps.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' wss://*.firebaseio.com https://*.googleapis.com https://viacep.com.br https://maps.googleapis.com; frame-src 'self' https://*.mercadolibre.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
     <link rel="stylesheet" href="/css/styles.css" />
     <link
       rel="stylesheet"
@@ -44,35 +45,4 @@
           </div>
           <div>
             <label for="confirm-password" class="block text-white text-sm font-semibold mb-3"><i class="fas fa-lock mr-2"></i>Confirme a Senha</label>
-            <input type="password" id="confirm-password" name="confirm-password" required minlength="6" class="form-input"/>
-          </div>
-          <div class="pt-2">
-            <button type="submit" id="submit-btn" class="btn-modern w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl text-lg shadow-xl">
-              <span class="submit-text flex items-center justify-center"><i class="fas fa-user-plus mr-3"></i>Criar Conta</span>
-              <span class="submit-loading hidden items-center justify-center">
-                  <div class="modern-spinner mr-3" style="border-top-color: #111827"></div>Criando...
-              </span>
-            </button>
-          </div>
-          <div class="text-center text-slate-400 pt-2">
-            <p>
-              Já tem uma conta?
-              <a href="pagina_login.html" class="font-semibold text-amber-400 hover:underline">Faça Login</a>
-            </p>
-          </div>
-        </form>
-      </div>
-    </main>
-    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
-        <!-- O rodapé será carregado aqui -->
-    </footer>
-    <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
-        <p id="alert-message" class="text-white text-lg mb-6"></p>
-        <button id="alert-close-btn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-lg transition">OK</button>
-      </div>
-    </div>
-    <script type="module" src="/src/layout.js"></script>
-    <script type="module" src="/src/cadastro_viajante.js"></script>
-  </body>
-</html>
+            <input type="password" id="confirm-password" name="confirm-password"

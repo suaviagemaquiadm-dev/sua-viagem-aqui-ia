@@ -293,3 +293,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .btn-modern { position: relative; overflow: hidden; transition: all 0.3s ease; }
 .btn-modern::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); transition: left 0.5s; }
 .btn-modern:hover::before { left: 100%; }
+.tab-button {
+    @apply px-6 py-3 text-lg font-semibold text-slate-400 border-b-2 border-transparent hover:text-white transition-colors;
+}
+.tab-button.active {
+    @apply text-amber-400 border-amber-400;
+}
+.submit-loading {
+    @apply items-center justify-center;
+}
+.submit-loading .modern-spinner-btn {
+    @apply mr-2;
+}
