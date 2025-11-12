@@ -1,14 +1,9 @@
 import {
-  db,
-  collection,
-  getDocs,
-  query,
-  where,
-  httpsCallable,
-  functions,
   auth,
   doc,
-  getDoc
+  getDoc,
+  httpsCallable,
+  functions
 } from "./firebase.js";
 import { showAlert } from "./ui/alert.js";
 import { initAIRouteBuilder } from "./ai.js";
@@ -57,24 +52,22 @@ function initSubscribeButtons() {
 
 async function loadCarouselsAndGrids() {
     try {
-        const q = query(collection(db, "partners"), where("status", "==", "aprovado"));
-        const snapshot = await getDocs(q);
-        const allPartners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        const premiumPartners = allPartners.filter(p => p.plan === 'advance' || p.plan === 'plus');
-        const basicPartners = allPartners.filter(p => p.plan === 'basic' || p.plan === 'free');
+        const getHomePageData = httpsCallable(functions, 'getHomePageData');
+        const result = await getHomePageData();
+        const { premiumPartners, basicPartners, allPartnersForInfiniteScroll } = result.data;
 
         // Carrossel de Parceiros Premium (Agências)
         new AgencyCarousel(premiumPartners).init();
         
         // Carrossel Infinito de Parceiros
-        new InfiniteCarousel(allPartners).init();
+        new InfiniteCarousel(allPartnersForInfiniteScroll).init();
 
         // Grade de Anunciantes Basic
-        initAdvertiserGrid(basicPartners.sort(() => 0.5 - Math.random()).slice(0, 8));
+        initAdvertiserGrid(basicPartners);
 
     } catch (error) {
         console.error("Erro ao carregar dados para os carrosséis:", error);
+        showAlert("Não foi possível carregar os destaques da página. Tente recarregar.");
     }
 
     // Depoimentos (dados mockados por enquanto)

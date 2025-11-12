@@ -18,6 +18,7 @@ const functionsMap = {
   notifications: null, // Novo
   frontend_config: null, // Novo
   search: null,
+  partners: null,
 };
 
 /**
@@ -80,3 +81,6 @@ Object.defineProperty(exports, "getFrontendConfig", { get: () => loadFunctions("
 
 // Funções de Busca
 Object.defineProperty(exports, "searchPartners", { get: () => loadFunctions("search").searchPartners });
+
+// Funções da Página Inicial
+Object.defineProperty(exports, "getHomePageData", { get: () => loadFunctions("partners").getHomePageData });

@@ -1,10 +1,8 @@
-import { db, collection, getDocs, query, where, orderBy, limit, startAfter, httpsCallable, functions } from "./firebase.js";
+import { functions, httpsCallable } from "./firebase.js";
 import { getResizedImageUrl } from "./utils.js";
 import { initApp } from './app.js';
 
-let lastVisible = null; // Para paginação
-let allPartners = []; // Cache para buscas subsequentes sem filtro de categoria
-let currentQueryConstraints = [];
+let allPartners = []; // Cache for map and re-renders without fetching
 
 const loadingContainer = document.getElementById("loading-container");
 const grid = document.getElementById("partners-grid");
@@ -55,6 +53,16 @@ function initMap(partnersData) {
 
     infoWindow = new google.maps.InfoWindow();
 
+    updateMarkers(partnersData);
+}
+
+/**
+ * Updates markers on the map.
+ * @param {Array} partnersData The data for the markers.
+ */
+function updateMarkers(partnersData) {
+    if (!map) return;
+    
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
     markers = [];
@@ -84,16 +92,13 @@ function initMap(partnersData) {
 }
 
 /**
- * Renderiza a lista de parceiros no grid.
- * @param {Array} partners - A lista de parceiros a ser renderizada.
- * @param {boolean} append - Se deve adicionar aos resultados existentes (paginação).
+ * Renders the list of partners in the grid.
+ * @param {Array} partners - The list of partners to render.
  */
-function renderPartners(partners, append = false) {
-  if (!append) {
-    grid.innerHTML = "";
-  }
+function renderPartners(partners) {
+  grid.innerHTML = "";
 
-  if (partners.length === 0 && !append) {
+  if (partners.length === 0) {
     noResultsMessage.classList.remove("hidden");
     grid.classList.add("hidden");
   } else {
@@ -135,42 +140,27 @@ function renderPartners(partners, append = false) {
 }
 
 /**
- * Executa a busca no Firestore com base nos filtros atuais.
+ * Executes the search by calling the Cloud Function.
  */
 async function performSearch() {
   loadingContainer.classList.remove("hidden");
   grid.classList.add("hidden");
   noResultsMessage.classList.add("hidden");
   
-  const searchText = document.getElementById("search-text").value.toLowerCase().trim();
+  const searchText = document.getElementById("search-text").value;
   const category = document.getElementById("filter-category").value;
   
-  // Reseta a paginação para uma nova busca
-  lastVisible = null; 
-
-  currentQueryConstraints = [where("status", "==", "aprovado")];
-  if (category) {
-      currentQueryConstraints.push(where("category", "==", category));
-  }
-
   try {
-    const q = query(collection(db, "partners"), ...currentQueryConstraints, orderBy("businessName"), limit(24));
-    const querySnapshot = await getDocs(q);
+    const searchPartnersFn = httpsCallable(functions, 'searchPartners');
+    const result = await searchPartnersFn({ text: searchText, category: category });
+    const partners = result.data;
     
-    lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-    
-    allPartners = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    allPartners = partners; // Update local cache
+    renderPartners(partners);
 
-    // Filtro de texto no lado do cliente
-    const filteredPartners = searchText
-      ? allPartners.filter(p => p.businessName.toLowerCase().includes(searchText))
-      : allPartners;
-
-    renderPartners(filteredPartners);
-
-    // Atualiza o mapa com os parceiros filtrados
+    // Update the map with the new filtered partners
     if (window.google && map) {
-        initMap(filteredPartners);
+        updateMarkers(partners);
     }
 
   } catch (error) {
@@ -181,15 +171,17 @@ async function performSearch() {
   }
 }
 
+// Main initialization logic
 document.addEventListener("DOMContentLoaded", async () => {
     initApp();
 
-    // Busca a configuração e carrega o script do mapa primeiro
+    // Fetch config and load Google Maps script first
     try {
         const getFrontendConfig = httpsCallable(functions, 'getFrontendConfig');
         const result = await getFrontendConfig();
         const apiKey = result.data.googleMapsApiKey;
         await loadGoogleMapsScript(apiKey);
+        initMap([]); // Initialize map empty before the first search
     } catch (error) {
         console.error("Falha ao carregar o Google Maps:", error);
         const mapContainer = document.getElementById('map');
@@ -198,7 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     
-    performSearch(); // Carga inicial
+    performSearch(); // Initial load
 
     const searchInput = document.getElementById("search-text");
     const categorySelect = document.getElementById("filter-category");
