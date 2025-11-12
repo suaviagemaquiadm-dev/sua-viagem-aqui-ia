@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }</strong> Seguindo`;
 
         displayBadges(userData.badges || {});
+        displayInterests(userData.interests || []);
         await loadPublicItineraries(viewingUserId);
 
         onAuthStateChanged(auth, (currentUser) => {
@@ -128,6 +129,27 @@ document.addEventListener("DOMContentLoaded", () => {
       badgesGrid.appendChild(badgeElement);
     }
   }
+
+  function displayInterests(interests) {
+    const interestsList = document.getElementById("interests-list");
+    const noInterestsMessage = document.getElementById("no-interests-message");
+    interestsList.innerHTML = "";
+
+    if (!interests || interests.length === 0) {
+      noInterestsMessage.classList.remove("hidden");
+      interestsList.appendChild(noInterestsMessage);
+      return;
+    }
+    
+    noInterestsMessage.classList.add("hidden");
+    interests.forEach(interest => {
+        const tagElement = document.createElement("span");
+        tagElement.className = "tag-item";
+        tagElement.textContent = interest;
+        interestsList.appendChild(tagElement);
+    });
+  }
+
   async function loadPublicItineraries(userId) {
     const grid = document.getElementById("itineraries-grid");
     const noMsg = document.getElementById("no-itineraries-message");

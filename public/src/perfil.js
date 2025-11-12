@@ -175,6 +175,70 @@ protectPage("traveler", (user, userData) => {
       toggleEditMode(false);
   }
 
+  // --- Lógica de Interesses ---
+  const interestsViewContainer = document.getElementById("interests-view-container");
+  const interestsEditContainer = document.getElementById("interests-edit-container");
+  const interestsDisplay = document.getElementById("interests-display");
+  const noInterestsMsg = document.getElementById("no-interests-msg");
+  const interestsInput = document.getElementById("interests-input");
+
+  function renderInterests(interests = []) {
+    if (interests.length === 0) {
+      interestsDisplay.innerHTML = '';
+      noInterestsMsg.classList.remove('hidden');
+      interestsDisplay.appendChild(noInterestsMsg);
+    } else {
+      noInterestsMsg.classList.add('hidden');
+      interestsDisplay.innerHTML = interests
+        .map(interest => `<span class="tag-item">${interest}</span>`)
+        .join('');
+    }
+  }
+
+  document.getElementById("edit-interests-btn").addEventListener("click", () => {
+    interestsInput.value = (userData.interests || []).join(', ');
+    interestsViewContainer.classList.add("hidden");
+    interestsEditContainer.classList.remove("hidden");
+  });
+
+  document.getElementById("cancel-interests-btn").addEventListener("click", () => {
+    interestsEditContainer.classList.add("hidden");
+    interestsViewContainer.classList.remove("hidden");
+  });
+
+  document.getElementById("save-interests-btn").addEventListener("click", async () => {
+    const interestsArray = interestsInput.value
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean); // Remove empty strings
+
+    const saveBtn = document.getElementById("save-interests-btn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Salvando...";
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        interests: interestsArray
+      });
+
+      userData.interests = interestsArray; // Update local state
+      renderInterests(userData.interests);
+      showAlert("Interesses salvos com sucesso!");
+      
+      interestsEditContainer.classList.add("hidden");
+      interestsViewContainer.classList.remove("hidden");
+    } catch (error) {
+      console.error("Erro ao salvar interesses:", error);
+      showAlert("Não foi possível salvar seus interesses.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Salvar";
+    }
+  });
+
+
   // --- Inicialização ---
   populateView(userData);
+  renderInterests(userData.interests); // Initial render of interests
 });

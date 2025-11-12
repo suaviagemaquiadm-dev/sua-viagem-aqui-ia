@@ -236,3 +236,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* Notification badge */
 #notification-badge.active { display: block; }
+
+/* Estilos para Tags de Interesse */
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    background-color: #334155; /* bg-slate-700 */
+    color: #e2e8f0; /* text-slate-200 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600; /* font-semibold */
+    padding: 0.5rem 1rem;
+    border-radius: 9999px; /* rounded-full */
+    border: 1px solid #475569; /* border-slate-600 */
+}

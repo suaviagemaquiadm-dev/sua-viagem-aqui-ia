@@ -1,4 +1,3 @@
-
 <!-- Forçar atualização de cache: 2025-10-09 12:45 -->
 <!doctype html>
 <html lang="pt-br">
@@ -127,6 +126,31 @@
                 <i class="fas fa-stream text-4xl text-cyan-400 mb-4"></i>
                 <h3 class="text-xl font-bold text-white">Meu Feed</h3>
             </a>
+        </div>
+        
+        <!-- Seção de Interesses -->
+        <div class="glass-effect rounded-3xl p-8 md:p-10 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-white">Meus Interesses de Viagem</h2>
+                <button id="edit-interests-btn" class="btn-secondary py-2 px-4 text-sm">
+                    <i class="fas fa-pencil-alt mr-2"></i>Editar
+                </button>
+            </div>
+            <!-- View Mode -->
+            <div id="interests-view-container" class="mt-4">
+                <div id="interests-display" class="flex flex-wrap gap-3">
+                    <p id="no-interests-msg" class="text-slate-400">Você ainda não adicionou nenhum interesse.</p>
+                </div>
+            </div>
+            <!-- Edit Mode -->
+            <div id="interests-edit-container" class="hidden mt-4">
+                <p class="text-slate-300 text-sm mb-2">Digite seus interesses separados por vírgula (ex: Praia, Aventura, Gastronomia).</p>
+                <input type="text" id="interests-input" class="form-input" placeholder="Praia, Aventura, Gastronomia...">
+                <div class="flex gap-4 mt-4">
+                    <button id="save-interests-btn" class="btn-primary py-2 px-5">Salvar</button>
+                    <button id="cancel-interests-btn" class="btn-secondary py-2 px-5">Cancelar</button>
+                </div>
+            </div>
         </div>
 
       </div>
