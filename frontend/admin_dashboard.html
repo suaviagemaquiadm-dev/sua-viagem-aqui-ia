@@ -1,0 +1,148 @@
+
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Admin - Sua Viagem Aqui</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="manifest" href="/manifest.json" />
+    <!-- Impede a indexação desta página -->
+    <link rel="stylesheet" href="/src/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <!-- Adiciona a biblioteca Chart.js com SRI -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha512-Tu2EBrPA5lW4zBSRve1fbNOc83UTDTRSQ5CoP3h1jM5fVdeTLAE2Dk3b3jF2vIsF2T2sVLSFdpw12f3fl1u/2A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" integrity="sha512-4468fISiEzT3MDy+oIWHlD5DSoo0atgs4MLi2v57V3B4N2T5ISy8dY6I28Y2tkrV7p2Tj2gs6HUm2D1w7gy5fA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+  <body class="bg-slate-900 text-slate-300">
+    <!-- Header -->
+    <header
+      id="main-header"
+      class="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-slate-700"
+    >
+        <!-- O cabeçalho será carregado aqui -->
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+      <div id="loading-state" class="text-center py-20">
+        <div class="modern-spinner mx-auto"></div>
+        <p class="mt-4 text-slate-400">Verificando permissões...</p>
+      </div>
+      
+      <div id="permission-denied" class="hidden text-center py-20">
+        <i class="fas fa-lock text-5xl text-red-500 mb-4"></i>
+        <h2 class="text-3xl font-bold">Acesso Negado</h2>
+        <p class="text-slate-400 mt-2">
+          Você não tem permissão para acessar esta página.
+        </p>
+      </div>
+
+      <div id="dashboard-content" class="hidden">
+        <h1 class="text-4xl font-bold text-white mb-8">
+          Dashboard de Métricas
+        </h1>
+
+        <!-- Grid de Métricas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Card Total de Usuários -->
+          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex items-center">
+              <div class="bg-blue-500/20 text-blue-400 rounded-lg p-3 mr-4">
+                <i class="fas fa-users fa-2x"></i>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Total de Usuários</p>
+                <p id="total-users" class="text-3xl font-bold text-white">0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Total de Parceiros -->
+          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex items-center">
+              <div class="bg-green-500/20 text-green-400 rounded-lg p-3 mr-4">
+                <i class="fas fa-handshake fa-2x"></i>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Total de Parceiros</p>
+                <p id="total-partners" class="text-3xl font-bold text-white">
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Roteiros Gerados -->
+          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex items-center">
+              <div class="bg-purple-500/20 text-purple-400 rounded-lg p-3 mr-4">
+                <i class="fas fa-magic fa-2x"></i>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Roteiros Gerados (IA)</p>
+                <p
+                  id="itineraries-generated"
+                  class="text-3xl font-bold text-white"
+                >
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Avaliações Submetidas -->
+          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex items-center">
+              <div class="bg-amber-500/20 text-amber-400 rounded-lg p-3 mr-4">
+                <i class="fas fa-star fa-2x"></i>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Avaliações Submetidas</p>
+                <p id="reviews-submitted" class="text-3xl font-bold text-white">
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de Gráficos -->
+        <div class="mt-12">
+          <h2 class="text-3xl font-bold text-white mb-6">
+            Evolução Diária (Últimos 15 dias)
+          </h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Gráfico de Novos Usuários -->
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 class="text-xl font-semibold text-white mb-4">
+                Novos Usuários por Dia
+              </h3>
+              <canvas id="users-chart"></canvas>
+            </div>
+            <!-- Gráfico de Novos Parceiros -->
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 class="text-xl font-semibold text-white mb-4">
+                Novos Parceiros por Dia
+              </h3>
+              <canvas id="partners-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700">
+        <!-- O rodapé será carregado aqui pelo layout.js -->
+    </footer>
+
+    <script type="module" src="/src/layout.js"></script>
+    <script type="module" src="/src/admin_dashboard.js"></script>
+  </body>
+</html>

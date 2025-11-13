@@ -1,0 +1,83 @@
+
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Oferta - Sua Viagem Aqui</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="/src/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="bg-slate-900 text-slate-200">
+
+    <!-- Header -->
+    <header id="main-header" class="bg-slate-800 shadow-md">
+        <!-- O cabeçalho será carregado aqui pelo layout.js -->
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container mx-auto px-4 py-12">
+        <div id="ad-details-container" class="max-w-4xl mx-auto">
+            <!-- Estado de Carregamento -->
+            <div id="loading-state" class="text-center py-16">
+                <div class="modern-spinner mx-auto"></div>
+                <p class="mt-4 text-slate-400">Carregando detalhes da oferta...</p>
+            </div>
+            <!-- Conteúdo será inserido aqui pelo JS -->
+        </div>
+
+         <!-- Seção de Avaliações -->
+        <section id="reviews-section" class="hidden max-w-4xl mx-auto mt-12">
+            <div class="glass-effect rounded-2xl shadow-2xl p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Avaliações</h2>
+                
+                <!-- Sumário de Avaliações -->
+                <div id="reviews-summary" class="flex items-center gap-4 mb-8">
+                    <!-- Será preenchido por JS -->
+                </div>
+
+                <!-- Lista de Avaliações -->
+                <div id="reviews-list" class="space-y-6">
+                    <!-- Será preenchido por JS -->
+                    <p id="no-reviews-message" class="text-slate-400">Este parceiro ainda não possui avaliações.</p>
+                </div>
+
+                <!-- Formulário para Nova Avaliação -->
+                <div id="review-form-container" class="hidden mt-10 pt-6 border-t border-slate-700">
+                    <h3 class="text-2xl font-bold text-white mb-4">Deixe sua avaliação</h3>
+                    <form id="review-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-2">Sua nota</label>
+                            <div id="rating-stars" class="flex items-center text-3xl text-slate-500">
+                                <i class="far fa-star cursor-pointer" data-value="1"></i>
+                                <i class="far fa-star cursor-pointer" data-value="2"></i>
+                                <i class="far fa-star cursor-pointer" data-value="3"></i>
+                                <i class="far fa-star cursor-pointer" data-value="4"></i>
+                                <i class="far fa-star cursor-pointer" data-value="5"></i>
+                            </div>
+                            <input type="hidden" id="rating-value" name="rating" required>
+                        </div>
+                         <div>
+                            <label for="review-comment" class="block text-sm font-semibold text-slate-300 mb-2">Seu comentário</label>
+                            <textarea id="review-comment" name="comment" rows="4" class="form-input" placeholder="Compartilhe sua experiência..."></textarea>
+                        </div>
+                        <button type="submit" id="submit-review-btn" class="btn-primary">
+                            <span class="submit-text">Enviar Avaliação</span>
+                            <span class="submit-loading hidden"><div class="modern-spinner-btn mr-2"></div>Enviando...</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="bg-slate-800/50 border-t border-slate-700 mt-12">
+        <!-- O rodapé será carregado aqui pelo layout.js -->
+    </footer>
+
+    <script type="module" src="/src/layout.js"></script>
+    <script type="module" src="/src/public_ad_details.js"></script>
+</body>
+</html>
