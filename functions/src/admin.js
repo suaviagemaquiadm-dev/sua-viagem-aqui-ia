@@ -31,11 +31,15 @@ exports.createPartnerAccount = onCall(async (request) => {
 
   const { businessName, ownerName, email, password, plan } = request.data;
 
-  if (!businessName || !ownerName || !email || !password || !plan) {
-    throw new HttpsError(
-      "invalid-argument",
-      "Todos os campos são obrigatórios.",
-    );
+  // Validação de Schema (Hardening)
+  if (
+    typeof businessName !== "string" ||
+    typeof ownerName !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    typeof plan !== "string"
+  ) {
+    throw new HttpsError("invalid-argument", "Todos os campos são obrigatórios e devem ser do tipo correto.");
   }
 
   let userRecord;
@@ -91,8 +95,10 @@ exports.createPartnerAccount = onCall(async (request) => {
 exports.deletePartnerAccount = onCall(async (request) => {
     ensureIsAdmin(request.auth);
     const { partnerId } = request.data;
-    if (!partnerId) {
-        throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
+    
+    // Validação de Schema (Hardening)
+    if (typeof partnerId !== 'string' || partnerId.length === 0) {
+        throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório e inválido.");
     }
 
     try {
@@ -129,11 +135,12 @@ exports.setPartnerStatus = onCall(async (request) => {
     ensureIsAdmin(request.auth);
     const { partnerId, newStatus, reason } = request.data;
 
-    if (!partnerId || !newStatus || !Object.values(PARTNER_STATUS).includes(newStatus)) {
+    // Validação de Schema (Hardening)
+    if (typeof partnerId !== 'string' || !Object.values(PARTNER_STATUS).includes(newStatus)) {
         throw new HttpsError("invalid-argument", "ID do parceiro ou novo status inválido.");
     }
     
-    if (newStatus === PARTNER_STATUS.SUSPENDED && !reason) {
+    if (newStatus === PARTNER_STATUS.SUSPENDED && (typeof reason !== 'string' || reason.length === 0)) {
         throw new HttpsError("invalid-argument", "Um motivo é obrigatório para suspender um parceiro.");
     }
 
@@ -158,7 +165,8 @@ exports.grantAdminRole = onCall(async (request) => {
   ensureIsAdmin(request.auth);
 
   const email = request.data.email;
-  if (!email) {
+  // Validação de Schema (Hardening)
+  if (typeof email !== 'string' || email.length === 0) {
     throw new HttpsError("invalid-argument", "O e-mail do usuário é obrigatório.");
   }
 
@@ -188,7 +196,8 @@ exports.revokeAdminRole = onCall(async (request) => {
   ensureIsAdmin(request.auth);
 
   const { targetUid } = request.data;
-  if (!targetUid) {
+  // Validação de Schema (Hardening)
+  if (typeof targetUid !== 'string' || targetUid.length === 0) {
     throw new HttpsError("invalid-argument", "O UID do usuário é obrigatório.");
   }
   

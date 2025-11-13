@@ -11,8 +11,9 @@ exports.trackProfileView = onCall(async (request) => {
   }
 
   const { partnerId } = request.data;
-  if (!partnerId) {
-    throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
+  // Validação de Schema (Hardening)
+  if (typeof partnerId !== 'string' || partnerId.length === 0) {
+    throw new HttpsError("invalid-argument", "O ID do parceiro é inválido.");
   }
 
   try {
@@ -37,8 +38,9 @@ exports.trackWhatsappClick = onCall(async (request) => {
   }
 
   const { partnerId } = request.data;
-  if (!partnerId) {
-    throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
+  // Validação de Schema (Hardening)
+  if (typeof partnerId !== 'string' || partnerId.length === 0) {
+    throw new HttpsError("invalid-argument", "O ID do parceiro é inválido.");
   }
 
   try {

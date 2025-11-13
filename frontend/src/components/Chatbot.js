@@ -1,0 +1,37 @@
+export function ChatbotComponent() {
+    return `
+        <!-- Botão flutuante para abrir o chat -->
+        <button id="chatbot-toggle" class="fixed bottom-6 right-6 bg-amber-500 text-slate-900 w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-[101] hover:bg-amber-400 transition-transform hover:scale-110" aria-label="Abrir assistente de viagem">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+
+        <!-- Janela do Chatbot -->
+        <div id="chatbot-widget" class="hidden fixed bottom-24 right-6 w-full max-w-sm h-[70vh] max-h-[600px] bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-[100] transition-all duration-300 origin-bottom-right">
+            <!-- Cabeçalho -->
+            <div class="flex-shrink-0 flex justify-between items-center p-4 border-b border-slate-700">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-robot text-amber-400 mr-3"></i>Assistente de Viagem</h3>
+                <button id="chatbot-close" class="text-slate-400 hover:text-white" aria-label="Fechar assistente"><i class="fas fa-times text-xl"></i></button>
+            </div>
+
+            <!-- Mensagens -->
+            <div id="chat-messages" class="flex-grow p-4 space-y-4 overflow-y-auto">
+                <!-- Mensagens serão inseridas aqui -->
+            </div>
+
+            <!-- Sugestões -->
+            <div id="chat-suggestions" class="flex-shrink-0 p-4 pt-0 flex flex-wrap gap-2">
+                <!-- Sugestões de perguntas serão inseridas aqui -->
+            </div>
+
+            <!-- Formulário de Input -->
+            <div class="flex-shrink-0 p-4 border-t border-slate-700">
+                <form id="chat-input-form" class="flex items-center gap-2">
+                    <input type="text" id="chat-input" placeholder="Pergunte sobre sua viagem..." class="form-input flex-grow" autocomplete="off" required>
+                    <button type="submit" class="bg-amber-500 text-slate-900 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" aria-label="Enviar mensagem">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+}

@@ -14,8 +14,13 @@ exports.generateAndAssignControlCode = onCall(async (request) => {
     }
 
     const { userId, userType } = request.data;
-    if (!userId || !userType) {
-        throw new HttpsError("invalid-argument", "O ID do usuário e o tipo são obrigatórios.");
+    
+    // Validação de Schema (Hardening)
+    if (typeof userId !== 'string' || userId.length === 0) {
+        throw new HttpsError("invalid-argument", "O ID do usuário é inválido.");
+    }
+    if (!['vj', 'an'].includes(userType)) {
+        throw new HttpsError("invalid-argument", "O tipo de usuário é inválido.");
     }
 
     const prefix = userType === 'vj' ? 'VJ' : 'AN';
@@ -71,8 +76,10 @@ exports.sendPasswordResetEmail = onCall({ secrets: [gmailAppPassword, "GMAIL_EMA
     const appPassword = process.env.GMAIL_APP_PASSWORD;
     const email = request.data.email;
 
-    if (!email) {
-      throw new HttpsError("invalid-argument", "O e-mail é obrigatório.");
+    // Validação de Schema (Hardening)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof email !== 'string' || !emailRegex.test(email)) {
+      throw new HttpsError("invalid-argument", "O formato do e-mail é inválido.");
     }
 
     try {

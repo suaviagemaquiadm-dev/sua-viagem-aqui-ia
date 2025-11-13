@@ -1,9 +1,10 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { beforeUserDeleted } = require("firebase-functions/v2/auth");
 const logger = require("firebase-functions/logger");
 const { db, FieldValue } = require("../config");
-const { deleteCollectionRecursive } = require("../utils");
+const { deleteCollectionRecursive } = require("./utils");
 
 /**
  * Função para permitir que um usuário autenticado atualize seu próprio perfil.
@@ -19,6 +20,13 @@ exports.updateUserProfile = onCall(async (request) => {
   const userId = request.auth.uid;
   const { name, photoURL } = request.data;
 
+  // Validação de Schema (Hardening)
+  if (name && typeof name !== 'string') {
+      throw new HttpsError("invalid-argument", "O nome fornecido é inválido.");
+  }
+  if (photoURL && typeof photoURL !== 'string') {
+      throw new HttpsError("invalid-argument", "A URL da foto é inválida.");
+  }
   if (!name && !photoURL) {
     throw new HttpsError(
       "invalid-argument",
@@ -90,8 +98,9 @@ exports.toggleFollowUser = onCall(async (request) => {
   const currentUserId = request.auth.uid;
   const { targetUserId } = request.data;
 
-  if (!targetUserId) {
-    throw new HttpsError("invalid-argument", "O ID do usuário alvo é obrigatório.");
+  // Validação de Schema (Hardening)
+  if (typeof targetUserId !== 'string' || targetUserId.length === 0) {
+    throw new HttpsError("invalid-argument", "O ID do usuário alvo é inválido.");
   }
 
   if (currentUserId === targetUserId) {

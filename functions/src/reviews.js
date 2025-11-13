@@ -1,4 +1,5 @@
 
+
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
@@ -20,12 +21,17 @@ exports.submitReview = onCall(async (request) => {
   const { partnerId, rating, comment } = request.data;
   const userId = request.auth.uid;
 
-  if (!partnerId || !rating) {
-    throw new HttpsError("invalid-argument", "ID do parceiro e nota são obrigatórios.");
+  // Validação de Schema (Hardening)
+  if (typeof partnerId !== 'string' || partnerId.length === 0) {
+    throw new HttpsError("invalid-argument", "O ID do parceiro é inválido.");
   }
-  if (rating < 1 || rating > 5) {
-    throw new HttpsError("invalid-argument", "A nota deve ser entre 1 e 5.");
+  if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+    throw new HttpsError("invalid-argument", "A nota deve ser um número entre 1 e 5.");
   }
+  if (comment && typeof comment !== 'string') {
+      throw new HttpsError("invalid-argument", "O comentário deve ser um texto.");
+  }
+
   if (partnerId === userId) {
       throw new HttpsError("failed-precondition", "Você não pode avaliar seu próprio negócio.");
   }
