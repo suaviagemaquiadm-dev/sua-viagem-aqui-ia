@@ -1,7 +1,6 @@
 
-
-import { initApp } from './app.js';
-import { initChatbot } from './chatbot.js';
+import { initApp } from "./app.js";
+import { initChatbot } from "./chatbot.js";
 
 /**
  * Carrega um componente HTML de um arquivo para um seletor específico no DOM.
@@ -21,7 +20,7 @@ async function loadComponent(selector, filePath) {
 }
 
 /**
- * Inicializa a lógica do banner de consentimento de cookies.
+ * Inicializa la lógica del banner de consentimiento de cookies.
  */
 function initCookieBanner() {
   const banner = document.getElementById("cookie-consent-banner");
@@ -30,11 +29,11 @@ function initCookieBanner() {
   if (banner && acceptBtn) {
     // Atraso para evitar que o banner cause CLS (Cumulative Layout Shift)
     setTimeout(() => {
-        if (!localStorage.getItem("cookieConsent")) {
-            banner.classList.remove("hidden");
-        }
+      if (!localStorage.getItem("cookieConsent")) {
+        banner.classList.remove("hidden");
+      }
     }, 1000);
-    
+
     acceptBtn.addEventListener("click", () => {
       localStorage.setItem("cookieConsent", "true");
       banner.classList.add("hidden");
@@ -46,19 +45,19 @@ function initCookieBanner() {
  * Registra o Service Worker para habilitar funcionalidades offline (PWA).
  */
 function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('Service Worker registrado com sucesso:', registration);
-                })
-                .catch(error => {
-                    console.error('Falha ao registrar o Service Worker:', error);
-                });
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("Service Worker registrado com sucesso:", registration);
+        })
+        .catch((error) => {
+          console.error("Falha ao registrar o Service Worker:", error);
         });
-    }
+    });
+  }
 }
-
 
 /**
  * Inicializa o layout principal da página, carregando header e footer.
@@ -66,9 +65,9 @@ function registerServiceWorker() {
 async function initLayout() {
   // Carrega os componentes de layout em paralelo para melhor performance
   await Promise.all([
-    loadComponent('#main-header', '/components/header.html'),
-    loadComponent('#main-footer', '/components/footer.html'),
-    loadComponent('#chatbot-container', '/components/chatbot.html'),
+    loadComponent("#main-header", "/components/header.html"),
+    loadComponent("#main-footer", "/components/footer.html"),
+    loadComponent("#chatbot-container", "/components/chatbot.html"),
   ]);
 
   // Inicializa a lógica principal da aplicação (auth, etc.) APÓS o header estar no DOM
@@ -79,8 +78,8 @@ async function initLayout() {
 }
 
 // Garante que o DOM esteja pronto antes de manipular o layout
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLayout);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initLayout);
 } else {
   initLayout();
 }

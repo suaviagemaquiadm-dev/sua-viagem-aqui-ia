@@ -1,3 +1,4 @@
+
 import { initAuth } from "./auth.js";
 
 /**
@@ -5,6 +6,6 @@ import { initAuth } from "./auth.js";
  * É chamada pelo layout.js após o header ser carregado.
  */
 export function initApp() {
-    initAuth();
-    // Outras inicializações globais podem ser adicionadas aqui no futuro
+  initAuth();
+  // Outras inicializações globais podem ser adicionadas aqui no futuro
 }
