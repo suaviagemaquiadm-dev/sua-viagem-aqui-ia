@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Painel de Administração - Sua Viagem Aqui</title>
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="manifest" href="/manifest.json" />
     <link
       rel="stylesheet"
@@ -14,308 +15,215 @@
       referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="/css/styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+      integrity="sha512-Tu2EBrPA5lW4zBSRve1fbNOc83UTDTRSQ5CoP3h1jM5fVdeTLAE2Dk3b3jF2vIsF2T2sVLSFdpw12f3fl1u/2A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
   </head>
-  <body class="bg-slate-900 text-white">
-    <!-- Header -->
-    <header class="bg-slate-800 shadow-lg sticky top-0 z-40">
-      <div
-        class="container mx-auto px-4 py-4 flex justify-between items-center"
-      >
-        <div class="flex items-center gap-4">
-          <i class="fas fa-user-shield text-amber-400 text-2xl"></i>
-          <h1 class="text-xl font-bold text-white">Painel de Administração</h1>
-        </div>
-        <button
-          id="logout-btn"
-          class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-        >
-          <i class="fas fa-sign-out-alt sm:mr-2"></i
-          ><span class="hidden sm:inline">Sair</span>
-        </button>
+  <body class="bg-slate-900 text-slate-300 flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col border-r border-slate-700"
+    >
+      <div class="flex items-center gap-3 mb-10">
+        <i class="fas fa-user-shield text-amber-400 text-2xl"></i>
+        <h1 class="text-xl font-bold text-white">Admin</h1>
       </div>
-    </header>
+      <nav id="admin-nav" class="flex flex-col gap-2">
+        <a
+          href="#"
+          class="admin-sidebar-link active"
+          data-tab="dashboard"
+          aria-current="page"
+        >
+          <i class="fas fa-tachometer-alt fa-fw mr-3"></i>Dashboard
+        </a>
+        <a href="#" class="admin-sidebar-link" data-tab="partners">
+          <i class="fas fa-handshake fa-fw mr-3"></i>Parceiros
+        </a>
+        <a href="#" class="admin-sidebar-link" data-tab="admins">
+          <i class="fas fa-users-cog fa-fw mr-3"></i>Administradores
+        </a>
+      </nav>
+      <div class="mt-auto">
+        <a
+          href="/index.html"
+          class="admin-sidebar-link"
+        >
+          <i class="fas fa-home fa-fw mr-3"></i>Voltar ao Site
+        </a>
+      </div>
+    </aside>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-      <div id="loading-state" class="text-center py-20">
-        <div class="modern-spinner mx-auto"></div>
-        <p class="mt-4 text-lg">Carregando dados administrativos...</p>
-      </div>
-
-      <div id="permission-denied" class="hidden text-center py-20">
-        <i class="fas fa-lock text-5xl text-red-500 mb-4"></i>
-        <h2 class="text-3xl font-bold">Acesso Negado</h2>
-        <p class="text-slate-400 mt-2">
-          Você não tem permissão para acessar esta página.
-        </p>
-      </div>
-
-      <div id="content-state" class="hidden space-y-8">
-        <!-- Dashboard Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">
-              Total de Parceiros
-            </h3>
-            <p id="total-partners" class="text-3xl font-bold text-white mt-2">
-              0
-            </p>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">Parceiros Ativos</h3>
-            <p
-              id="active-partners"
-              class="text-3xl font-bold text-green-400 mt-2"
-            >
-              0
-            </p>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">
-              Pagamentos Pendentes
-            </h3>
-            <p
-              id="pending-payments"
-              class="text-3xl font-bold text-yellow-400 mt-2"
-            >
-              0
-            </p>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">Assinantes Pagos</h3>
-            <p
-              id="paid-subscribers"
-              class="text-3xl font-bold text-cyan-400 mt-2"
-            >
-              0
-            </p>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">Planos Free</h3>
-            <p id="free-plans" class="text-3xl font-bold text-slate-300 mt-2">
-              0
-            </p>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-slate-400 text-sm font-medium">
-              Denúncias Pendentes
-            </h3>
-            <p
-              id="pending-reports"
-              class="text-3xl font-bold text-red-500 mt-2"
-            >
-              0
-            </p>
-          </div>
+    <main class="flex-1 overflow-y-auto">
+      <div id="loading-state" class="flex items-center justify-center h-full">
+        <div class="text-center">
+          <div class="modern-spinner mx-auto"></div>
+          <p class="mt-4 text-lg">Carregando dados...</p>
         </div>
+      </div>
 
-        <!-- Gráfico e Criação de Parceiro -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div
-            class="lg:col-span-2 bg-slate-800 p-6 rounded-lg border border-slate-700"
+      <div
+        id="permission-denied"
+        class="hidden flex items-center justify-center h-full"
+      >
+        <div class="text-center">
+          <i class="fas fa-lock text-5xl text-red-500 mb-4"></i>
+          <h2 class="text-3xl font-bold">Acesso Negado</h2>
+          <p class="text-slate-400 mt-2">
+            Você não tem permissão para acessar esta página.
+          </p>
+        </div>
+      </div>
+
+      <div id="content-state" class="hidden">
+        <!-- Header -->
+        <header
+          class="p-6 flex justify-between items-center sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10 border-b border-slate-700"
+        >
+          <h2 id="main-title" class="text-2xl font-bold text-white">
+            Dashboard
+          </h2>
+          <button
+            id="logout-btn"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
           >
-            <h3 class="text-lg font-semibold text-white mb-4">
-              Distribuição de Planos
-            </h3>
-            <canvas id="plans-chart"></canvas>
-          </div>
-          <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <h3 class="text-lg font-semibold text-white mb-4">
-              Criar Novo Parceiro Manualmente
-            </h3>
-            <form id="create-partner-form" class="space-y-4">
-              <input
-                type="text"
-                name="create-businessName"
-                placeholder="Nome do Negócio"
-                class="form-input rounded w-full"
-                required
-              />
-              <input
-                type="text"
-                name="create-ownerName"
-                placeholder="Nome do Responsável"
-                class="form-input rounded w-full"
-                required
-              />
-              <input
-                type="email"
-                name="create-email"
-                placeholder="Email de Acesso"
-                class="form-input rounded w-full"
-                required
-              />
-              <input
-                type="password"
-                name="create-password"
-                placeholder="Senha Provisória"
-                class="form-input rounded w-full"
-                required
-              />
-              <select name="create-plan" class="form-input rounded w-full">
-                <option value="free">Free</option>
-                <option value="basic">Basic</option>
-                <option value="plus">Plus</option>
-                <option value="advance">Advance</option>
-              </select>
-              <button
-                type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg"
+            <i class="fas fa-sign-out-alt sm:mr-2"></i
+            ><span class="hidden sm:inline">Sair</span>
+          </button>
+        </header>
+
+        <div class="p-6 space-y-8">
+          <!-- Dashboard Section -->
+          <section id="dashboard-section" class="space-y-8">
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div class="stat-card bg-blue-500/10 border-blue-500/30">
+                <i class="fas fa-users text-blue-400"></i>
+                <div>
+                  <h3 class="stat-card-title">Total de Usuários</h3>
+                  <p id="total-users" class="stat-card-value">0</p>
+                </div>
+              </div>
+              <div class="stat-card bg-green-500/10 border-green-500/30">
+                <i class="fas fa-handshake text-green-400"></i>
+                <div>
+                  <h3 class="stat-card-title">Total de Parceiros</h3>
+                  <p id="total-partners" class="stat-card-value">0</p>
+                </div>
+              </div>
+              <div class="stat-card bg-yellow-500/10 border-yellow-500/30">
+                <i class="fas fa-clock text-yellow-400"></i>
+                <div>
+                  <h3 class="stat-card-title">Aprovações Pendentes</h3>
+                  <p id="pending-approvals" class="stat-card-value">0</p>
+                </div>
+              </div>
+              <div class="stat-card bg-red-500/10 border-red-500/30">
+                <i class="fas fa-exclamation-triangle text-red-400"></i>
+                <div>
+                  <h3 class="stat-card-title">Parceiros Suspensos</h3>
+                  <p id="suspended-partners" class="stat-card-value">0</p>
+                </div>
+              </div>
+            </div>
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div
+                class="lg:col-span-1 bg-slate-800 p-6 rounded-lg border border-slate-700"
               >
-                Criar Conta
-              </button>
-            </form>
-          </div>
-        </div>
+                <h3 class="text-lg font-semibold text-white mb-4">
+                  Distribuição de Planos
+                </h3>
+                <canvas id="plans-chart"></canvas>
+              </div>
+              <div
+                class="lg:col-span-2 bg-slate-800 p-6 rounded-lg border border-slate-700"
+              >
+                <h3 class="text-lg font-semibold text-white mb-4">
+                  Novos Registros (Últimos 15 dias)
+                </h3>
+                <canvas id="daily-regs-chart"></canvas>
+              </div>
+            </div>
+          </section>
 
-        <!-- Seção para Gerenciar Admins -->
-        <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-          <h3 class="text-lg font-semibold text-white mb-4">
-            Gerenciar Administradores
-          </h3>
-          <form id="grant-admin-form" class="flex items-center gap-4">
-            <input
-              type="email"
-              id="admin-email-input"
-              placeholder="E-mail do usuário a ser promovido"
-              class="form-input rounded w-full"
-              required
-            />
-            <button
-              type="submit"
-              class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors whitespace-nowrap"
-            >
-              <i class="fas fa-user-shield mr-2"></i>Promover a Admin
-            </button>
-          </form>
-          <div class="mt-6">
-            <h4 class="text-md font-semibold text-slate-300 mb-2">
-              Administradores Atuais:
-            </h4>
-            <ul id="admin-list" class="space-y-2">
-              <li>
-                <p class="text-slate-500">
-                  <i class="fas fa-spinner fa-spin mr-2"></i>Carregando lista de
-                  administradores...
-                </p>
-              </li>
-            </ul>
-          </div>
-        </div>
+          <!-- Partners Section -->
+          <section id="partners-section" class="hidden space-y-6">
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 class="text-lg font-semibold text-white mb-4">
+                Criar Novo Parceiro
+              </h3>
+              <form id="create-partner-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <input name="create-businessName" placeholder="Nome do Negócio" class="form-input" required/>
+                <input name="create-email" type="email" placeholder="Email de Acesso" class="form-input" required/>
+                <input name="create-password" type="password" placeholder="Senha Provisória" class="form-input" required/>
+                <select name="create-plan" class="form-input">
+                  <option value="free">Free</option>
+                  <option value="basic">Basic</option>
+                  <option value="plus">Plus</option>
+                  <option value="advance">Advance</option>
+                </select>
+                <input name="create-ownerName" placeholder="Nome do Responsável" class="form-input" required/>
+                <button type="submit" class="btn-primary py-3"><i class="fas fa-plus mr-2"></i>Criar Conta</button>
+              </form>
+            </div>
+            <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+              <div class="p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Todos os Parceiros</h3>
+                <input type="text" id="search-partners" placeholder="Buscar parceiro..." class="form-input w-1/3"/>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                  <thead class="text-xs text-slate-400 uppercase bg-slate-700/50">
+                    <tr>
+                      <th class="p-4">Negócio</th>
+                      <th class="p-4">Email</th>
+                      <th class="p-4">Plano</th>
+                      <th class="p-4">Status</th>
+                      <th class="p-4 text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="partners-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-        <!-- Tabela de Gerenciamento de Parceiros -->
-        <div
-          class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
-        >
-          <div class="p-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold">Gerenciar Parceiros</h2>
-            <input
-              type="text"
-              id="search-partners"
-              placeholder="Buscar por nome ou email..."
-              class="form-input rounded w-1/3"
-            />
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-              <thead class="text-xs text-slate-400 uppercase bg-slate-700/50">
-                <tr>
-                  <th class="p-4">Negócio</th>
-                  <th class="p-4">Email</th>
-                  <th class="p-4">Plano</th>
-                  <th class="p-4">Status</th>
-                  <th class="p-4 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="partners-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tabela de Gerenciamento de Denúncias -->
-        <div
-          class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
-        >
-          <div class="p-4">
-            <h2 class="text-xl font-bold">Gerenciar Denúncias Pendentes</h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-              <thead class="text-xs text-slate-400 uppercase bg-slate-700/50">
-                <tr>
-                  <th class="p-4">Parceiro Denunciado</th>
-                  <th class="p-4">Motivo</th>
-                  <th class="p-4">Data</th>
-                  <th class="p-4 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="reports-table-body"></tbody>
-            </table>
-          </div>
+          <!-- Admins Section -->
+          <section id="admins-section" class="hidden">
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 class="text-lg font-semibold text-white mb-4">
+                Gerenciar Administradores
+              </h3>
+              <form id="grant-admin-form" class="flex items-center gap-4 mb-6">
+                <input type="email" id="admin-email-input" placeholder="E-mail do usuário a ser promovido" class="form-input flex-grow" required/>
+                <button type="submit" class="btn-primary py-3 whitespace-nowrap"><i class="fas fa-user-shield mr-2"></i>Promover a Admin</button>
+              </form>
+              <div>
+                <h4 class="text-md font-semibold text-slate-300 mb-2">Administradores Atuais:</h4>
+                <ul id="admin-list" class="space-y-2"></ul>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </main>
 
-    <!-- Modal de Edição -->
-    <div
-      id="edit-modal"
-      class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="modal-content w-full max-w-2xl rounded-lg shadow-xl p-8 max-h-screen overflow-y-auto"
-      >
-        <h3 class="text-2xl font-bold text-white mb-6">Editar Parceiro</h3>
-        <form id="edit-partner-form"></form>
-        <div class="flex justify-end gap-4 mt-6">
-          <button
-            id="close-modal-btn"
-            class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-5 rounded-lg"
-          >
-            Cancelar
-          </button>
-          <button
-            id="save-edit-btn"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg"
-          >
-            Salvar
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal de Alerta/Confirmação -->
-    <div
-      id="alert-modal"
-      class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="modal-content rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600"
-      >
+    <div id="alert-modal" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+      <div class="modal-content rounded-2xl shadow-xl p-8 max-w-sm w-full text-center border border-slate-600">
         <p id="alert-message" class="text-white text-lg mb-6"></p>
         <div class="flex justify-center gap-4">
-          <button
-            id="alert-ok-btn"
-            class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-6 rounded-lg"
-          >
-            OK
-          </button>
-          <button
-            id="alert-cancel-btn"
-            class="hidden bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-lg"
-          >
-            Cancelar
-          </button>
-          <button
-            id="alert-confirm-btn"
-            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg"
-          >
-            Confirmar
-          </button>
+          <button id="alert-ok-btn" class="btn-primary py-2 px-6">OK</button>
+          <button id="alert-cancel-btn" class="hidden btn-secondary py-2 px-6">Cancelar</button>
+          <button id="alert-confirm-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Confirmar</button>
         </div>
       </div>
     </div>
-
     <script type="module" src="/src/admin.js"></script>
   </body>
 </html>

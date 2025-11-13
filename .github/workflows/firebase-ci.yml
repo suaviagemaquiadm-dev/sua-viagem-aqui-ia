@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies for functions
         working-directory: ./functions
-        run: npm install
+        run: npm ci
 
       - name: Run security audit
         working-directory: ./functions
