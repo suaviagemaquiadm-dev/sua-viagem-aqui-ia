@@ -16,8 +16,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          # A opção de cache foi removida para garantir um ambiente completamente
-          # limpo e diagnosticar problemas de corrupção de cache.
 
       - name: Clean npm cache
         run: npm cache clean --force
