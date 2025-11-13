@@ -1,21 +1,26 @@
+
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import { glob } from 'glob';
 
-// Encontra todos os arquivos HTML na pasta 'public' para criar os pontos de entrada
-const htmlFiles = glob.sync('public/**/*.html');
-const input = htmlFiles.reduce((acc, file) => {
-  const name = file.replace('public/', '').replace('.html', '');
-  acc[name] = resolve(__dirname, file);
-  return acc;
-}, {});
-
+// This setup finds all HTML files in the 'public' directory and creates
+// corresponding entry points for the Vite build.
+const input = Object.fromEntries(
+  glob.sync(resolve(__dirname, 'public/**/*.html')).map(file => [
+    // Creates a clean name for the entry point, e.g., 'index' or 'admin'
+    file.slice(resolve(__dirname, 'public').length + 1, -'.html'.length),
+    file
+  ])
+);
 
 export default defineConfig({
-  root: 'public', // A raiz do nosso código-fonte
+  // The 'public' directory is the root of our source files.
+  // Vite will serve from here in development.
+  root: resolve(__dirname, 'public'),
   build: {
-    outDir: 'dist', // Onde o build será gerado
-    emptyOutDir: true, // Limpa o diretório antes de cada build
+    // The build output will be placed in a 'dist' directory inside 'frontend'.
+    outDir: resolve(__dirname, 'dist'),
+    emptyOutDir: true,
     rollupOptions: {
       input,
     },

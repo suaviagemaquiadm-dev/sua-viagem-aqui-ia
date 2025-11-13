@@ -1,3 +1,4 @@
+
 // AVISO: NÃO VOLTAR A USAR UM ARRAY ESTÁTICO DE URLs (urlsToCache).
 // A estratégia dinâmica abaixo é mais robusta, performática e fácil de manter.
 // Ela garante que novos arquivos sejam cacheados e que os usuários recebam
