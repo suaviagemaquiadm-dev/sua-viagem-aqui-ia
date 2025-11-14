@@ -147,7 +147,15 @@ exports.suggestDestination = onCall({ secrets: [openAIKey], region: "southameric
         return { success: true, data: result };
 
     } catch (error) {
-        logger.error("Erro na API do Gemini ao sugerir destino:", error);
+        logger.error("Erro na API do Gemini ao sugerir destino:", {
+            message: error.message,
+            details: error.details, // Gemini API pode fornecer detalhes aqui
+            name: error.name,
+        });
+        // Se for um erro conhecido da API, podemos tratar de forma diferente
+        if (error.name === 'GoogleGenerativeAIResponseError') {
+            throw new HttpsError("unavailable", "O serviço de sugestões está temporariamente sobrecarregado. Tente novamente.");
+        }
         throw new HttpsError(
             "internal",
             "Não foi possível obter uma sugestão no momento. Tente novamente."

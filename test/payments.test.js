@@ -1,5 +1,4 @@
 
-
 const test = require("firebase-functions-test")();
 const { assert } = require("chai");
 const sinon = require("sinon");
@@ -31,12 +30,12 @@ const docStub = sinon.stub();
 const collectionStub = sinon.stub();
 const dbStub = { collection: collectionStub };
 const { HttpsError } = require("firebase-functions/v2/https");
-const originalConfig = require("../functions/config");
+const originalConfig = require("../config");
 
 
 // Import the functions to be tested using proxyquire to inject mocks
 const paymentsFunctions = proxyquire(
-  "../functions/payments.js",
+  "../src/payments.js",
   {
     "firebase-functions/v2/https": { onCall: onCallStub, onRequest: onRequestStub, HttpsError },
     mercadopago: mercadopagoMock,
