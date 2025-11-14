@@ -1,4 +1,5 @@
 
+
 const test = require("firebase-functions-test")();
 const { assert } = require("chai");
 const sinon = require("sinon");
@@ -26,9 +27,9 @@ const dbStub = { collection: collectionStub };
 const { FieldValue, PARTNER_STATUS } = require("../config"); // Constantes reais
 
 // Importa as funções usando proxyquire para injetar os mocks
-const adminFunctions = proxyquire("../src/admin.js", {
+const adminFunctions = proxyquire("../admin.js", {
   "firebase-functions/v2/https": { onCall: onCallStub, HttpsError: require("firebase-functions/v2/https").HttpsError },
-  "../config": {
+  "./config": {
     db: dbStub,
     adminAuth: adminAuthStub,
     FieldValue,

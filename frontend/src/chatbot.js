@@ -1,44 +1,9 @@
-/* global showdown */
 import { auth } from "./firebase.js";
 import { showAlert } from "./ui/alert.js";
 import { callFunction } from "./apiService.js";
 
 let chatHistory = [];
 let converter;
-
-/**
- * Adiciona uma mensagem à interface do chat.
- * @param {string} message O texto da mensagem.
- * @param {string} role O papel (user ou bot).
- * @param {boolean} shouldSave Se a mensagem deve ser salva no histórico.
- */
-function addMessageToUI(message, role, shouldSave = true) {
-    const messagesContainer = document.getElementById("chat-messages");
-    if (!messagesContainer) return;
-
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("chat-message", `chat-message-${role}`);
-    
-    let sanitizedHtml;
-    if (converter && window.DOMPurify) {
-        const rawHtml = converter.makeHtml(message);
-        sanitizedHtml = window.DOMPurify.sanitize(rawHtml);
-    } else {
-        const p = document.createElement('p');
-        p.textContent = message;
-        sanitizedHtml = p.outerHTML;
-    }
-
-    messageDiv.innerHTML = sanitizedHtml;
-
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    if (role !== 'loading' && shouldSave) {
-        chatHistory.push({ role, text: message });
-        saveHistory();
-    }
-}
 
 /**
  * Salva o histórico do chat no sessionStorage.
@@ -60,10 +25,8 @@ function loadHistory() {
         if (savedHistory) {
             chatHistory = JSON.parse(savedHistory);
             const messagesContainer = document.getElementById("chat-messages");
-            if(messagesContainer) {
-                messagesContainer.innerHTML = ''; // Limpa antes de recarregar
-                chatHistory.forEach(msg => addMessageToUI(msg.text, msg.role, false));
-            }
+            messagesContainer.innerHTML = ''; // Limpa antes de recarregar
+            chatHistory.forEach(msg => addMessageToUI(msg.text, msg.role, false));
         }
     } catch (error) {
         console.warn("Não foi possível carregar o histórico do chat:", error);
@@ -84,6 +47,7 @@ export function initChatbot() {
         return;
     }
     
+    // As bibliotecas 'showdown' e 'DOMPurify' devem ser carregadas globalmente (ex: no HTML principal via CDN)
     if (typeof showdown !== 'undefined') {
         converter = new showdown.Converter();
     } else {
@@ -120,7 +84,7 @@ export function initChatbot() {
 
         const input = document.getElementById("chat-input");
         const message = input.value.trim();
-        if (suggestionsContainer) suggestionsContainer.innerHTML = ""; // Limpa sugestões
+        suggestionsContainer.innerHTML = ""; // Limpa sugestões
 
         if (message) {
             addMessageToUI(message, "user");
@@ -131,7 +95,6 @@ export function initChatbot() {
     });
 
     function renderSuggestions() {
-        if (!suggestionsContainer) return;
         const suggestions = [
             "Sugira um destino de praia",
             "Como funciona o plano Plus?",
@@ -154,6 +117,32 @@ export function initChatbot() {
             };
             suggestionsContainer.appendChild(button);
         });
+    }
+    
+    function addMessageToUI(message, role, shouldSave = true) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("chat-message", `chat-message-${role}`);
+        
+        let sanitizedHtml;
+        if (converter && window.DOMPurify) {
+            const rawHtml = converter.makeHtml(message);
+            sanitizedHtml = window.DOMPurify.sanitize(rawHtml);
+        } else {
+            // Fallback seguro para texto puro se as bibliotecas não estiverem disponíveis
+            const p = document.createElement('p');
+            p.textContent = message;
+            sanitizedHtml = p.outerHTML;
+        }
+
+        messageDiv.innerHTML = sanitizedHtml;
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        if (role !== 'loading' && shouldSave) {
+            chatHistory.push({ role, text: message });
+            saveHistory();
+        }
     }
     
     function showLoadingIndicator() {
