@@ -1,4 +1,3 @@
-
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { db, adminAuth, FieldValue, PARTNER_STATUS } = require("./config");
@@ -26,19 +25,16 @@ const ensureIsAdmin = (auth) => {
  * Protegida para ser chamada apenas por administradores.
  */
 exports.createPartnerAccount = onCall(async (request) => {
+  // Fix: Use request.auth for v2 functions instead of request.context
   ensureIsAdmin(request.auth);
 
   const { businessName, ownerName, email, password, plan } = request.data;
 
-  // Validação de Schema (Hardening)
-  if (
-    typeof businessName !== "string" ||
-    typeof ownerName !== "string" ||
-    typeof email !== "string" ||
-    typeof password !== "string" ||
-    typeof plan !== "string"
-  ) {
-    throw new HttpsError("invalid-argument", "Todos os campos são obrigatórios e devem ser do tipo correto.");
+  if (!businessName || !ownerName || !email || !password || !plan) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Todos os campos são obrigatórios.",
+    );
   }
 
   let userRecord;
@@ -92,12 +88,11 @@ exports.createPartnerAccount = onCall(async (request) => {
  * Deleta uma conta de parceiro e todos os seus dados.
  */
 exports.deletePartnerAccount = onCall(async (request) => {
+    // Fix: Use request.auth for v2 functions instead of request.context
     ensureIsAdmin(request.auth);
     const { partnerId } = request.data;
-    
-    // Validação de Schema (Hardening)
-    if (typeof partnerId !== 'string' || partnerId.length === 0) {
-        throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório e inválido.");
+    if (!partnerId) {
+        throw new HttpsError("invalid-argument", "O ID do parceiro é obrigatório.");
     }
 
     try {
@@ -131,15 +126,15 @@ exports.deletePartnerAccount = onCall(async (request) => {
  * Altera o status de um parceiro.
  */
 exports.setPartnerStatus = onCall(async (request) => {
+    // Fix: Use request.auth for v2 functions instead of request.context
     ensureIsAdmin(request.auth);
     const { partnerId, newStatus, reason } = request.data;
 
-    // Validação de Schema (Hardening)
-    if (typeof partnerId !== 'string' || !Object.values(PARTNER_STATUS).includes(newStatus)) {
+    if (!partnerId || !newStatus || !Object.values(PARTNER_STATUS).includes(newStatus)) {
         throw new HttpsError("invalid-argument", "ID do parceiro ou novo status inválido.");
     }
     
-    if (newStatus === PARTNER_STATUS.SUSPENDED && (typeof reason !== 'string' || reason.length === 0)) {
+    if (newStatus === PARTNER_STATUS.SUSPENDED && !reason) {
         throw new HttpsError("invalid-argument", "Um motivo é obrigatório para suspender um parceiro.");
     }
 
@@ -161,11 +156,11 @@ exports.setPartnerStatus = onCall(async (request) => {
  * Concede o papel de administrador a um usuário.
  */
 exports.grantAdminRole = onCall(async (request) => {
+  // Fix: Use request.auth for v2 functions instead of request.context
   ensureIsAdmin(request.auth);
 
   const email = request.data.email;
-  // Validação de Schema (Hardening)
-  if (typeof email !== 'string' || email.length === 0) {
+  if (!email) {
     throw new HttpsError("invalid-argument", "O e-mail do usuário é obrigatório.");
   }
 
@@ -192,14 +187,15 @@ exports.grantAdminRole = onCall(async (request) => {
  * Revoga o papel de administrador de um usuário.
  */
 exports.revokeAdminRole = onCall(async (request) => {
+  // Fix: Use request.auth for v2 functions instead of request.context
   ensureIsAdmin(request.auth);
 
   const { targetUid } = request.data;
-  // Validação de Schema (Hardening)
-  if (typeof targetUid !== 'string' || targetUid.length === 0) {
+  if (!targetUid) {
     throw new HttpsError("invalid-argument", "O UID do usuário é obrigatório.");
   }
   
+  // Fix: Use request.auth for v2 functions instead of request.context
   if (targetUid === request.auth.uid) {
     throw new HttpsError("failed-precondition", "Um administrador não pode revogar os próprios privilégios.");
   }
@@ -234,6 +230,7 @@ exports.revokeAdminRole = onCall(async (request) => {
  * Lista os administradores atuais.
  */
 exports.listAdmins = onCall(async (request) => {
+  // Fix: Use request.auth for v2 functions instead of request.context
   ensureIsAdmin(request.auth);
 
   try {

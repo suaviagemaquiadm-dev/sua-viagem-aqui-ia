@@ -1,4 +1,5 @@
 
+/* global Chart */
 import {
   db,
   signOut,
@@ -191,7 +192,8 @@ async function loadAndRenderAdmins() {
       `;
       adminList.appendChild(li);
     });
-  } catch (error) {
+  } catch (err) {
+    console.error('Falha ao carregar administradores:', err);
     adminList.innerHTML = '<li><p class="text-red-400">Falha ao carregar administradores.</p></li>';
   }
 }
@@ -218,8 +220,8 @@ async function loadDailyStatsForCharts() {
     const partnersData = labels.map(date => dailyData[date]?.newPartners || 0);
     
     renderDailyRegsChart(labels, usersData, partnersData);
-  } catch(error) {
-      console.error("Error fetching daily stats for charts:", error);
+  } catch(err) {
+      console.error("Error fetching daily stats for charts:", err);
   }
 }
 

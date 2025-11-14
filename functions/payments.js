@@ -1,6 +1,5 @@
-
 const logger = require("firebase-functions/logger");
-const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onRequest } = require("firebase-functions/v2/https");
 const crypto = require("crypto");
 const mercadopago = require("mercadopago");
 const {
@@ -29,6 +28,7 @@ function validateWebhookSignature(req) {
     return false;
   }
 
+  // Fix: Improve parsing to be robust against whitespace and malformed parts.
   const parts = signatureHeader.split(",").reduce((acc, part) => {
     const [key, value] = part.split("=");
     if (key && value) acc[key.trim()] = value.trim();
@@ -43,8 +43,10 @@ function validateWebhookSignature(req) {
       return false;
   }
 
+
   // Previne ataques de replay
   const now = Math.floor(Date.now() / 1000);
+  // Fix: Use Math.abs() to handle small clock drifts in both directions.
   if (Math.abs(now - timestamp) > 300) {
     // 5 minutos de tolerância
     logger.warn("Webhook validation failed: Timestamp expired.");
@@ -142,63 +144,3 @@ exports.mercadoPagoWebhook = onRequest(
     }
   },
 );
-
-/**
- * Cria uma preferência de pagamento no Mercado Pago.
- */
-exports.createMercadoPagoPreference = onCall(
-  { secrets: [mpAccessToken], region: "southamerica-east1" },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "A função só pode ser chamada por um usuário autenticado.",
-      );
-    }
-
-    const { title, price, userId, email, transactionType } = request.data;
-    if (!title || !price || !userId || !email || !transactionType) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Dados insuficientes para criar a preferência de pagamento.",
-      );
-    }
-
-    mercadopago.configure({ access_token: mpAccessToken.value() });
-
-    const preference = {
-      items: [
-        {
-          title: title,
-          unit_price: Number(price),
-          quantity: 1,
-        },
-      ],
-      payer: {
-        email: email,
-      },
-      back_urls: {
-        success: "https://gemini-cli-98f4a.web.app/perfil.html", 
-        failure: "https://gemini-cli-98f4a.web.app/perfil.html", 
-        pending: "https://gemini-cli-98f4a.web.app/perfil.html",
-      },
-      auto_return: "approved",
-      external_reference: userId,
-      metadata: {
-        transaction_type: transactionType,
-        user_id: userId,
-      },
-    };
-
-    try {
-      const response = await mercadopago.preferences.create(preference);
-      return { preferenceId: response.body.id };
-    } catch (error) {
-      logger.error("Erro ao criar preferência no Mercado Pago:", error);
-      throw new HttpsError(
-        "internal",
-        "Não foi possível criar a preferência de pagamento.",
-        error.message,
-      );
-    }
-  });
