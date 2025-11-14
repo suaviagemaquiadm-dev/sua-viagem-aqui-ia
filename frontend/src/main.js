@@ -52,4 +52,18 @@ async function loadCarouselsAndGrids() {
 
     const testimonialsData = [
        { name: 'Maria S.', role: 'Pousada Aconchego', quote: 'Desde que entramos na plataforma, nossa taxa de ocupação aumentou em 30%. O acesso direto aos viajantes fez toda a diferença!', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=250' },
-       { name: 'João P.', role: 'Guia de Ecoturismo', quote: 'A
+       { name: 'João P.', role: 'Guia de Ecoturismo', quote: 'A plataforma me conectou com viajantes apaixonados por natureza. Meu trabalho ganhou uma visibilidade que eu não tinha antes. Recomendo!', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250' },
+       { name: 'Carla B.', role: 'Restaurante Sabor do Mar', quote: 'Nosso restaurante agora é um ponto de parada obrigatório para turistas que usam o app. O retorno foi imediato e muito positivo.', img: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=250' }
+    ];
+
+    new TestimonialsCarousel(testimonialsData).init();
+}
+
+
+async function fetchWeather() {
+    // Esta função pode ser implementada para buscar dados de clima
+    console.log("Função de clima a ser implementada.");
+}
+
+// Inicializa a página quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", initHomePage);
