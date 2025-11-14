@@ -1,5 +1,5 @@
 
-import showdown from "showdown";
+import { Converter } from "showdown";
 import {
   auth,
   db,
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const noItinerariesMessage = document.getElementById(
     "no-itineraries-message",
   );
-  const converter = new showdown.Converter();
+  const converter = new Converter();
   let currentUserId = null;
 
   onAuthStateChanged(auth, async (user) => {
