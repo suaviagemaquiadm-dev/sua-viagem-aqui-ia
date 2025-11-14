@@ -43,6 +43,24 @@ function initCookieBanner() {
 }
 
 /**
+ * Registra o Service Worker para habilitar funcionalidades offline (PWA).
+ */
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("Service Worker registrado com sucesso:", registration);
+        })
+        .catch((error) => {
+          console.error("Falha ao registrar o Service Worker:", error);
+        });
+    });
+  }
+}
+
+/**
  * Inicializa o layout principal da página, carregando header e footer.
  */
 async function initLayout() {
@@ -58,6 +76,7 @@ async function initLayout() {
   initApp();
   initChatbot();
   initCookieBanner();
+  registerService-worker();
 }
 
 // Garante que o DOM esteja pronto antes de manipular o layout

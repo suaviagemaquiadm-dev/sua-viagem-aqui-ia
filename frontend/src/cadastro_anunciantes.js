@@ -1,4 +1,3 @@
-/* global IMask */
 import {
   auth,
   db,
@@ -8,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
 } from "./firebase.js";
 import { createCheckout } from "./payment.js";
+import { showAlert } from "./ui/alert.js";
 import { setupRealtimeEmailCheck } from "./form-utils.js";
 import { callFunction } from "./apiService.js";
 
