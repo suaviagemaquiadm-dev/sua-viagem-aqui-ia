@@ -1,0 +1,1 @@
+console.log('meus_favoritos.js carregado');

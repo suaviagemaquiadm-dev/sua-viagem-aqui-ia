@@ -1,0 +1,1 @@
+console.log('meu_feed.js carregado');

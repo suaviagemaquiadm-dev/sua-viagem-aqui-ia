@@ -15,5 +15,5 @@ export function initApp() {
   // }
 
   // Por enquanto, apenas um console.log para indicar que foi chamada.
-  console.log('initApp() chamada.');
+
 }
