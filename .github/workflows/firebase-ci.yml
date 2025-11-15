@@ -18,12 +18,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Clean npm cache
-        run: npm cache clean --force
-
-      - name: Install frontend dependencies
+      - name: Clean and Install frontend dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          npm cache clean --force
+          npm ci
 
       - name: Run linter
         working-directory: ./frontend
@@ -37,9 +36,11 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
-      - name: Install dependencies for functions
+      - name: Clean and Install functions dependencies
         working-directory: ./functions
-        run: npm ci
+        run: |
+          npm cache clean --force
+          npm ci
 
       - name: Run security audit
         working-directory: ./functions

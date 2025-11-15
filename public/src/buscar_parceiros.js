@@ -1,5 +1,4 @@
-import { functions } from "./firebase.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+import { functions, httpsCallable } from "./firebase.js";
 import { getResizedImageUrl } from "./utils.js";
 import { initApp } from './app.js';
 

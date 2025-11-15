@@ -1,5 +1,4 @@
 
-
 const test = require("firebase-functions-test")();
 const { assert } = require("chai");
 const sinon = require("sinon");

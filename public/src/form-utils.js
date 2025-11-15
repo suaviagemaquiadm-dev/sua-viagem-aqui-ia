@@ -1,7 +1,6 @@
-import { auth, db } from './firebase.js';
+import { auth, db, collection, query, where, getDocs } from './firebase.js';
 import { showAlert } from './ui/alert.js';
-import { fetchSignInMethodsForEmail } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { fetchSignInMethodsForEmail } from './firebase.js';
 
 
 /**

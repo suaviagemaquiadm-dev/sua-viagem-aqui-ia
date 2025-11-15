@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import {
   db,
   signOut,
@@ -13,7 +12,6 @@ import {
 } from "/src/firebase.js";
 import { protectPage } from "/src/auth-guard.js";
 import { callFunction } from "./apiService.js";
-import Chart from 'chart.js/auto';
 
 let allPartnersData = [];
 let plansChart, dailyRegsChart;
@@ -114,7 +112,7 @@ function listenToPartners() {
     updateDashboardCards(allPartnersData);
     renderPartnersTable(allPartnersData);
     updatePlansChart(allPartnersData);
-  }, () => console.error("Error listening to partners:"));
+  }, (error) => console.error("Error listening to partners:", error));
 }
 
 function listenToMetrics() {

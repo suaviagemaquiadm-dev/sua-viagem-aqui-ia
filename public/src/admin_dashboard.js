@@ -1,6 +1,6 @@
 import { protectPage } from "/src/auth-guard.js";
-import { db } from "/src/firebase.js";
 import {
+  db,
   onSnapshot,
   doc,
   collection,
@@ -8,7 +8,7 @@ import {
   orderBy,
   limit,
   getDocs,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+} from "/src/firebase.js";
 
 let usersChartInstance, partnersChartInstance;
 

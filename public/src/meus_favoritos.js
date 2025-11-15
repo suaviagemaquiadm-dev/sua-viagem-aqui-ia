@@ -1,7 +1,7 @@
 import { initApp } from "/src/app.js";
-import { auth, db } from "/src/firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
+  auth,
+  db,
   doc,
   getDoc,
   collection,
@@ -10,7 +10,8 @@ import {
   getDocs,
   updateDoc,
   arrayRemove,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  onAuthStateChanged,
+} from "/src/firebase.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp(); // Handles header/footer and auth state

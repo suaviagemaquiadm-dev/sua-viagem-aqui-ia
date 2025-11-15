@@ -1,9 +1,8 @@
-/* global google */
 import { getResizedImageUrl } from "./utils.js";
 import { initApp } from './app.js';
 import { callFunction } from "./apiService.js";
 
-
+let allPartners = []; // Cache for map and re-renders without fetching
 
 const loadingContainer = document.getElementById("loading-container");
 const grid = document.getElementById("partners-grid");
@@ -154,7 +153,7 @@ async function performSearch() {
   try {
     const partners = await callFunction('searchPartners', { text: searchText, category: category });
     
-    // allPartners = partners; // Update local cache
+    allPartners = partners; // Update local cache
     renderPartners(partners);
 
     // Update the map with the new filtered partners

@@ -1,6 +1,4 @@
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged, getIdTokenResult } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { auth, db, doc, getDoc, onAuthStateChanged, getIdTokenResult } from "./firebase.js";
 
 // Constantes para evitar 'magic strings'
 const USER_ROLES = {

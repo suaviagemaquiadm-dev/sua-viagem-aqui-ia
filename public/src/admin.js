@@ -1,16 +1,18 @@
 
-import { db, functions, auth } from "/src/firebase.js";
-import { signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
+  db,
+  functions,
   collection,
   onSnapshot,
+  signOut,
+  httpsCallable,
+  auth,
   doc,
   query,
   orderBy,
   limit,
   getDocs,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+} from "/src/firebase.js";
 import { protectPage } from "/src/auth-guard.js";
 
 let allPartnersData = [];

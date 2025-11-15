@@ -1,6 +1,7 @@
 import { protectPage } from "./auth-guard.js";
-import { db, storage } from "./firebase.js";
 import {
+  db,
+  storage,
   doc,
   getDoc,
   updateDoc,
@@ -11,13 +12,11 @@ import {
   query,
   orderBy,
   deleteDoc,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
   deleteObject,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+} from "./firebase.js";
 import { showAlert } from "./ui/alert.js";
 
 protectPage("advertiser", (user, partnerData) => {

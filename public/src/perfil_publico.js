@@ -1,6 +1,6 @@
-import { auth, db, functions } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
+  auth,
+  db,
   doc,
   getDoc,
   collection,
@@ -8,8 +8,10 @@ import {
   where,
   getDocs,
   orderBy,
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+  onAuthStateChanged,
+  httpsCallable,
+  functions,
+} from "./firebase.js";
 import { initApp } from "./app.js";
 
 document.addEventListener("DOMContentLoaded", () => {
