@@ -1,6 +1,7 @@
 import { showAlert } from "./ui/alert.js";
 import { trackEvent } from "./analytics.js";
-import { functions, httpsCallable } from "./firebase.js";
+import { functions } from "./firebase.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { getResizedImageUrl } from "./utils.js";
 
 /**

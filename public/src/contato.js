@@ -1,4 +1,5 @@
-import { functions, httpsCallable } from "/src/firebase.js";
+import { functions } from "/src/firebase.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "/src/ui/alert.js";
 
 document.addEventListener('DOMContentLoaded', () => {

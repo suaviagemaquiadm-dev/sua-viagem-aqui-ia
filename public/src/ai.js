@@ -1,4 +1,6 @@
-import { auth, db, doc, getDoc, httpsCallable, functions } from "./firebase.js";
+import { auth, db, functions } from "./firebase.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "./ui/alert.js";
 
 /**

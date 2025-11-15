@@ -1,17 +1,17 @@
+import { auth, db, functions } from "./firebase.js";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
-  auth,
-  db,
+  getIdTokenResult,
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import {
   doc,
   setDoc,
   serverTimestamp,
-  httpsCallable,
-  functions,
-  getIdTokenResult,
-} from "./firebase.js";
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "./ui/alert.js";
 import { initApp } from "./app.js";
 

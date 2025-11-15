@@ -1,7 +1,7 @@
 
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
-  auth,
-  db,
   collection,
   query,
   orderBy,
@@ -9,8 +9,7 @@ import {
   doc,
   deleteDoc,
   updateDoc,
-  onAuthStateChanged,
-} from "./firebase.js";
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { showAlert } from "./ui/alert.js";
 import { initApp } from "./app.js";
 

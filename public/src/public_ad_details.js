@@ -1,19 +1,17 @@
+import { db, auth, functions } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
-  db,
   doc,
   getDoc,
   updateDoc,
   arrayUnion,
   arrayRemove,
-  auth,
-  onAuthStateChanged,
   collection,
   query,
   orderBy,
   getDocs,
-  httpsCallable,
-  functions,
-} from "./firebase.js";
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { initApp } from "./app.js";
 import { getResizedImageUrl } from "./utils.js";
 import { showAlert } from "./ui/alert.js";

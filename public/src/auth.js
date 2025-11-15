@@ -1,18 +1,18 @@
+import { auth, db, functions } from "./firebase.js";
 import {
   onAuthStateChanged,
   signOut,
-  auth,
-  db,
+  getIdTokenResult,
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import {
   doc,
   getDoc,
-  getIdTokenResult,
   onSnapshot,
   collection,
   query,
   orderBy,
-  httpsCallable,
-  functions,
-} from "./firebase.js";
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { getWithTTL, setWithTTL } from "./cache.js";
 
 const USER_ROLES = {

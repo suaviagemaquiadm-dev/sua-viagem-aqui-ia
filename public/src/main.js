@@ -1,4 +1,5 @@
-import { httpsCallable, functions } from "./firebase.js";
+import { functions } from "./firebase.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "./ui/alert.js";
 import { initAIRouteBuilder } from "./ai.js";
 import { AgencyCarousel, InfiniteCarousel, TestimonialsCarousel, initAdvertiserGrid } from "./ui.js";

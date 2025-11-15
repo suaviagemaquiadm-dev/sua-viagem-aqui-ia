@@ -1,13 +1,7 @@
 import { protectPage } from "./auth-guard.js";
-import {
-  db,
-  doc,
-  updateDoc,
-  storage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "./firebase.js";
+import { db, storage } from "./firebase.js";
+import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 import { showAlert } from "./ui/alert.js";
 
 protectPage("traveler", (user, userData) => {

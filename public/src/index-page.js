@@ -1,15 +1,13 @@
+import { db, functions, auth } from "./firebase.js";
 import {
-  db,
-  functions,
-  auth,
   doc,
   getDoc,
   collection,
   getDocs,
   query,
   where,
-  httpsCallable,
-} from "./firebase.js";
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "./ui/alert.js";
 import { createCheckout } from "./payment.js";
 import { initAIRouteBuilder } from "./ai.js";

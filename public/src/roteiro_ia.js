@@ -1,4 +1,7 @@
-import { auth, db, doc, getDoc, collection, addDoc, serverTimestamp, httpsCallable, functions, onAuthStateChanged } from "./firebase.js";
+import { auth, db, functions } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 import { showAlert } from "./ui/alert.js";
 import { initApp } from "./app.js";
 
