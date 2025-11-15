@@ -20,5 +20,9 @@
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.4",
     "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "firebase": "^12.6.0",
+    "showdown": "^2.1.0"
   }
 }
