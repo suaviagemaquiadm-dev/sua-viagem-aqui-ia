@@ -1,5 +1,5 @@
+/* global showdown */
 import { auth } from "./firebase.js";
-import { showAlert } from "./ui/alert.js";
 import { callFunction } from "./apiService.js";
 
 let chatHistory = [];
@@ -31,6 +31,33 @@ function loadHistory() {
     } catch (error) {
         console.warn("Não foi possível carregar o histórico do chat:", error);
         chatHistory = []; // Reseta em caso de erro
+    }
+}
+
+export function addMessageToUI(message, role, shouldSave = true) {
+    const messagesContainer = document.getElementById("chat-messages");
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("chat-message", `chat-message-${role}`);
+    
+    let sanitizedHtml;
+    if (converter && window.DOMPurify) {
+        const rawHtml = converter.makeHtml(message);
+        sanitizedHtml = window.DOMPurify.sanitize(rawHtml);
+    } else {
+        // Fallback seguro para texto puro se as bibliotecas não estiverem disponíveis
+        const p = document.createElement('p');
+        p.textContent = message;
+        sanitizedHtml = p.outerHTML;
+    }
+
+    messageDiv.innerHTML = sanitizedHtml;
+
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    if (role !== 'loading' && shouldSave) {
+        chatHistory.push({ role, text: message });
+        saveHistory();
     }
 }
 
@@ -78,7 +105,8 @@ export function initChatbot() {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!auth.currentUser) {
-            showAlert("Por favor, faça login para usar o assistente.");
+            // showAlert("Por favor, faça login para usar o assistente."); // showAlert não está definida
+            console.warn("Usuário não logado. Não é possível usar o assistente.");
             return;
         }
 
@@ -107,7 +135,8 @@ export function initChatbot() {
             button.textContent = text;
             button.onclick = () => {
                 if (!auth.currentUser) {
-                    showAlert("Por favor, faça login para usar o assistente.");
+                    // showAlert("Por favor, faça login para usar o assistente."); // showAlert não está definida
+                    console.warn("Usuário não logado. Não é possível usar o assistente.");
                     return;
                 }
                 addMessageToUI(text, "user");
@@ -117,32 +146,6 @@ export function initChatbot() {
             };
             suggestionsContainer.appendChild(button);
         });
-    }
-    
-    function addMessageToUI(message, role, shouldSave = true) {
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("chat-message", `chat-message-${role}`);
-        
-        let sanitizedHtml;
-        if (converter && window.DOMPurify) {
-            const rawHtml = converter.makeHtml(message);
-            sanitizedHtml = window.DOMPurify.sanitize(rawHtml);
-        } else {
-            // Fallback seguro para texto puro se as bibliotecas não estiverem disponíveis
-            const p = document.createElement('p');
-            p.textContent = message;
-            sanitizedHtml = p.outerHTML;
-        }
-
-        messageDiv.innerHTML = sanitizedHtml;
-
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        if (role !== 'loading' && shouldSave) {
-            chatHistory.push({ role, text: message });
-            saveHistory();
-        }
     }
     
     function showLoadingIndicator() {

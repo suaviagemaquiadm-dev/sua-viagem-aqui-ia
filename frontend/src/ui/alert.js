@@ -10,8 +10,7 @@ export function showAlert(message, type = "error") {
   }
 
   alertMessage.textContent = message;
-  // Você pode adicionar lógica para mudar a cor ou ícone baseado no 'type' (e.g., 'success', 'error', 'info')
-  // Por exemplo: alertModal.className = `... bg-${type}-500 ...`;
+  alertModal.className = `fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${type === 'error' ? 'text-red-400' : 'text-green-400'}`;
 
   alertModal.classList.remove("hidden");
 
